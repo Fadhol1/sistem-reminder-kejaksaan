@@ -27,6 +27,9 @@ Route::prefix('perkara')->group(function () {
 
     // 4. Store Timeline: Tambah perkembangan linimasa via route parameter ID
     Route::post('/{id}/timeline', [PerkaraApiController::class, 'storeTimeline'])->name('api.perkara.timeline.store_with_id');
+
+    // 5. DESTROY: Hapus perkara berdasarkan ID (TAMBAHKAN INI)
+    Route::delete('/{id}', [PerkaraApiController::class, 'destroy']);
 });
 
 // 5. Get Reminders: Daftar reminder aktif & mendesak untuk dashboard Android kepala

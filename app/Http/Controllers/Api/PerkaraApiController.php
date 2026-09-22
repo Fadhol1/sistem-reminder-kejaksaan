@@ -178,6 +178,26 @@ class PerkaraApiController extends Controller
         });
     }
 
+    public function destroy($id)
+    {
+    $perkara = Perkara::find($id);
+
+    if (!$perkara) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Data perkara tidak ditemukan.'
+        ], 404);
+    }
+
+    // Hapus data perkara (relasi timeline & reminder akan ikut terhapus jika di-set cascade, atau hapus manual)
+    $perkara->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Data perkara berhasil dihapus.'
+    ], 200);
+}
+
     /**
      * 4. STORE TIMELINE: Mencatat perkembangan baru ke tabel perkara_timelines,
      * memperbarui status_saat_ini pada tabel perkaras, serta mengelola reminder terkait.
