@@ -25,6 +25,7 @@ class PerkaraReminder extends Model
      */
     protected $fillable = [
         'perkara_id',
+        'tahap',
         'jenis_reminder',
         'tanggal_mulai',
         'deadline',
@@ -101,7 +102,7 @@ class PerkaraReminder extends Model
             return null;
         }
 
-        return (int) now()->startOfDay()->diffInDays($this->deadline->startOfDay(), false);
+        return (int) now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($this->deadline)->startOfDay(), false);
     }
 
     /**

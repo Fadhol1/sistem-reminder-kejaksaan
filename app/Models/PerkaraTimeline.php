@@ -24,6 +24,7 @@ class PerkaraTimeline extends Model
      */
     protected $fillable = [
         'perkara_id',
+        'user_id',
         'tahap',
         'status_kegiatan',
         'tanggal_kejadian',
@@ -48,5 +49,13 @@ class PerkaraTimeline extends Model
     public function perkara(): BelongsTo
     {
         return $this->belongsTo(Perkara::class, 'perkara_id');
+    }
+
+    /**
+     * Relasi ke User yang mencatat kejadian.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\PerkaraController;
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -22,4 +24,11 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Modul Perkara
+    Route::get('/perkara', [PerkaraController::class, 'index'])->name('perkara.index');
+    Route::get('/perkara/create', [PerkaraController::class, 'create'])->name('perkara.create');
+    Route::post('/perkara', [PerkaraController::class, 'store'])->name('perkara.store');
+    Route::get('/perkara/{id}', [PerkaraController::class, 'show'])->name('perkara.show');
+    Route::post('/perkara/{id}/perkembangan', [PerkaraController::class, 'catatPerkembangan'])->name('perkara.catatPerkembangan');
 });

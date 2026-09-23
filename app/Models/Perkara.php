@@ -29,6 +29,8 @@ class Perkara extends Model
         'nama_tersangka',
         'penyidik',
         'jaksa',
+        'bidang',
+        'satuan_kerja',
         'tanggal_spdp',
         'tahap_saat_ini',
         'status_saat_ini',
