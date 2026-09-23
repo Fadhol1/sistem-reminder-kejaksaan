@@ -68,9 +68,9 @@ class User extends Authenticatable
     /**
      * Role checking helpers
      */
-    public function isAdmin(): bool
+    public function isPidum(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'pidum';
     }
 
     public function isJaksa(): bool
