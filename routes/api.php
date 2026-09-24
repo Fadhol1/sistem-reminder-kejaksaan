@@ -30,6 +30,12 @@ Route::prefix('perkara')->group(function () {
 
     // 5. DESTROY: Hapus perkara berdasarkan ID (TAMBAHKAN INI)
     Route::delete('/{id}', [PerkaraApiController::class, 'destroy']);
+
+    // 6. FUTURE ANDROID API: Get Available Actions based on State Machine
+    Route::get('/{id}/available-actions', [PerkaraApiController::class, 'getAvailableActions'])->name('api.perkara.available_actions');
+
+    // 7. FUTURE ANDROID API: Execute Action
+    Route::post('/{id}/actions', [PerkaraApiController::class, 'processAction'])->name('api.perkara.process_action');
 });
 
 // 5. Get Reminders: Daftar reminder aktif & mendesak untuk dashboard Android kepala

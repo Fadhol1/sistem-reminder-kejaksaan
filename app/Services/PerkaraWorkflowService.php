@@ -54,10 +54,16 @@ class PerkaraWorkflowService
                 break;
 
             case self::TAHAP_MONITORING:
-                $actions[] = ['id' => 'catat_p17', 'label' => 'Kirim P-17'];
-                $actions[] = ['id' => 'catat_p17_2', 'label' => 'Kirim P-17 Kedua / FORM-2'];
-                $actions[] = ['id' => 'catat_form3', 'label' => 'Kirim FORM-3'];
-                $actions[] = ['id' => 'terima_berkas', 'label' => 'Penyerahan Berkas Tahap I'];
+                if ($status === 'Menunggu Berkas Tahap I') {
+                    $actions[] = ['id' => 'catat_p17', 'label' => 'Kirim P-17'];
+                } elseif ($status === 'P-17') {
+                    $actions[] = ['id' => 'catat_p17_2', 'label' => 'Kirim P-17 Kedua / FORM-2'];
+                } elseif ($status === 'P-17 Kedua / FORM-2') {
+                    $actions[] = ['id' => 'catat_form3', 'label' => 'Kirim FORM-3'];
+                }
+                
+                // Terlepas dari status P-17 mana pun (selama belum pindah tahap), user bisa mencatatkan penerimaan berkas Tahap I
+                $actions[] = ['id' => 'terima_berkas', 'label' => 'Penyerahan Berkas Tahap I (P-24)'];
                 break;
 
             case self::TAHAP_P24:
@@ -69,12 +75,16 @@ class PerkaraWorkflowService
 
             case self::TAHAP_P19:
                 $actions[] = ['id' => 'terima_pemenuhan_p19', 'label' => 'Terima Pemenuhan Petunjuk'];
-                $actions[] = ['id' => 'p20', 'label' => 'P-20 (Overdue)'];
+                if ($status !== 'P-20 / Overdue') {
+                    $actions[] = ['id' => 'p20', 'label' => 'P-20 (Overdue)'];
+                }
                 break;
 
             case self::TAHAP_P21:
                 $actions[] = ['id' => 'terima_tahap2', 'label' => 'Penyerahan Tahap II'];
-                $actions[] = ['id' => 'form7', 'label' => 'FORM-7 (Overdue)'];
+                if ($status !== 'FORM-7 / Overdue') {
+                    $actions[] = ['id' => 'form7', 'label' => 'FORM-7 (Overdue)'];
+                }
                 break;
 
             case self::TAHAP_II:
