@@ -58,6 +58,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relasi Many-to-Many perkara jika user adalah Jaksa (berdasarkan id via pivot perkaras_jaksa).
+     */
+    public function perkaras(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Perkara::class, 'perkara_jaksa', 'jaksa_id', 'perkara_id');
+    }
+
+    /**
      * Relasi ke perkara di mana user ditugaskan sebagai Penyidik (berdasarkan nama).
      */
     public function perkaraPenyidik(): HasMany

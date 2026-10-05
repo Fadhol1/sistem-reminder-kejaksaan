@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 class PerkaraWorkflowService
 {
     // Tahap
-    public const TAHAP_SPDP = 'SPDP';
-    public const TAHAP_P16 = 'P-16';
     public const TAHAP_KOORDINASI = 'Koordinasi Awal';
     public const TAHAP_MONITORING = 'Monitoring Penyidikan';
     public const TAHAP_P24 = 'P-24';
@@ -29,22 +27,6 @@ class PerkaraWorkflowService
         $actions = [];
 
         switch ($tahap) {
-            case self::TAHAP_SPDP:
-                if ($status === 'Menunggu Penerimaan SPDP') {
-                    $actions[] = ['id' => 'spdp_diterima', 'label' => 'Catat SPDP Diterima'];
-                } elseif ($status === 'SPDP Diterima') {
-                    $actions[] = ['id' => 'lanjut_p16', 'label' => 'Lanjut ke P-16'];
-                }
-                break;
-
-            case self::TAHAP_P16:
-                if ($status === 'Menunggu Penunjukan Jaksa') {
-                    $actions[] = ['id' => 'tunjuk_jaksa', 'label' => 'Catat Jaksa Ditunjuk (P-16)'];
-                } elseif ($status === 'Jaksa Ditunjuk') {
-                    $actions[] = ['id' => 'lanjut_koordinasi', 'label' => 'Lanjut Koordinasi Awal'];
-                }
-                break;
-
             case self::TAHAP_KOORDINASI:
                 if ($status === 'Menunggu Koordinasi') {
                     $actions[] = ['id' => 'koordinasi_selesai', 'label' => 'Koordinasi Selesai'];
@@ -97,9 +79,9 @@ class PerkaraWorkflowService
         return $actions;
     }
 
-    public static function processAction(Perkara $perkara, string $actionId, array $data, int $userId): void
+    public static function processAction(Perkara $perkara, string $actionId, array $data, ?int $userId = null, string $actorType = 'USER'): void
     {
-        DB::transaction(function () use ($perkara, $actionId, $data, $userId) {
+        DB::transaction(function () use ($perkara, $actionId, $data, $userId, $actorType) {
             $catatan = $data['catatan'] ?? null;
             $tanggal = isset($data['tanggal']) ? Carbon::parse($data['tanggal']) : now();
 
@@ -108,31 +90,6 @@ class PerkaraWorkflowService
             $eventName = '';
 
             switch ($actionId) {
-                // Tahap SPDP
-                case 'spdp_diterima':
-                    $newStatus = 'SPDP Diterima';
-                    $eventName = 'SPDP Diterima';
-                    self::resolveActiveReminders($perkara, self::TAHAP_SPDP);
-                    break;
-                case 'lanjut_p16':
-                    $newTahap = self::TAHAP_P16;
-                    $newStatus = 'Menunggu Penunjukan Jaksa';
-                    $eventName = 'Lanjut ke Tahap P-16';
-                    // SLA P-16/Koordinasi?
-                    break;
-                    
-                // Tahap P-16
-                case 'tunjuk_jaksa':
-                    $newStatus = 'Jaksa Ditunjuk';
-                    $eventName = 'Jaksa Penuntut Umum Ditunjuk (P-16)';
-                    break;
-                case 'lanjut_koordinasi':
-                    $newTahap = self::TAHAP_KOORDINASI;
-                    $newStatus = 'Menunggu Koordinasi';
-                    $eventName = 'Memasuki Tahap Koordinasi Awal';
-                    self::createReminder($perkara, self::TAHAP_KOORDINASI, 'SLA Koordinasi Awal', 3);
-                    break;
-                    
                 // Tahap KOORDINASI AWAL
                 case 'koordinasi_selesai':
                     $newStatus = 'Koordinasi Selesai';
@@ -159,16 +116,25 @@ class PerkaraWorkflowService
                 case 'catat_p17_2':
                     $newStatus = 'P-17 Kedua / FORM-2';
                     $eventName = 'Pengiriman P-17 Kedua / FORM-2';
+                    if ($actorType === 'SYSTEM') {
+                        $eventName .= ' (System Auto-Transition)';
+                        $catatan = $catatan ?? 'Tenggat waktu P-17 terlewati. Sistem secara otomatis menaikkan status menjadi P-17 Kedua / FORM-2.';
+                    }
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
-                    self::createReminder($perkara, self::TAHAP_MONITORING, 'Penataan setelah FORM-2', 30);
+                    self::createReminder($perkara, self::TAHAP_MONITORING, 'Penataan setelah FORM-2', 30); // Note: Assume 30 days or NEEDS_CONFIRMATION next SLA? Given rules, we just set 30 for now until confirmed.
                     break;
                 case 'catat_form3':
                     $newStatus = 'FORM-3';
                     $eventName = 'Pengiriman FORM-3';
+                    if ($actorType === 'SYSTEM') {
+                        $eventName .= ' (System Auto-Transition)';
+                        $catatan = $catatan ?? 'Tenggat waktu FORM-2 terlewati. Sistem secara otomatis mencatatkan FORM-3.';
+                    }
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
                     break;
                 case 'terima_berkas':
                     $newTahap = self::TAHAP_P24;
+                    // Note for SLA Engine: P-24 has manual branch (lengkap/belum lengkap). System will NOT automate this.
                     $newStatus = 'Menunggu Penelitian Berkas';
                     $eventName = 'Penyerahan Berkas Tahap I Diterima';
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
@@ -197,7 +163,11 @@ class PerkaraWorkflowService
                     break;
                 case 'p20':
                     $newStatus = 'P-20 / Overdue';
-                    $eventName = 'Penerbitan P-20 (Melewati SLA)';
+                    $eventName = 'Penerbitan P-20';
+                    if ($actorType === 'SYSTEM') {
+                        $eventName .= ' (System Auto-Transition)';
+                        $catatan = $catatan ?? 'Batas waktu 14 hari pemenuhan petunjuk (P-19) terlewati. Sistem menerbitkan P-20 secara otomatis.';
+                    }
                     self::resolveActiveReminders($perkara, self::TAHAP_P19);
                     break;
                     
@@ -210,7 +180,11 @@ class PerkaraWorkflowService
                     break;
                 case 'form7':
                     $newStatus = 'FORM-7 / Overdue';
-                    $eventName = 'Penerbitan FORM-7 (Melewati SLA)';
+                    $eventName = 'Penerbitan FORM-7';
+                    if ($actorType === 'SYSTEM') {
+                        $eventName .= ' (System Auto-Transition)';
+                        $catatan = $catatan ?? 'Batas waktu 14 hari Penyerahan Tahap II terlewati. Sistem menerbitkan FORM-7 secara otomatis.';
+                    }
                     self::resolveActiveReminders($perkara, self::TAHAP_P21);
                     break;
 
@@ -232,6 +206,7 @@ class PerkaraWorkflowService
             PerkaraTimeline::create([
                 'perkara_id' => $perkara->id,
                 'user_id' => $userId,
+                'actor_type' => $actorType,
                 'tahap' => $newTahap,
                 'status_kegiatan' => $eventName,
                 'tanggal_kejadian' => $tanggal,

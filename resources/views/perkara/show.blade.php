@@ -12,6 +12,23 @@
             </a>
             <h3 class="text-xl font-semibold text-gray-900">Detail Perkara</h3>
         </div>
+        @if(auth()->user()->isPidum())
+        <div class="flex items-center space-x-2">
+            <a href="{{ route('perkara.edit', $perkara->id) }}" class="inline-flex items-center justify-center rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-white border border-gray-300 shadow-sm hover:bg-gray-50 h-9 px-4 py-2">
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                </svg>
+                Edit Perkara
+            </a>
+            
+            <button type="button" onclick="openDeleteModal()" class="inline-flex items-center justify-center rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-white border border-red-300 text-red-600 shadow-sm hover:bg-red-50 h-9 px-4 py-2">
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+                Hapus
+            </button>
+        </div>
+        @endif
     </div>
 
     @if(session('success'))
@@ -56,8 +73,12 @@
                         <span class="font-semibold text-gray-900">{{ $perkara->tanggal_spdp->format('d M Y') }}</span>
                     </div>
                     <div>
-                        <span class="block text-gray-500 mb-1">Nama Tersangka</span>
-                        <span class="font-medium text-gray-900">{{ $perkara->nama_tersangka }}</span>
+                        <span class="block text-gray-500 mb-1">Daftar Tersangka</span>
+                        <ul class="font-medium text-gray-900 space-y-1">
+                            @foreach($perkara->tersangkas as $tersangka)
+                                <li>{{ $tersangka->nama }}</li>
+                            @endforeach
+                        </ul>
                     </div>
                     <div>
                         <span class="block text-gray-500 mb-1">Bidang / Satuan Kerja</span>
@@ -69,7 +90,13 @@
                     </div>
                     <div>
                         <span class="block text-gray-500 mb-1">Jaksa Penuntut Umum</span>
-                        <span class="font-medium text-gray-900">{{ $perkara->jaksa }}</span>
+                        <ul class="font-medium text-gray-900 space-y-1">
+                            @forelse($perkara->jaksas as $jaksaTerkait)
+                                <li>{{ $jaksaTerkait->name }}</li>
+                            @empty
+                                <li>{{ $perkara->jaksa }}</li>
+                            @endforelse
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -196,4 +223,53 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900/60 transition-opacity backdrop-blur-sm" id="deleteModalBackdrop"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-xl bg-white/70 backdrop-blur-xl border border-white/40 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10 shadow-sm border border-red-200">
+                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 drop-shadow-sm" id="modal-title">Hapus Perkara</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-700">Apakah Anda yakin ingin menghapus perkara ini sepenuhnya beserta seluruh riwayat timeline dan remindernya? Tindakan ini tidak dapat dibatalkan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-4 sm:flex sm:flex-row-reverse sm:px-6 border-t border-white/50 bg-white/30">
+                    <form action="{{ route('perkara.destroy', $perkara->id) }}" method="POST" id="deleteForm">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex w-full justify-center rounded-md bg-red-600/90 hover:bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto transition-colors">Hapus Perkara</button>
+                    </form>
+                    <button type="button" onclick="closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white/60 hover:bg-white/90 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300/50 sm:mt-0 sm:w-auto transition-colors">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const deleteModal = document.getElementById('deleteModal');
+    
+    function openDeleteModal() {
+        deleteModal.classList.remove('hidden');
+    }
+    
+    function closeDeleteModal() {
+        deleteModal.classList.add('hidden');
+    }
+    
+    // Close modal if user clicks outside of it
+    document.getElementById('deleteModalBackdrop').addEventListener('click', closeDeleteModal);
+</script>
 @endsection

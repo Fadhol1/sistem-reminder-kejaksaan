@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Tersangka;
 
 class Perkara extends Model
 {
@@ -26,7 +28,6 @@ class Perkara extends Model
      */
     protected $fillable = [
         'nomor_perkara',
-        'nama_tersangka',
         'penyidik',
         'jaksa',
         'bidang',
@@ -64,6 +65,11 @@ class Perkara extends Model
         return $this->hasMany(PerkaraReminder::class, 'perkara_id');
     }
 
+    public function tersangkas(): HasMany
+    {
+        return $this->hasMany(Tersangka::class, 'perkara_id');
+    }
+
     /**
      * Relasi ke reminder yang masih aktif.
      */
@@ -94,5 +100,13 @@ class Perkara extends Model
     public function penyidikUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'penyidik', 'name');
+    }
+
+    /**
+     * Relasi Many-to-Many ke User Jaksa via pivot perkara_jaksa.
+     */
+    public function jaksas(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'perkara_jaksa', 'perkara_id', 'jaksa_id');
     }
 }

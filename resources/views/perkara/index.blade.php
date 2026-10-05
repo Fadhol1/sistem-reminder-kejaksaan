@@ -45,9 +45,24 @@
                     @forelse($perkaras as $perkara)
                     <tr class="hover:bg-gray-50/50">
                         <td class="px-6 py-4 font-medium text-gray-900">{{ $perkara->nomor_perkara }}</td>
-                        <td class="px-6 py-4">{{ $perkara->nama_tersangka }}</td>
                         <td class="px-6 py-4">
-                            <div class="text-xs font-semibold text-gray-900">J: {{ $perkara->jaksa }}</div>
+                            @php
+                                $tersangkaList = $perkara->tersangkas;
+                                $firstNama = $tersangkaList->first()?->nama ?? '-';
+                                $sisa = $tersangkaList->count() - 1;
+                            @endphp
+                            <div class="flex items-center gap-2">
+                                <span>{{ $firstNama }}</span>
+                                @if($sisa > 0)
+                                    <button type="button" onclick="toggleTersangka('tersangka-{{ $perkara->id }}')" class="inline-flex items-center gap-0.5 text-indigo-600 hover:text-indigo-700 text-xs font-medium">
+                                        +{{ $sisa }} lainnya
+                                        <svg class="w-3 h-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs font-semibold text-gray-900">J: {{ $perkara->jaksas->pluck('name')->join(', ') ?: $perkara->jaksa }}</div>
                             <div class="text-xs text-gray-500">P: {{ $perkara->penyidik }}</div>
                         </td>
                         <td class="px-6 py-4">
@@ -64,6 +79,21 @@
                             </a>
                         </td>
                     </tr>
+                    @if($tersangkaList && $tersangkaList->count() > 1)
+<tr id="tersangka-{{ $perkara->id }}" class="hidden bg-gray-50/30">
+                        <td></td>
+                        <td colspan="5" class="px-6 py-3">
+                            <div class="space-y-1">
+                                @foreach($tersangkaList as $tersangka)
+                                    <div class="flex items-center gap-3 text-xs text-gray-700 py-1 border-l-2 border-indigo-200 pl-3" style="max-width: 240px;">
+                                        <span class="font-medium">{{ $loop->iteration }}.</span>
+                                        <span>{{ $tersangka->nama }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </td>
+                    </tr>
+                    @endif
                     @empty
                     <tr>
                         <td colspan="6" class="px-6 py-8 text-center text-gray-500 text-sm">
@@ -81,4 +111,11 @@
         @endif
     </div>
 </div>
+
+<script>
+    function toggleTersangka(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden');
+    }
+</script>
 @endsection

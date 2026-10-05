@@ -25,6 +25,7 @@ class PerkaraTimeline extends Model
     protected $fillable = [
         'perkara_id',
         'user_id',
+        'actor_type',
         'tahap',
         'status_kegiatan',
         'tanggal_kejadian',
