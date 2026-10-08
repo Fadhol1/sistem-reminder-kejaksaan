@@ -14,7 +14,7 @@
     </div>
 
     <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden p-6">
-        <form action="{{ route('users.update', $user->id) }}" method="POST" class="space-y-6">
+        <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -48,6 +48,46 @@
                     <p class="mt-1 text-xs text-amber-600">Anda tidak dapat mengubah Role administrasi Anda sendiri.</p>
                 @endif
                 @error('role')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+            
+            <div>
+                <label for="nip" class="block text-sm font-medium text-gray-700 mb-1">NIP (Opsional)</label>
+                <input type="text" name="nip" id="nip" value="{{ old('nip', $user->nip) }}" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('nip') border-red-500 @enderror">
+                @error('nip')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="pangkat_golongan" class="block text-sm font-medium text-gray-700 mb-1">Pangkat / Golongan (Opsional)</label>
+                <input type="text" name="pangkat_golongan" id="pangkat_golongan" value="{{ old('pangkat_golongan', $user->pangkat_golongan) }}" placeholder="Contoh: Jaksa Madya (IV/a)" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('pangkat_golongan') border-red-500 @enderror">
+                @error('pangkat_golongan')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="jabatan" class="block text-sm font-medium text-gray-700 mb-1">Jabatan (Opsional)</label>
+                <input type="text" name="jabatan" id="jabatan" value="{{ old('jabatan', $user->jabatan) }}" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('jabatan') border-red-500 @enderror">
+                @error('jabatan')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="foto_profil" class="block text-sm font-medium text-gray-700 mb-2">Foto Profil (Opsional)</label>
+                
+                @if($user->foto_profil)
+                <div class="mb-3">
+                    <img src="{{ Storage::url($user->foto_profil) }}" alt="Foto Profil" class="h-24 w-24 rounded-full object-cover border border-gray-200">
+                </div>
+                @endif
+                
+                <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-md">
+                <p class="mt-1 text-xs text-gray-500">Unggah foto baru jika ingin mengganti foto saat ini. Maks 2MB.</p>
+                @error('foto_profil')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
             </div>

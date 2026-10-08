@@ -93,12 +93,21 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="h-10 w-10 shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold uppercase">
-                                        {{ substr($user->name, 0, 2) }}
+                                    <div class="h-10 w-10 shrink-0 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-700 font-semibold overflow-hidden border border-gray-200">
+                                        @if($user->foto_profil)
+                                            <img src="{{ Storage::url($user->foto_profil) }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
+                                        @else
+                                            <svg class="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                            </svg>
+                                        @endif
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                        <div class="text-sm text-gray-500">{{ $user->email }}</div>
+                                        <div class="text-xs text-gray-500">{{ $user->email }}</div>
+                                        @if($user->jabatan)
+                                            <div class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-wide">{{ $user->jabatan }}</div>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

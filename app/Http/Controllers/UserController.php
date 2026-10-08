@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Perkara;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
@@ -57,13 +58,26 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'role' => ['required', 'string', 'in:jaksa,penyidik,pidum'],
+            'nip' => ['nullable', 'string', 'max:50', 'unique:users'],
+            'pangkat_golongan' => ['nullable', 'string', 'max:255'],
+            'jabatan' => ['nullable', 'string', 'max:255'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $fotoPath = null;
+        if ($request->hasFile('foto_profil')) {
+            $fotoPath = $request->file('foto_profil')->store('profiles', 'public');
+        }
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
+            'nip' => $validated['nip'] ?? null,
+            'pangkat_golongan' => $validated['pangkat_golongan'] ?? null,
+            'jabatan' => $validated['jabatan'] ?? null,
+            'foto_profil' => $fotoPath,
             'password' => Hash::make($validated['password']),
         ]);
 
@@ -95,6 +109,10 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'role' => ['required', 'string', 'in:jaksa,penyidik,pidum'],
+            'nip' => ['nullable', 'string', 'max:50', 'unique:users,nip,'.$user->id],
+            'pangkat_golongan' => ['nullable', 'string', 'max:255'],
+            'jabatan' => ['nullable', 'string', 'max:255'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ];
 
         // Validasi password opsional (hanya diisi jika admin ingin mengubah password user)
@@ -106,6 +124,16 @@ class UserController extends Controller
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
+        $user->nip = $validated['nip'] ?? null;
+        $user->pangkat_golongan = $validated['pangkat_golongan'] ?? null;
+        $user->jabatan = $validated['jabatan'] ?? null;
+        
+        if ($request->hasFile('foto_profil')) {
+            if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+                Storage::disk('public')->delete($user->foto_profil);
+            }
+            $user->foto_profil = $request->file('foto_profil')->store('profiles', 'public');
+        }
         
         // Prevent admin from changing their own role maliciously and locking themselves out
         if ($user->id !== $request->user()->id) {
@@ -140,6 +168,10 @@ class UserController extends Controller
         
         if ($isActiveInPerkara) {
             return redirect()->back()->with('error', 'Keamanan: Akun ini tidak dapat dihapus karena tercatat sedang/pernah memegang Perkara. Anda disarankan untuk menonaktifkan atau mengubah passwordnya jika ingin menutup akses.');
+        }
+
+        if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+            Storage::disk('public')->delete($user->foto_profil);
         }
 
         $user->delete();

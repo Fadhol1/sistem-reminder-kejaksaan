@@ -11,6 +11,42 @@ use Illuminate\Support\Facades\Auth;
 class PerkaraApiController extends Controller
 {
     /**
+     * Get list of Perkara based on logged in user's role
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        
+        $query = Perkara::with(['tersangkas', 'activeReminders'])->orderBy('created_at', 'desc');
+
+        // Restrict API data strictly based on role
+        if ($user->role === 'jaksa') {
+            $query->whereHas('jaksas', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        } elseif ($user->role === 'penyidik') {
+            $query->where('penyidik', $user->name);
+        }
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_perkara', 'like', "%{$search}%")
+                  ->orWhereHas('tersangkas', function ($q2) use ($search) {
+                      $q2->where('nama', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $perkaras = $query->paginate(15);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $perkaras
+        ]);
+    }
+
+    /**
      * Get detail of a specific case
      */
     public function show($id)
