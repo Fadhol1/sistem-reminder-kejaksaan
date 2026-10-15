@@ -119,7 +119,7 @@ class PerkaraController extends Controller
         }
 
         $perkara = Perkara::with('tersangkas')->findOrFail($id);
-        
+
         return view('perkara.edit', compact('perkara'));
     }
 
@@ -135,7 +135,7 @@ class PerkaraController extends Controller
         $perkara = Perkara::findOrFail($id);
 
         $validated = $request->validate([
-            'nomor_perkara' => 'required|string|unique:perkaras,nomor_perkara,'.$perkara->id,
+            'nomor_perkara' => 'required|string|unique:perkaras,nomor_perkara,' . $perkara->id,
             'tersangkas' => 'required|array|min:1',
             'tersangkas.*.nama' => 'required|string|max:255',
         ]);
@@ -226,12 +226,12 @@ class PerkaraController extends Controller
         DB::transaction(function () use ($perkara) {
             // Detach jaksas (Many-to-Many pivot)
             $perkara->jaksas()->detach();
-            
+
             // Delete related records (assuming cascade isn't fully enforced or to be safe)
             $perkara->tersangkas()->delete();
             $perkara->timelines()->delete();
             $perkara->activeReminders()->delete();
-            
+
             // Delete the main record
             $perkara->delete();
         });

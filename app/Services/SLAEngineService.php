@@ -46,7 +46,7 @@ class SLAEngineService
             }
 
             // Temukan transisi otomatis berdasarkan SLA yang bocor
-            $transitionAction = $this->getAutoTransitionActionForTahap($perkara->tahap_saat_ini);
+            $transitionAction = $this->resolveTransitionByStatus($perkara->tahap_saat_ini, $perkara->status_saat_ini);
 
             if ($transitionAction === 'NEEDS_CONFIRMATION') {
                 // Rule konkrit belum dikonfirmasi oleh analis bisnis/user. Lewati.
@@ -78,8 +78,7 @@ class SLAEngineService
     {
         switch ($tahap) {
             case PerkaraWorkflowService::TAHAP_KOORDINASI:
-                // Workflow 3 hari. Konsekuensi belum fix.
-                return 'NEEDS_CONFIRMATION';
+                return 'tindak_lanjut_koordinasi_overdue';
 
             case PerkaraWorkflowService::TAHAP_MONITORING:
                 // Butuh detil jika ini status P-17 atau P-17 Kedua. 
@@ -114,16 +113,23 @@ class SLAEngineService
     private function resolveTransitionByStatus(string $tahap, string $status): ?string
     {
         if ($tahap === PerkaraWorkflowService::TAHAP_KOORDINASI) {
-            return 'NEEDS_CONFIRMATION';
+            if ($status === 'Menunggu Koordinasi') {
+                return 'tindak_lanjut_koordinasi_overdue';
+            }
+            return null;
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_MONITORING) {
+            if ($status === 'Menunggu Berkas Tahap I') {
+                return 'catat_p17';
+            }
             if ($status === 'P-17') {
                 return 'catat_p17_2';
             }
             if ($status === 'P-17 Kedua / FORM-2') {
                 return 'catat_form3';
             }
+            return null;
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_P19) {

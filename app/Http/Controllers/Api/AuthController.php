@@ -52,31 +52,32 @@ class AuthController extends Controller
         $user = $request->user();
 
         $rules = [
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'nip' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
-            'pangkat_golongan' => ['nullable', 'string', 'max:255'],
-            'jabatan' => ['nullable', 'string', 'max:255'],
-            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'name'            => ['sometimes', 'required', 'string', 'max:255'],
+            'email'           => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'nip'             => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'nrp'             => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'nomor_hp'        => ['nullable', 'string', 'max:20'],
+            'pangkat_golongan'=> ['nullable', 'string', 'max:255'],
+            'jabatan'         => ['nullable', 'string', 'max:255'],
+            'foto_profil'     => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'password'        => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
 
         $validated = $request->validate($rules);
 
-        if ($request->has('name')) $user->name = $validated['name'];
-        if ($request->has('email')) $user->email = $validated['email'];
-        if ($request->has('nip')) $user->nip = $validated['nip'];
+        if ($request->has('name'))             $user->name = $validated['name'];
+        if ($request->has('email'))            $user->email = $validated['email'];
+        if ($request->has('nip'))              $user->nip = $validated['nip'];
+        if ($request->has('nrp'))              $user->nrp = $validated['nrp'];
+        if ($request->has('nomor_hp'))         $user->nomor_hp = $validated['nomor_hp'];
         if ($request->has('pangkat_golongan')) $user->pangkat_golongan = $validated['pangkat_golongan'];
-        if ($request->has('jabatan')) $user->jabatan = $validated['jabatan'];
+        if ($request->has('jabatan'))          $user->jabatan = $validated['jabatan'];
 
         if ($request->hasFile('foto_profil')) {
             if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
                 Storage::disk('public')->delete($user->foto_profil);
             }
             $user->foto_profil = $request->file('foto_profil')->store('profiles', 'public');
-            
-            // Format to returning absolute URL for mobile convenience
-            $user->foto_profil_url = Storage::url($user->foto_profil);
         }
 
         if ($request->filled('password')) {
@@ -84,13 +85,36 @@ class AuthController extends Controller
         }
 
         $user->save();
+        $user->refresh();
+
+        // Append absolute foto_profil_url for mobile convenience
+        $profileData = $user->toArray();
+        $profileData['foto_profil_url'] = $user->foto_profil
+            ? Storage::url($user->foto_profil)
+            : null;
 
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diperbarui',
-            'data' => [
-                'user' => $user
-            ]
+            'data'    => ['user' => $profileData]
+        ]);
+    }
+
+    /**
+     * Get Current Authenticated User Data (GET /api/profile)
+     */
+    public function getProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $profileData = $user->toArray();
+        $profileData['foto_profil_url'] = $user->foto_profil
+            ? Storage::url($user->foto_profil)
+            : null;
+
+        return response()->json([
+            'success' => true,
+            'data'    => ['user' => $profileData]
         ]);
     }
 
@@ -104,6 +128,49 @@ class AuthController extends Controller
             'data' => [
                 'user' => $request->user()
             ]
+        ]);
+    }
+
+    /**
+     * Dedicated Change Password Endpoint (secure - requires current password)
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password'  => ['required', 'string'],
+            'password'          => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        // Verifikasi kata sandi lama sebelum izinkan perubahan
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kata sandi saat ini tidak sesuai.',
+                'errors'  => ['current_password' => ['Kata sandi saat ini tidak sesuai.']]
+            ], 422);
+        }
+
+        // Cegah penggunaan password yang sama persis dengan yang lama
+        if (Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kata sandi baru tidak boleh sama dengan kata sandi lama.',
+                'errors'  => ['password' => ['Kata sandi baru tidak boleh sama dengan kata sandi lama.']]
+            ], 422);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Revoke semua token lama kecuali yang sedang dipakai (opsional tapi lebih aman)
+        $currentTokenId = $user->currentAccessToken()->id;
+        $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kata sandi berhasil diperbarui. Sesi lain telah diakhiri.'
         ]);
     }
 

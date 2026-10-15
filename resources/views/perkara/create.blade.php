@@ -103,7 +103,7 @@
             </div>
 
             <div class="bg-yellow-50 text-yellow-800 text-sm p-4 rounded-md border border-yellow-200 mt-4">
-                <strong>Catatan:</strong> Setelah disimpan, perkara akan otomatis masuk ke tahap <strong>Koordinasi Awal</strong> dengan status awal <em>Menunggu Koordinasi</em>. Tanggal SPDP di atas tetap dibutuhkan untuk perhitungan batas SLA 30 hari Penyerahan Berkas.
+                <strong>Catatan:</strong> Setelah disimpan, perkara akan otomatis masuk ke tahap <strong>Koordinasi Awal</strong> dengan status awal <em>Menunggu Koordinasi</em>. Perhitungan batas SLA dihitung sejak tanggal perkara di-input ke sistem.
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200 space-x-3">
