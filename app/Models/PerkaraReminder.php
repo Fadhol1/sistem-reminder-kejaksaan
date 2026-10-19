@@ -34,6 +34,16 @@ class PerkaraReminder extends Model
     ];
 
     /**
+     * Accessor yang otomatis dimuat ke array / JSON response.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'sisa_hari',
+        'status_log',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -103,6 +113,26 @@ class PerkaraReminder extends Model
         }
 
         return (int) now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($this->deadline)->startOfDay(), false);
+    }
+
+    /**
+     * Accessor label status log untuk tampilan riwayat (Android & Web).
+     */
+    public function getStatusLogAttribute(): string
+    {
+        if (! $this->is_active) {
+            return $this->status_urgensi === 'Overdue' ? 'Selesai (Overdue)' : 'Selesai';
+        }
+
+        return $this->status_urgensi === 'Overdue' ? 'Aktif (Overdue)' : 'Aktif';
+    }
+
+    /**
+     * Scope untuk mengambil reminder yang sudah selesai/inaktif.
+     */
+    public function scopeInactive(Builder $query): Builder
+    {
+        return $query->where('is_active', false);
     }
 
     /**

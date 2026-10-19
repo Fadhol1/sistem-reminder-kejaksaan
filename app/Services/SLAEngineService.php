@@ -3,10 +3,26 @@
 namespace App\Services;
 
 use App\Models\PerkaraReminder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SLAEngineService
 {
+    /**
+     * Memeriksa dan mengeksekusi SLA secara On-Demand dengan throttling
+     * agar data otomatis terupdate saat diakses via Web maupun Mobile App tanpa harus menunggu cron.
+     */
+    public static function runThrottled(int $seconds = 15): void
+    {
+        $cacheKey = 'sla_engine_last_throttled_run';
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+        Cache::put($cacheKey, now()->timestamp, $seconds);
+
+        app(self::class)->executeEngine();
+    }
+
     /**
      * Mengevaluasi semua deadline yang lewat (Overdue) dan menjalankan auto-transition
      * jika aturan bisnis terpenuhi. Proses ini bersifat Idempotent.

@@ -103,32 +103,83 @@
 
             <!-- Riwayat/Timeline -->
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h4 class="font-medium text-gray-900">Riwayat Perjalanan Perkara (Audit Trail)</h4>
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                    <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Riwayat Perjalanan Perkara (Audit Trail)
+                    </h4>
+                    <span class="text-xs font-medium text-gray-500">{{ $perkara->timelines->count() }} peristiwa</span>
                 </div>
                 <div class="p-6">
-                    <div class="relative border-l border-gray-200 ml-3">
-                        @foreach($perkara->timelines as $timeline)
-                        <div class="mb-6 ml-6">
-                            <span class="absolute flex items-center justify-center w-6 h-6 bg-indigo-100 rounded-full -left-3 ring-4 ring-white">
-                                <svg class="w-3 h-3 text-indigo-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                                </svg>
-                            </span>
-                            <h5 class="flex items-center mb-1 text-sm font-semibold text-gray-900">
-                                {{ $timeline->tahap }} 
-                                <span class="bg-gray-100 text-gray-600 text-xs font-medium mr-2 px-2.5 py-0.5 rounded ml-3">
-                                    {{ $timeline->status_kegiatan }}
-                                </span>
-                            </h5>
-                            <time class="block mb-2 text-xs font-normal leading-none text-gray-400">
-                                {{ $timeline->tanggal_kejadian->format('d M Y H:i') }} • Oleh: {{ $timeline->user->name ?? 'System' }}
-                            </time>
-                            @if($timeline->catatan)
-                                <p class="text-sm font-normal text-gray-500">{{ $timeline->catatan }}</p>
-                            @endif
-                        </div>
-                        @endforeach
+                    <div class="relative border-l-2 border-gray-200 ml-3 space-y-6">
+                        @forelse($perkara->timelines as $timeline)
+                            @php
+                                $isSystem = ($timeline->actor_type === 'SYSTEM');
+                                $tahapBg = match($timeline->tahap) {
+                                    'Koordinasi Awal' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                    'Monitoring Penyidikan' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                    'P-24' => 'bg-purple-50 text-purple-700 border-purple-200',
+                                    'P-19' => 'bg-orange-50 text-orange-700 border-orange-200',
+                                    'P-21' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    'Tahap II' => 'bg-teal-50 text-teal-700 border-teal-200',
+                                    default => 'bg-gray-100 text-gray-700 border-gray-200',
+                                };
+                            @endphp
+                            <div class="relative pl-6 group">
+                                <!-- Node Icon -->
+                                <div class="absolute -left-[13px] top-1 flex items-center justify-center">
+                                    @if($isSystem)
+                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-white ring-4 ring-white shadow-2xs">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                                            </svg>
+                                        </span>
+                                    @else
+                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-white ring-4 ring-white shadow-2xs group-hover:bg-indigo-600 transition">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                            </svg>
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <div class="bg-gray-50/70 hover:bg-white rounded-lg p-3.5 border border-gray-200 transition">
+                                    <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $tahapBg }}">
+                                                {{ $timeline->tahap }}
+                                            </span>
+                                            @if($isSystem)
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                                    🤖 Otomasi Sistem
+                                                </span>
+                                            @else
+                                                <span class="text-xs text-gray-500 font-medium">
+                                                    Oleh: <strong class="text-gray-700">{{ $timeline->user->name ?? 'Petugas' }}</strong>
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <time class="text-xs text-gray-400 font-medium">
+                                            {{ $timeline->tanggal_kejadian->translatedFormat('d M Y') }} • {{ $timeline->created_at->format('H:i') }} WIB
+                                        </time>
+                                    </div>
+
+                                    <h5 class="text-sm font-bold text-gray-900">
+                                        {{ $timeline->status_kegiatan }}
+                                    </h5>
+
+                                    @if($timeline->catatan)
+                                        <div class="mt-2 text-xs text-gray-600 italic bg-white p-2.5 rounded border border-gray-100">
+                                            "{{ $timeline->catatan }}"
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-gray-400 py-4 text-center">Belum ada riwayat tercatat.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>

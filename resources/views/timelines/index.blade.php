@@ -1,93 +1,361 @@
 @extends('layouts.app')
 
-@section('title', 'Global Timelines')
+@section('title', 'Kronologis & Log Aktivitas (Timeline)')
 
 @section('content')
-<div class="space-y-6 max-w-4xl mx-auto">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="space-y-6 w-full mx-auto">
+    <!-- Header Page -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-gray-200">
         <div>
-            <h3 class="text-xl font-semibold text-gray-900">Kronologis & Log Aktivitas (Timeline)</h3>
-            <p class="text-sm text-gray-500 mt-1">Lacak setiap mutasi dan pergerakan status pada semua perkara secara real-time.</p>
+            <div class="flex items-center gap-2">
+                <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </span>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Kronologis & Log Aktivitas (Timeline)</h2>
+                    <p class="text-sm text-gray-500">Audit trail pergerakan perkara, pergantian tahapan, dan eksekusi otomatis SLA.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Sinkronisasi Otomatis Real-time
+            </span>
         </div>
     </div>
 
-    <!-- Search/Filter Filter -->
-    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <form action="{{ route('timelines.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
-            <div class="flex-1">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari aksi, catatan, nomor perkara, atau tersangka..." class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus-visible:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+    <!-- 4 Stats / KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Total Aktivitas -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Catatan</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['total_aktivitas'] ?? 0) }}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">Semua jejak audit trail</p>
             </div>
-            <div class="flex gap-2">
-                <button type="submit" class="inline-flex items-center justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 focus:outline-none">
-                    Cari Catatan
-                </button>
-                @if(request()->has('search'))
-                    <a href="{{ route('timelines.index') }}" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none">
-                        Reset
-                    </a>
-                @endif
+            <div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 2: Hari Ini -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Aktivitas Hari Ini</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['hari_ini'] ?? 0) }}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">{{ now()->translatedFormat('d F Y') }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 3: Otomasi SLA Sistem -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Otomasi SLA Sistem</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['oleh_sistem'] ?? 0) }}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">Auto Form-1B/1C, P-17, dll.</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 4: Tindakan Petugas -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Tindakan Petugas</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['oleh_petugas'] ?? 0) }}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">Jaksa, Penyidik & Admin</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+        <form action="{{ route('timelines.index') }}" method="GET" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                <!-- Search Keyword -->
+                <div class="md:col-span-5 relative">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Cari Keyword / Perkara</label>
+                    <div class="relative">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" name="search" value="{{ request('search') }}" 
+                            placeholder="Nomor perkara, tersangka, status, atau catatan..." 
+                            class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Tahapan Filter -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Tahap Perkara</label>
+                    <select name="tahap" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Tahap</option>
+                        @foreach($tahapList as $tahap)
+                            <option value="{{ $tahap }}" {{ request('tahap') == $tahap ? 'selected' : '' }}>
+                                {{ $tahap }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Aktor Filter -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Pelaksana</label>
+                    <select name="actor" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Pelaksana</option>
+                        <option value="SYSTEM" {{ request('actor') == 'SYSTEM' ? 'selected' : '' }}>🤖 Otomasi Sistem</option>
+                        <option value="USER" {{ request('actor') == 'USER' ? 'selected' : '' }}>👤 Petugas / Manual</option>
+                    </select>
+                </div>
+
+                <!-- Submit & Reset Buttons -->
+                <div class="md:col-span-2 flex items-end gap-2">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition">
+                        Terapkan
+                    </button>
+                    @if(request()->hasAny(['search', 'tahap', 'actor', 'tanggal_dari', 'tanggal_sampai']))
+                        <a href="{{ route('timelines.index') }}" title="Reset Semua Filter" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </a>
+                    @endif
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Activity Log List (Vertical Flow) -->
-    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden p-6 py-8">
-        <div class="relative border-l border-gray-200 ml-4 lg:ml-6">
-            @forelse($timelines as $log)
-                <div class="mb-8 ml-6 group">
-                    <span class="absolute flex items-center justify-center w-6 h-6 
-                        @if($loop->first && request()->page <= 1) bg-indigo-500 ring-4 ring-indigo-50 text-white
-                        @else bg-gray-100 ring-4 ring-white text-gray-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors @endif 
-                        rounded-full -left-3 mt-1">
-                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </span>
-                    
-                    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 pt-1">
-                        <div class="relative z-10 w-full">
-                            <h4 class="text-sm font-semibold text-gray-900 flex items-center flex-wrap gap-2">
-                                <a href="{{ route('perkara.show', $log->perkara_id) }}" class="text-indigo-600 hover:underline hover:text-indigo-800 inline-block relative z-20">
-                                    SPDP: {{ $log->perkara->nomor_perkara }}
-                                </a>
-                                <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-bold uppercase px-2 py-0.5 rounded">
-                                    {{ $log->tahap }}
-                                </span>
-                            </h4>
-                            <p class="text-sm font-medium text-gray-900 mt-1">
-                                Status diubah menjadi: <span class="text-indigo-700">{{ $log->status_kegiatan }}</span>
-                            </p>
-                            @if($log->catatan)
-                                <p class="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-md border border-gray-100 italic">
-                                    "{{ $log->catatan }}"
-                                </p>
-                            @endif
+    <!-- Timeline Chronological Feed -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-8">
+        @php
+            $groupedTimelines = $timelines->groupBy(function($item) {
+                if ($item->tanggal_kejadian->isToday()) {
+                    return 'Hari Ini • ' . $item->tanggal_kejadian->translatedFormat('d F Y');
+                } elseif ($item->tanggal_kejadian->isYesterday()) {
+                    return 'Kemarin • ' . $item->tanggal_kejadian->translatedFormat('d F Y');
+                }
+                return $item->tanggal_kejadian->translatedFormat('l, d F Y');
+            });
+        @endphp
+
+        @if($timelines->isEmpty())
+            <div class="text-center py-16">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-base font-semibold text-gray-900">Tidak ada riwayat aktivitas ditemukan</h3>
+                <p class="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+                    Kriteria pencarian atau filter yang Anda terapkan tidak menghasilkan catatan apapun.
+                </p>
+                <div class="mt-4">
+                    <a href="{{ route('timelines.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition">
+                        Reset Filter Pencarian
+                    </a>
+                </div>
+            </div>
+        @else
+            <div class="space-y-10">
+                @foreach($groupedTimelines as $dateLabel => $items)
+                    <div>
+                        <!-- Date Header Divider -->
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{ $dateLabel }}
+                            </span>
+                            <div class="flex-1 h-px bg-gray-200"></div>
+                            <span class="text-xs text-gray-400 font-medium">{{ count($items) }} peristiwa</span>
                         </div>
-                        
-                        <div class="lg:text-right shrink-0">
-                            <time class="block text-xs font-semibold text-gray-500 mb-1">
-                                {{ $log->tanggal_kejadian->translatedFormat('d M Y, H:i') }}
-                            </time>
-                            <p class="text-xs text-gray-400">Oleh: <span class="font-medium text-gray-700">{{ $log->user->name ?? 'Sistem' }}</span></p>
+
+                        <!-- Activities Stream in this date -->
+                        <div class="relative border-l-2 border-gray-200 ml-3 sm:ml-5 space-y-6">
+                            @foreach($items as $log)
+                                @php
+                                    $isSystem = ($log->actor_type === 'SYSTEM');
+                                    $isOverdueAction = str_contains($log->status_kegiatan, 'Form-1B') || 
+                                                       str_contains($log->status_kegiatan, 'Form-1C') || 
+                                                       str_contains($log->status_kegiatan, 'P-20') || 
+                                                       str_contains($log->status_kegiatan, 'FORM-7') || 
+                                                       str_contains($log->status_kegiatan, 'FORM-3');
+                                    
+                                    // Tahap Badge Color Palette
+                                    $tahapBg = match($log->tahap) {
+                                        'Koordinasi Awal' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                        'Monitoring Penyidikan' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                        'P-24' => 'bg-purple-50 text-purple-700 border-purple-200',
+                                        'P-19' => 'bg-orange-50 text-orange-700 border-orange-200',
+                                        'P-21' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                        'Tahap II' => 'bg-teal-50 text-teal-700 border-teal-200',
+                                        default => 'bg-gray-100 text-gray-700 border-gray-200',
+                                    };
+                                @endphp
+
+                                <div class="relative pl-6 sm:pl-8 group">
+                                    <!-- Node Indicator on the timeline rail -->
+                                    <div class="absolute -left-[17px] top-1.5 flex items-center justify-center">
+                                        @if($isSystem)
+                                            <span class="relative flex h-8 w-8 items-center justify-center rounded-full bg-purple-600 text-white ring-4 ring-white shadow-sm">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                                                </svg>
+                                            </span>
+                                        @else
+                                            <span class="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white ring-4 ring-white shadow-sm group-hover:bg-indigo-600 transition">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                </svg>
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Event Card Container -->
+                                    <div class="bg-gray-50/70 hover:bg-white rounded-xl p-4 sm:p-5 border border-gray-200/80 hover:border-gray-300 hover:shadow-md transition duration-200">
+                                        <!-- Top Row: Badges & Timestamps -->
+                                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-200/60">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <!-- Nomor Perkara Link -->
+                                                @if($log->perkara)
+                                                    <a href="{{ route('perkara.show', $log->perkara_id) }}" 
+                                                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 transition shadow-2xs">
+                                                        <span>SPDP: {{ $log->perkara->nomor_perkara }}</span>
+                                                        <svg class="w-3 h-3 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                    </a>
+                                                @else
+                                                    <span class="text-xs font-semibold text-gray-500">Perkara #{{ $log->perkara_id }}</span>
+                                                @endif
+
+                                                <!-- Tahap Badge -->
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border {{ $tahapBg }}">
+                                                    {{ $log->tahap }}
+                                                </span>
+
+                                                <!-- Actor Badge -->
+                                                @if($isSystem)
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-100/80 text-purple-800 border border-purple-200">
+                                                        <svg class="w-3 h-3 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                        </svg>
+                                                        Otomasi SLA Sistem
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-gray-200/70 text-gray-700">
+                                                        <svg class="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                        </svg>
+                                                        {{ $log->user->name ?? 'Petugas' }} 
+                                                        @if(!empty($log->user->role))
+                                                            <span class="text-gray-400">({{ strtoupper($log->user->role) }})</span>
+                                                        @endif
+                                                    </span>
+                                                @endif
+                                            </div>
+
+                                            <!-- Timestamp -->
+                                            <div class="text-right">
+                                                <span class="text-xs text-gray-500 font-medium">
+                                                    {{ $log->tanggal_kejadian->translatedFormat('d M Y') }} • 
+                                                    <span class="font-semibold text-gray-700">{{ $log->created_at->format('H:i') }} WIB</span>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Event Title & Activity Description -->
+                                        <div class="pt-3">
+                                            <h4 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                                                @if($isOverdueAction)
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
+                                                @else
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                @endif
+                                                {{ $log->status_kegiatan }}
+                                            </h4>
+
+                                            <!-- Case Meta (Tersangka & Jaksa/Penyidik) -->
+                                            @if($log->perkara)
+                                                <div class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600 bg-white/70 p-2.5 rounded-lg border border-gray-200/60">
+                                                    <div>
+                                                        <span class="text-gray-400 font-medium">Tersangka:</span>
+                                                        <span class="font-semibold text-gray-800">
+                                                            @if($log->perkara->tersangkas && $log->perkara->tersangkas->count() > 0)
+                                                                {{ $log->perkara->tersangkas->pluck('nama')->implode(', ') }}
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </span>
+                                                    </div>
+
+                                                    <span class="text-gray-300">|</span>
+
+                                                    <div>
+                                                        <span class="text-gray-400 font-medium">Penyidik:</span>
+                                                        <span class="font-medium text-gray-700">{{ $log->perkara->penyidik ?? '-' }}</span>
+                                                    </div>
+
+                                                    <span class="text-gray-300">|</span>
+
+                                                    <div>
+                                                        <span class="text-gray-400 font-medium">Jaksa:</span>
+                                                        <span class="font-medium text-gray-700">
+                                                            @if($log->perkara->jaksas && $log->perkara->jaksas->count() > 0)
+                                                                {{ $log->perkara->jaksas->pluck('name')->implode(', ') }}
+                                                            @else
+                                                                {{ $log->perkara->jaksa ?? '-' }}
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            <!-- Catatan / Keterangan Event -->
+                                            @if($log->catatan)
+                                                <div class="mt-3 relative pl-3.5 py-1 border-l-2 border-indigo-400/80 bg-indigo-50/40 rounded-r-md">
+                                                    <p class="text-xs sm:text-sm text-gray-700 italic">
+                                                        "{{ $log->catatan }}"
+                                                    </p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                </div>
-            @empty
-                <div class="text-center py-12 text-gray-500">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">Belum Ada Aktivitas</h3>
-                    <p class="mt-1 text-sm text-gray-500">Belum ada satupun pergerakan perkara yang divalidasi dan tercatat sistem.</p>
-                </div>
-            @endforelse
-        </div>
-
-        <!-- Pagination -->
-        @if($timelines->hasPages())
-            <div class="mt-8 pt-4 border-t border-gray-100">
-                {{ $timelines->links() }}
+                @endforeach
             </div>
+
+            <!-- Pagination Bar -->
+            @if($timelines->hasPages())
+                <div class="mt-8 pt-5 border-t border-gray-200">
+                    {{ $timelines->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </div>

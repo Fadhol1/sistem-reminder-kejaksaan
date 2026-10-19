@@ -15,7 +15,7 @@ use Exception;
 
 class TestEngine extends Command
 {
-    protected $signature = 'sipeta:test-engine';
+    protected $signature = 'sipeta:test-engine {--keep-data : Jangan bersihkan data dummy setelah pengetesan}';
     protected $description = 'Test SLA Engine';
 
     public function handle()
@@ -425,6 +425,12 @@ class TestEngine extends Command
 
         } catch (Exception $e) {
             $this->error("Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+        } finally {
+            if (!$this->option('keep-data')) {
+                Perkara::where('nomor_perkara', 'like', 'TEST-%')->delete();
+                User::where('email', 'like', '%@test.com')->delete();
+                $this->info("Data dummy pengujian berhasil dibersihkan otomatis dari database.");
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Perkara;
 use App\Models\PerkaraReminder;
 use App\Models\PerkaraTimeline;
+use App\Services\SLAEngineService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,8 @@ class PerkaraApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        SLAEngineService::runThrottled();
+
         $query = Perkara::with(['tersangkas', 'activeReminders'])->orderBy('created_at', 'desc');
 
         // Filter berdasarkan role user (jaksa/penyidik)
@@ -82,6 +85,8 @@ class PerkaraApiController extends Controller
      */
     public function show(int|string $id): JsonResponse
     {
+        SLAEngineService::runThrottled();
+
         $perkara = Perkara::with([
             'timelines' => function ($q) {
                 $q->with('user:id,name,role')->orderBy('tanggal_kejadian', 'desc')->orderBy('id', 'desc');
@@ -391,6 +396,8 @@ class PerkaraApiController extends Controller
      */
     public function getReminders(Request $request): JsonResponse
     {
+        SLAEngineService::runThrottled();
+
         $user = $request->user();
 
         // 1. Query builder dengan relasi perkara dan tersangkas (tanpa kolom nama_tersangka yang sudah deprecated)
@@ -480,6 +487,100 @@ class PerkaraApiController extends Controller
             'message' => 'Daftar reminder berhasil dimuat.',
             'summary' => $summary,
             'data'    => $reminders,
+        ]);
+    }
+
+    /**
+     * 6. GET REMINDER LOGS: Mengembalikan seluruh riwayat/log reminder (termasuk yang sudah selesai/inaktif)
+     * sebagai audit trail SLA yang bersifat permanen dan tidak dapat dihapus.
+     */
+    public function getReminderLogs(Request $request): JsonResponse
+    {
+        SLAEngineService::runThrottled();
+
+        $user = $request->user();
+
+        $query = PerkaraReminder::with([
+            'perkara' => function ($q) {
+                $q->select('id', 'nomor_perkara', 'penyidik', 'jaksa', 'tahap_saat_ini', 'status_saat_ini')
+                    ->with('tersangkas');
+            },
+        ]);
+
+        // 1. Role-based scoping (Jaksa hanya melihat perkara miliknya, Penyidik miliknya, PIDUM semua)
+        if ($user && $user->role === 'jaksa') {
+            $query->whereHas('perkara.jaksas', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        } elseif ($user && $user->role === 'penyidik') {
+            $query->whereHas('perkara', function ($q) use ($user) {
+                $q->where('penyidik', $user->name);
+            });
+        }
+
+        // 2. Filter Status Log:
+        // status = 'all' (default), 'selesai' / 'inactive', 'aktif' / 'active', 'overdue'
+        $status = strtolower($request->input('status', 'all'));
+        if ($status === 'selesai' || $status === 'inactive') {
+            $query->where('is_active', false);
+        } elseif ($status === 'aktif' || $status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'overdue') {
+            $query->where('status_urgensi', 'Overdue');
+        }
+
+        // 3. Filter berdasarkan Tahap jika dikirimkan
+        if ($request->filled('tahap')) {
+            $query->where('tahap', $request->input('tahap'));
+        }
+
+        // 4. Pencarian (nomor perkara, nama tersangka, jaksa, atau jenis reminder)
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('jenis_reminder', 'like', "%{$search}%")
+                    ->orWhere('tahap', 'like', "%{$search}%")
+                    ->orWhereHas('perkara', function ($subQ) use ($search) {
+                        $subQ->where('nomor_perkara', 'like', "%{$search}%")
+                            ->orWhere('jaksa', 'like', "%{$search}%")
+                            ->orWhereHas('tersangkas', function ($tQ) use ($search) {
+                                $tQ->where('nama', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        // 5. Urutan audit log: dari yang paling baru diupdate/dibuat ke yang terlama
+        $query->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
+
+        // 6. Pagination (default 20 per halaman)
+        $perPage = (int) $request->input('per_page', 20);
+        $logs = $query->paginate($perPage);
+
+        // 7. Ringkasan statistik untuk header kartu log di aplikasi mobile
+        $summaryQuery = PerkaraReminder::query();
+        if ($user && $user->role === 'jaksa') {
+            $summaryQuery->whereHas('perkara.jaksas', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        } elseif ($user && $user->role === 'penyidik') {
+            $summaryQuery->whereHas('perkara', function ($q) use ($user) {
+                $q->where('penyidik', $user->name);
+            });
+        }
+
+        $summary = [
+            'total_logs'    => (clone $summaryQuery)->count(),
+            'total_selesai' => (clone $summaryQuery)->where('is_active', false)->count(),
+            'total_aktif'   => (clone $summaryQuery)->where('is_active', true)->count(),
+            'total_overdue' => (clone $summaryQuery)->where('status_urgensi', 'Overdue')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data log reminder berhasil dimuat.',
+            'summary' => $summary,
+            'data'    => $logs,
         ]);
     }
 }

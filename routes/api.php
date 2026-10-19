@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Timeline Global Audit Trail
     Route::get('/timelines', [PerkaraApiController::class, 'getAllTimelines'])->name('api.timelines.index');
 
-    // Reminders
+    // Reminders & Reminder Logs (Audit Trail)
     Route::get('/reminders', [PerkaraApiController::class, 'getReminders'])->name('api.reminders.index');
+    Route::get('/reminders/logs', [PerkaraApiController::class, 'getReminderLogs'])->name('api.reminders.logs');
+    Route::get('/reminder-logs', [PerkaraApiController::class, 'getReminderLogs'])->name('api.reminders.logs.alias');
 });

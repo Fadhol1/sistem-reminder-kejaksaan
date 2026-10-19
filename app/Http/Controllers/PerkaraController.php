@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Perkara;
 use App\Models\PerkaraTimeline;
 use App\Services\PerkaraWorkflowService;
+use App\Services\SLAEngineService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -16,23 +17,91 @@ class PerkaraController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Perkara::with('tersangkas')->orderBy('created_at', 'desc');
+        SLAEngineService::runThrottled();
 
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            $query->where('nomor_perkara', 'like', "%{$search}%")
-                ->orWhere('tersangkas', function ($query) use ($search) {
-                    $query->where('nama', 'like', "%{$search}%");
-                });
+        $user = $request->user();
+
+        $query = Perkara::with(['tersangkas', 'jaksas', 'activeReminders'])->orderBy('created_at', 'desc');
+
+        // 1. Role filtering (Jaksa & Penyidik hanya melihat perkaranya)
+        if ($user && ($user->isJaksa() || $user->isPenyidik())) {
+            $query->where(function ($q) use ($user) {
+                if ($user->isJaksa()) {
+                    $q->whereHas('jaksas', function ($sub) use ($user) {
+                        $sub->where('users.id', $user->id);
+                    });
+                } else {
+                    $q->where('penyidik', $user->name);
+                }
+            });
         }
 
-        if ($request->has('tahap') && $request->get('tahap') != '') {
-            $query->where('tahap_saat_ini', $request->get('tahap'));
+        // 2. Search filtering (nomor_perkara, tersangka, jaksa, penyidik)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_perkara', 'like', "%{$search}%")
+                    ->orWhere('jaksa', 'like', "%{$search}%")
+                    ->orWhere('penyidik', 'like', "%{$search}%")
+                    ->orWhereHas('tersangkas', function ($subQ) use ($search) {
+                        $subQ->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('jaksas', function ($jQ) use ($search) {
+                        $jQ->where('name', 'like', "%{$search}%");
+                    });
+            });
         }
 
-        $perkaras = $query->paginate(10);
+        // 3. Filter berdasarkan Tahapan
+        if ($request->filled('tahap')) {
+            $query->where('tahap_saat_ini', $request->tahap);
+        }
 
-        return view('perkara.index', compact('perkaras'));
+        // 4. Filter Status Perkara (Aktif vs Selesai)
+        if ($request->filled('status_filter')) {
+            if ($request->status_filter === 'aktif') {
+                $query->where('status_saat_ini', '!=', 'Tahap II Selesai');
+            } elseif ($request->status_filter === 'selesai') {
+                $query->where('status_saat_ini', 'Tahap II Selesai');
+            }
+        }
+
+        // 5. Ringkasan Statistik Perkara (scoped sesuai role user)
+        $summaryQuery = Perkara::query();
+        if ($user && ($user->isJaksa() || $user->isPenyidik())) {
+            $summaryQuery->where(function ($q) use ($user) {
+                if ($user->isJaksa()) {
+                    $q->whereHas('jaksas', function ($sub) use ($user) {
+                        $sub->where('users.id', $user->id);
+                    });
+                } else {
+                    $q->where('penyidik', $user->name);
+                }
+            });
+        }
+
+        $stats = [
+            'total_perkara' => (clone $summaryQuery)->count(),
+            'perkara_aktif' => (clone $summaryQuery)->where('status_saat_ini', '!=', 'Tahap II Selesai')->count(),
+            'ada_overdue'   => (clone $summaryQuery)->whereHas('activeReminders', function ($rQ) {
+                $rQ->where('status_urgensi', 'Overdue');
+            })->count(),
+            'tahap_selesai' => (clone $summaryQuery)->where('status_saat_ini', 'Tahap II Selesai')->count(),
+        ];
+
+        // Daftar tahapan baku untuk dropdown filter
+        $tahapList = [
+            PerkaraWorkflowService::TAHAP_KOORDINASI,
+            PerkaraWorkflowService::TAHAP_MONITORING,
+            PerkaraWorkflowService::TAHAP_P24,
+            PerkaraWorkflowService::TAHAP_P19,
+            PerkaraWorkflowService::TAHAP_P21,
+            PerkaraWorkflowService::TAHAP_II,
+        ];
+
+        $perkaras = $query->paginate(10)->withQueryString();
+
+        return view('perkara.index', compact('perkaras', 'stats', 'tahapList'));
     }
 
     /**
@@ -162,12 +231,9 @@ class PerkaraController extends Controller
      */
     public function show(string $id)
     {
-        $perkara = Perkara::with(['timelines.user', 'activeReminders'])->findOrFail($id);
+        SLAEngineService::runThrottled();
 
-        // Ensure reminder status_urgensi is up to date (sync if needed)
-        foreach ($perkara->activeReminders as $reminder) {
-            $reminder->syncStatusUrgensi();
-        }
+        $perkara = Perkara::with(['timelines.user', 'activeReminders'])->findOrFail($id);
 
         $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
 

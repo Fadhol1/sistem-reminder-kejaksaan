@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Perkara;
 use App\Models\PerkaraReminder;
+use App\Services\SLAEngineService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -11,11 +12,9 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        // Update status_urgensi for all active reminders first to ensure stats are fresh
-        $activeReminders = PerkaraReminder::active()->get();
-        foreach ($activeReminders as $reminder) {
-            $reminder->syncStatusUrgensi();
-        }
+        
+        // Evaluasi SLA otomatis (termasuk auto-transition jika ada yang overdue)
+        SLAEngineService::runThrottled();
 
         $perkaraQuery = Perkara::query();
         if ($user->isJaksa()) {

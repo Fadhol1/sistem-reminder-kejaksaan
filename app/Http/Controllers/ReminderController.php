@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PerkaraReminder;
+use App\Services\SLAEngineService;
 use Illuminate\Http\Request;
 
 class ReminderController extends Controller
@@ -11,11 +12,8 @@ class ReminderController extends Controller
     {
         $user = $request->user();
 
-        // Sync urgensi for all active reminders globally (maybe resource intensive in very large DB, but okay for MVP)
-        $activeRemindersToSync = PerkaraReminder::active()->get();
-        foreach ($activeRemindersToSync as $rem) {
-            $rem->syncStatusUrgensi();
-        }
+        // Evaluasi SLA otomatis (termasuk auto-transition jika ada yang overdue)
+        SLAEngineService::runThrottled();
 
         $query = PerkaraReminder::with(['perkara' => function($q) {
             $q->with('tersangkas');
@@ -54,9 +52,31 @@ class ReminderController extends Controller
             }
         }
 
-        // Sorting: nearest deadline first (and then overdue at the very top theoretically, although overdue means ascending deadline too)
-        $reminders = $query->orderBy('deadline', 'asc')->paginate(20);
+        // Ringkasan Statistik Urgensi Reminder Aktif (scoped sesuai role user)
+        $summaryQuery = PerkaraReminder::query()->active();
+        if ($user->isJaksa() || $user->isPenyidik()) {
+            $summaryQuery->whereHas('perkara', function ($q) use ($user) {
+                if ($user->isJaksa()) {
+                    $q->whereHas('jaksas', function ($sub) use ($user) {
+                        $sub->where('users.id', $user->id);
+                    });
+                } else {
+                    $q->where('penyidik', $user->name);
+                }
+            });
+        }
 
-        return view('reminders.index', compact('reminders'));
+        $stats = [
+            'total_aktif' => (clone $summaryQuery)->count(),
+            'overdue'     => (clone $summaryQuery)->where('status_urgensi', 'Overdue')->count(),
+            'jatuh_tempo' => (clone $summaryQuery)->where('status_urgensi', 'Jatuh Tempo')->count(),
+            'h_3'         => (clone $summaryQuery)->where('status_urgensi', 'H-3')->count(),
+            'aman'        => (clone $summaryQuery)->where('status_urgensi', 'Aman')->count(),
+        ];
+
+        // Sorting: Urutkan deadline terdekat dan pagination 10 data per halaman
+        $reminders = $query->orderBy('deadline', 'asc')->paginate(10)->withQueryString();
+
+        return view('reminders.index', compact('reminders', 'stats'));
     }
 }
