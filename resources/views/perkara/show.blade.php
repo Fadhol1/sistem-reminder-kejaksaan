@@ -204,6 +204,18 @@
                         <p class="font-semibold text-gray-900">{{ $perkara->status_saat_ini }}</p>
                     </div>
 
+                    @if(str_contains($perkara->status_saat_ini, 'FORM-3'))
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700">
+                            <p class="font-semibold text-slate-900 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Alur Monitoring Selesai (Arsip)
+                            </p>
+                            <p class="mt-1 text-slate-600">Berkas SPDP telah dikembalikan kepada Penyidik dan administrasi perkara disimpan ke arsip. Seluruh jadwal reminder dinonaktifkan.</p>
+                        </div>
+                    @endif
+
                     @if($perkara->activeReminders->count() > 0)
                         <div class="pt-4 border-t border-gray-100 mt-4">
                             <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Reminder Aktif (Deadline)</p>
@@ -226,6 +238,90 @@
                     @endif
                 </div>
             </div>
+
+            @if(app()->environment('local') || config('app.debug'))
+            <!-- Dev / Sandbox SLA Simulator Card (Khusus Local Environment) -->
+            <div class="bg-gradient-to-br from-amber-50/70 via-white to-orange-50/50 rounded-xl border-2 border-dashed border-amber-300 shadow-sm overflow-hidden">
+                <div class="px-5 py-3.5 bg-amber-100/70 border-b border-amber-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white tracking-wider uppercase">DEV TOOL</span>
+                        <h4 class="font-bold text-xs sm:text-sm text-amber-950">Simulator Waktu & SLA</h4>
+                    </div>
+                    <span class="text-[10px] font-semibold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full">Local Testing</span>
+                </div>
+
+                <div class="p-5 space-y-4">
+                    <p class="text-xs text-amber-900/80 leading-relaxed">
+                        Manipulasi waktu deadline untuk menguji notifikasi & otomatisasi alur SLA (H-3, Jatuh Tempo, P-17, FORM-2, FORM-3) secara instan tanpa menunggu waktu nyata.
+                    </p>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Mode: H-3 -->
+                        <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="mode" value="set_h3">
+                            <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors" title="Ubah deadline menjadi 3 hari lagi">
+                                <span class="w-2 h-2 rounded-full bg-amber-200"></span>
+                                Set H-3 (Kuning)
+                            </button>
+                        </form>
+
+                        <!-- Mode: H-0 (Jatuh Tempo) -->
+                        <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="mode" value="set_h0">
+                            <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-rose-500 hover:bg-rose-600 text-white shadow-xs transition-colors" title="Ubah deadline menjadi hari ini">
+                                <span class="w-2 h-2 rounded-full bg-rose-200"></span>
+                                Set H-0 (Jatuh Tempo)
+                            </button>
+                        </form>
+
+                        <!-- Mode: Overdue & Auto-Transition -->
+                        <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST" class="sm:col-span-2">
+                            @csrf
+                            <input type="hidden" name="mode" value="set_overdue">
+                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow-xs transition-colors" title="Ubah deadline menjadi kemarin dan eksekusi SLA Engine">
+                                <svg class="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                </svg>
+                                <span>Set Overdue & Jalankan Alur Otomatis</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Custom Days Input & Trigger Engine -->
+                    <div class="pt-3 border-t border-amber-200/80">
+                        <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST" class="flex items-center gap-2">
+                            @csrf
+                            <input type="hidden" name="mode" value="custom_days">
+                            <div class="relative flex-1">
+                                <input type="number" name="custom_days" placeholder="Misal: 1" value="1" min="-60" max="60" required
+                                    class="w-full text-xs rounded-lg border border-amber-300 bg-white py-1.5 px-2.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                                <span class="absolute right-2 top-1.5 text-[10px] text-gray-400">hari lagi</span>
+                            </div>
+                            <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-800 hover:bg-amber-900 text-white shrink-0 transition-colors">
+                                Terapkan Hari
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Force Trigger Engine Button -->
+                    <div class="pt-1">
+                        <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="mode" value="trigger_engine">
+                            <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors">
+                                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                                <span>Paksa Evaluasi SLA Engine Sekarang</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Catat Perkembangan Action Card -->
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">

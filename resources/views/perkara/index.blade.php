@@ -96,9 +96,9 @@
         <!-- Card 4: Tahap Selesai -->
         <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Tahap II Selesai</p>
+                <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Perkara Selesai</p>
                 <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['tahap_selesai'] ?? 0) }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Penyerahan tersangka/BB selesai</p>
+                <p class="text-xs text-gray-400 mt-0.5">Tahap II & SPDP Dikembalikan</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -146,7 +146,7 @@
                     <select name="status_filter" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                         <option value="">Semua Status</option>
                         <option value="aktif" {{ request('status_filter') == 'aktif' ? 'selected' : '' }}>Perkara Berjalan</option>
-                        <option value="selesai" {{ request('status_filter') == 'selesai' ? 'selected' : '' }}>Tahap II Selesai</option>
+                        <option value="selesai" {{ request('status_filter') == 'selesai' ? 'selected' : '' }}>Perkara Selesai</option>
                     </select>
                 </div>
 
@@ -275,7 +275,11 @@
                                         </span>
                                     @elseif($perkara->status_saat_ini === 'Tahap II Selesai')
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            ✓ Tuntas
+                                            ✓ Tahap II Selesai
+                                        </span>
+                                    @elseif(str_contains($perkara->status_saat_ini, 'FORM-3'))
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+                                            ✓ SPDP Dikembalikan (Arsip)
                                         </span>
                                     @endif
                                 </div>

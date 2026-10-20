@@ -26,7 +26,10 @@ class DashboardController extends Controller
         }
 
         $totalPerkara = (clone $perkaraQuery)->count();
-        $perkaraAktif = (clone $perkaraQuery)->where('status_saat_ini', '!=', 'Tahap II Selesai')->count();
+        $perkaraAktif = (clone $perkaraQuery)
+            ->where('status_saat_ini', '!=', 'Tahap II Selesai')
+            ->where('status_saat_ini', 'not like', '%FORM-3%')
+            ->count();
 
         $reminderQuery = PerkaraReminder::active();
         if ($user->isJaksa() || $user->isPenyidik()) {

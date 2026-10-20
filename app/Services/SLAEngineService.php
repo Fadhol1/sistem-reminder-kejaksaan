@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Perkara;
 use App\Models\PerkaraReminder;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -29,61 +31,7 @@ class SLAEngineService
      */
     public function processOverdueTransitions(): void
     {
-        Log::info('SLAEngineService: Memulai pemeriksaan deadline (SLA).');
-
-        // Ambil semua reminder aktif
-        $activeReminders = PerkaraReminder::with('perkara')->active()->get();
-        $processedCount = 0;
-
-        foreach ($activeReminders as $reminder) {
-            // Evaluasi status urgensi mutakhir tanpa harus save (hemat query) kecuali jika berubah
-            $calculatedUrgensi = PerkaraReminder::determineUrgensi($reminder->deadline);
-            if ($reminder->status_urgensi !== $calculatedUrgensi) {
-                $reminder->status_urgensi = $calculatedUrgensi;
-                $reminder->save();
-            }
-
-            // Jika status belum jatuh tempo kelewat (Overdue), lewati.
-            if ($reminder->status_urgensi !== 'Overdue') {
-                continue;
-            }
-
-            // Pastikan perkara tidak null dan state perkara sama persis dengan yang direminder
-            $perkara = $reminder->perkara;
-            if (!$perkara) {
-                continue;
-            }
-
-            // Idempotency check: pastikan tahap saat ini dari perkara sama dengan reminder yang aktif
-            if ($perkara->tahap_saat_ini !== $reminder->tahap) {
-                // Anomali: Reminder aktif tapi tahap sudah berubah. Tutup reminder ini agar data sinkron.
-                $reminder->update(['is_active' => false]);
-                continue;
-            }
-
-            // Temukan transisi otomatis berdasarkan SLA yang bocor
-            $transitionAction = $this->resolveTransitionByStatus($perkara->tahap_saat_ini, $perkara->status_saat_ini);
-
-            if ($transitionAction === 'NEEDS_CONFIRMATION') {
-                // Rule konkrit belum dikonfirmasi oleh analis bisnis/user. Lewati.
-                Log::info("SLAEngineService: Overdue pada tahap {$perkara->tahap_saat_ini} (Perkara ID: {$perkara->id}) membutuhkan konfirmasi rule. Tidak ada transisi.");
-                continue;
-            }
-
-            if ($transitionAction) {
-                try {
-                    // Panggil Workflow Service untuk mengubah status
-                    // Note: argument user_id = null, actorType = 'SYSTEM'
-                    Log::info("SLAEngineService: Mengeksekusi transisi '{$transitionAction}' untuk Perkara ID: {$perkara->id}");
-                    PerkaraWorkflowService::processAction($perkara, $transitionAction, [], null, 'SYSTEM');
-                    $processedCount++;
-                } catch (\Exception $e) {
-                    Log::error("SLAEngineService: Gagal memproses auto-transition '{$transitionAction}' untuk Perkara ID: {$perkara->id}. Error: " . $e->getMessage());
-                }
-            }
-        }
-
-        Log::info("SLAEngineService: Selesai. Total transisi SLA otomatis yang dieksekusi: {$processedCount}");
+        $this->executeEngine();
     }
 
     /**
@@ -97,24 +45,15 @@ class SLAEngineService
                 return 'tindak_lanjut_koordinasi_overdue';
 
             case PerkaraWorkflowService::TAHAP_MONITORING:
-                // Butuh detil jika ini status P-17 atau P-17 Kedua. 
-                // Karena kita hanya pegang TAHAP_MONITORING, reminder ini harusnya menyimpan 
-                // specific "jenis_reminder" untuk membedakannya. 
-                // Kita kembalikan flag khusus agar di-resolve lebih teliti di method lain, 
-                // atau diubah pendekatannya.
-                
-                // Mari ambil logic detailnya lewat method bantuan.
                 return 'RESOLVE_BY_STATUS';
 
             case PerkaraWorkflowService::TAHAP_P19:
-                return 'p20'; // Menjadi P-20
+                return 'p20';
 
             case PerkaraWorkflowService::TAHAP_P21:
-                return 'form7'; // Menjadi FORM-7
+                return 'form7';
                 
             case PerkaraWorkflowService::TAHAP_P24:
-                // Mengikuti instruksi point 5: P-24 manual branching (Lengkap vs Belum).
-                // Maka tidak ada auto transition oleh Engine.
                 return null;
         }
 
@@ -124,9 +63,8 @@ class SLAEngineService
     /**
      * Bantuan untuk meresolve tahapan yang punya banyak status rentan (seperti Monitoring)
      * ke action ID yang akurat. 
-     * Method pengganti logika getAutoTransitionActionForTahap khusus monitoring.
      */
-    private function resolveTransitionByStatus(string $tahap, string $status): ?string
+    private function resolveTransitionByStatus(string $tahap, string $status, ?PerkaraReminder $reminder = null): ?string
     {
         if ($tahap === PerkaraWorkflowService::TAHAP_KOORDINASI) {
             if ($status === 'Menunggu Koordinasi') {
@@ -136,38 +74,75 @@ class SLAEngineService
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_MONITORING) {
-            if ($status === 'Menunggu Berkas Tahap I') {
+            $jenisReminder = $reminder ? $reminder->jenis_reminder : '';
+
+            // 1. Jika menunggu berkas Tahap I (SLA 30 hari SPDP lewat) -> Otomatis Terbitkan P-17
+            if ($status === 'Menunggu Berkas Tahap I' || str_contains($jenisReminder, 'Tahap I')) {
                 return 'catat_p17';
             }
-            if ($status === 'P-17') {
+
+            // 2. Jika sudah P-17 (SLA 30 hari P-17 lewat tanpa berkas) -> Otomatis Terbitkan SOP FORM-2
+            if ($status === 'P-17' || 
+                (str_contains($status, 'P-17') && !str_contains($status, 'Kedua') && !str_contains($status, 'FORM-2')) || 
+                (str_contains($jenisReminder, 'P-17') && !str_contains($jenisReminder, 'Kedua') && !str_contains($jenisReminder, 'FORM-2'))) {
                 return 'catat_p17_2';
             }
-            if ($status === 'P-17 Kedua / FORM-2') {
+
+            // 3. Jika sudah SOP FORM-2 (SLA 30 hari FORM-2 lewat tanpa berkas) -> Otomatis Terbitkan SOP FORM-3 (Pengembalian SPDP & Simpan Arsip)
+            if (str_contains($status, 'FORM-2') || str_contains($jenisReminder, 'FORM-2')) {
                 return 'catat_form3';
             }
+
             return null;
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_P19) {
-            return 'p20';
+            if ($status !== 'P-20 / Overdue') {
+                return 'p20';
+            }
+            return null;
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_P21) {
-            return 'form7';
+            if ($status !== 'FORM-7 / Overdue') {
+                return 'form7';
+            }
+            return null;
         }
 
-        return null; // Tidak ada rules tembakan paksa
+        return null;
     }
 
     /**
-     * Memperbarui logika proses: mengevaluasi berdasarkan Tahap dan Status.
+     * Mengevaluasi kondisi SLA: SPDP > 30 hari pada Monitoring, dan semua reminder aktif yang Overdue.
      */
     public function executeEngine(): void
     {
         Log::info('SLAEngineService: Memulai pemeriksaan SLA berkala.');
 
-        $activeReminders = PerkaraReminder::with('perkara')->active()->get();
         $processedCount = 0;
+
+        // 1. Evaluasi khusus Monitoring Penyidikan: SPDP > 30 hari tanpa berkas Tahap I -> Otomatis terbitkan P-17
+        $monitoringPerkaras = Perkara::where('tahap_saat_ini', PerkaraWorkflowService::TAHAP_MONITORING)
+            ->where('status_saat_ini', 'Menunggu Berkas Tahap I')
+            ->whereNotNull('tanggal_spdp')
+            ->get();
+
+        foreach ($monitoringPerkaras as $pSPDP) {
+            $spdpDate = Carbon::parse($pSPDP->tanggal_spdp);
+            if ($spdpDate->addDays(30)->isPast()) {
+                try {
+                    Log::info("SLAEngineService: SPDP > 30 hari terdeteksi pada Perkara ID {$pSPDP->id}. Menjalankan auto-transition P-17.");
+                    PerkaraWorkflowService::processAction($pSPDP, 'catat_p17', [], null, 'SYSTEM');
+                    $processedCount++;
+                } catch (\Exception $e) {
+                    Log::error("SLAEngineService: Gagal memproses auto-transition catat_p17 Perkara ID {$pSPDP->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // 2. Evaluasi semua reminder aktif yang melewati batas waktu (Overdue)
+        $activeReminders = PerkaraReminder::with('perkara')->active()->get();
 
         foreach ($activeReminders as $reminder) {
             $calculatedUrgensi = PerkaraReminder::determineUrgensi($reminder->deadline);
@@ -181,15 +156,24 @@ class SLAEngineService
             }
 
             $perkara = $reminder->perkara;
-            if (!$perkara || $perkara->tahap_saat_ini !== $reminder->tahap) {
-                if ($perkara && $perkara->tahap_saat_ini !== $reminder->tahap) {
-                    $reminder->update(['is_active' => false]);
-                }
+            if (!$perkara) {
                 continue;
             }
 
-            // Dapatkan action dari konjungsi tahap dan status saat ini
-            $transitionAction = $this->resolveTransitionByStatus($perkara->tahap_saat_ini, $perkara->status_saat_ini);
+            // Anomali: Reminder aktif tapi tahap sudah berubah. Tutup reminder ini agar data sinkron.
+            if ($perkara->tahap_saat_ini !== $reminder->tahap) {
+                $reminder->update(['is_active' => false]);
+                continue;
+            }
+
+            // Jika perkara sudah dalam status selesai FORM-3 atau Tahap II Selesai, tutup reminder
+            if (str_contains($perkara->status_saat_ini, 'FORM-3') || $perkara->status_saat_ini === 'Tahap II Selesai') {
+                $reminder->update(['is_active' => false]);
+                continue;
+            }
+
+            // Dapatkan action dari konjungsi tahap, status, dan reminder saat ini
+            $transitionAction = $this->resolveTransitionByStatus($perkara->tahap_saat_ini, $perkara->status_saat_ini, $reminder);
 
             if ($transitionAction === 'NEEDS_CONFIRMATION') {
                 Log::info("SLAEngineService: Overdue tahap {$perkara->tahap_saat_ini} (ID: {$perkara->id}) masih NEEDS_CONFIRMATION.");
@@ -210,3 +194,4 @@ class SLAEngineService
         Log::info("SLAEngineService: Selesai. Transisi dieksekusi: {$processedCount}");
     }
 }
+

@@ -36,14 +36,14 @@ class PerkaraWorkflowService
             case self::TAHAP_MONITORING:
                 if ($status === 'Menunggu Berkas Tahap I') {
                     $actions[] = ['id' => 'catat_p17', 'label' => 'Kirim P-17'];
-                } elseif ($status === 'P-17') {
-                    $actions[] = ['id' => 'catat_p17_2', 'label' => 'Kirim P-17 Kedua / FORM-2'];
-                } elseif ($status === 'P-17 Kedua / FORM-2') {
-                    $actions[] = ['id' => 'catat_form3', 'label' => 'Kirim FORM-3'];
+                } elseif ($status === 'P-17' || (str_contains($status, 'P-17') && !str_contains($status, 'Kedua') && !str_contains($status, 'FORM-2'))) {
+                    $actions[] = ['id' => 'catat_p17_2', 'label' => 'Kirim SOP FORM-2 (P-17 Kedua)'];
+                } elseif (str_contains($status, 'FORM-2')) {
+                    $actions[] = ['id' => 'catat_form3', 'label' => 'Kirim SOP FORM-3 (Pengembalian SPDP)'];
                 }
 
-                // Terlepas dari status P-17 mana pun (selama belum FORM-3 / SPDP dikembalikan), user bisa mencatatkan penerimaan berkas Tahap I
-                if ($status !== 'FORM-3') {
+                // Selama belum diterbitkan SOP FORM-3 (SPDP dikembalikan), Jaksa tetap bisa mencatat penerimaan berkas Tahap I
+                if (!str_contains($status, 'FORM-3')) {
                     $actions[] = ['id' => 'terima_berkas', 'label' => 'Penyerahan Berkas Tahap I (P-24)'];
                 }
                 break;
@@ -145,87 +145,122 @@ class PerkaraWorkflowService
 
                     $hasTahap1Reminder = PerkaraReminder::where('perkara_id', $perkara->id)
                         ->where('tahap', self::TAHAP_MONITORING)
-                        ->where('jenis_reminder', 'Batas Penyerahan Tahap I')
+                        ->where(function ($q) {
+                            $q->where('jenis_reminder', 'Batas Penyerahan Tahap I')
+                              ->orWhere('jenis_reminder', 'like', '%Tahap I%');
+                        })
                         ->where('is_active', true)
                         ->exists();
 
                     if (!$hasTahap1Reminder) {
-                        // SLA Tahap I = 30 hari dari tanggal perkara di-input / ditambah ke sistem (created_at)
-                        $inputDate = $perkara->created_at ?? now();
-                        $diffFromInput = Carbon::parse($inputDate)->diffInDays(now());
-                        $sisaHari = max(0, 30 - $diffFromInput);
-                        self::createReminder($perkara, self::TAHAP_MONITORING, 'Batas Penyerahan Tahap I', $sisaHari);
+                        // SLA Tahap I = 30 hari dari tanggal SPDP (atau tanggal input jika tidak ada)
+                        $spdpDate = $perkara->tanggal_spdp ? Carbon::parse($perkara->tanggal_spdp) : ($perkara->created_at ?? now());
+                        $deadline = $spdpDate->copy()->addDays(30);
+
+                        PerkaraReminder::create([
+                            'perkara_id' => $perkara->id,
+                            'tahap' => self::TAHAP_MONITORING,
+                            'jenis_reminder' => 'Batas Penyerahan Tahap I',
+                            'tanggal_mulai' => now(),
+                            'deadline' => $deadline,
+                            'status_urgensi' => PerkaraReminder::determineUrgensi($deadline),
+                            'is_active' => true,
+                        ]);
                     }
                     break;
 
                 // Tahap MONITORING
                 case 'catat_p17':
                     $newStatus = 'P-17';
-                    $eventName = 'Pengiriman P-17';
+                    $eventName = 'Penerbitan P-17 (Permintaan Perkembangan Penyidikan)';
                     if ($actorType === 'SYSTEM') {
                         $eventName .= ' (System Auto-Transition)';
-                        $catatan = $catatan ?? 'Tenggat waktu 30 hari penyerahan berkas Tahap I terlewati. Sistem secara otomatis menerbitkan P-17.';
+                        $catatan = $catatan ?? 'Batas waktu 30 hari penyerahan berkas Tahap I setelah SPDP terlewati tanpa penyerahan berkas. Sistem secara otomatis menerbitkan P-17.';
+                    } else {
+                        $catatan = $catatan ?? 'Penerbitan P-17 (Surat Permintaan Perkembangan Penyidikan) kepada Penyidik.';
                     }
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
 
                     $hasActiveP17Reminder = PerkaraReminder::where('perkara_id', $perkara->id)
                         ->where('tahap', self::TAHAP_MONITORING)
-                        ->where('jenis_reminder', 'Tindak lanjut P-17')
+                        ->where(function ($q) {
+                            $q->where('jenis_reminder', 'like', '%P-17%')
+                              ->orWhere('jenis_reminder', 'like', '%Batas Waktu P-17%');
+                        })
                         ->where('is_active', true)
                         ->exists();
+
                     if (!$hasActiveP17Reminder) {
-                        self::createReminder($perkara, self::TAHAP_MONITORING, 'Tindak lanjut P-17', 30);
+                        self::createReminder($perkara, self::TAHAP_MONITORING, 'Batas Waktu P-17 (30 Hari)', 30);
                     }
 
                     $hasP17Timeline = PerkaraTimeline::where('perkara_id', $perkara->id)
                         ->where('tahap', self::TAHAP_MONITORING)
-                        ->where('status_kegiatan', 'like', '%Pengiriman P-17%')
+                        ->where('status_kegiatan', 'like', '%P-17%')
                         ->where('status_kegiatan', 'not like', '%Kedua%')
+                        ->where('status_kegiatan', 'not like', '%FORM-2%')
                         ->exists();
-                    if ($hasP17Timeline) {
+
+                    if ($hasP17Timeline && $actorType === 'SYSTEM') {
                         $eventName = '';
                     }
                     break;
+
                 case 'catat_p17_2':
                     $newStatus = 'P-17 Kedua / FORM-2';
-                    $eventName = 'Pengiriman P-17 Kedua / FORM-2';
+                    $eventName = 'Penerbitan SOP FORM-2 (P-17 Kedua)';
                     if ($actorType === 'SYSTEM') {
                         $eventName .= ' (System Auto-Transition)';
-                        $catatan = $catatan ?? 'Tenggat waktu P-17 terlewati. Sistem secara otomatis menaikkan status menjadi P-17 Kedua / FORM-2.';
+                        $catatan = $catatan ?? 'Batas waktu 30 hari setelah P-17 terlewati tanpa penyerahan berkas dari penyidik. Sistem secara otomatis menerbitkan SOP FORM-2 (P-17 Kedua).';
+                    } else {
+                        $catatan = $catatan ?? 'Penerbitan SOP FORM-2 (Surat Peringatan / P-17 Kedua) kepada Penyidik.';
                     }
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
 
                     $hasActiveForm2Reminder = PerkaraReminder::where('perkara_id', $perkara->id)
                         ->where('tahap', self::TAHAP_MONITORING)
-                        ->where('jenis_reminder', 'Penataan setelah FORM-2')
+                        ->where(function ($q) {
+                            $q->where('jenis_reminder', 'like', '%FORM-2%')
+                              ->orWhere('jenis_reminder', 'like', '%Penataan setelah FORM-2%');
+                        })
                         ->where('is_active', true)
                         ->exists();
+
                     if (!$hasActiveForm2Reminder) {
-                        self::createReminder($perkara, self::TAHAP_MONITORING, 'Penataan setelah FORM-2', 30);
+                        self::createReminder($perkara, self::TAHAP_MONITORING, 'Batas Waktu SOP FORM-2 (30 Hari)', 30);
                     }
 
                     $hasForm2Timeline = PerkaraTimeline::where('perkara_id', $perkara->id)
                         ->where('tahap', self::TAHAP_MONITORING)
                         ->where('status_kegiatan', 'like', '%FORM-2%')
                         ->exists();
-                    if ($hasForm2Timeline) {
+
+                    if ($hasForm2Timeline && $actorType === 'SYSTEM') {
                         $eventName = '';
                     }
                     break;
+
                 case 'catat_form3':
-                    $newStatus = 'FORM-3';
-                    $eventName = 'Pengiriman FORM-3';
+                    $newStatus = 'SOP FORM-3 (Pengembalian SPDP)';
+                    $eventName = 'Pengembalian SPDP dan Simpan Arsip (SOP FORM-3)';
                     if ($actorType === 'SYSTEM') {
                         $eventName .= ' (System Auto-Transition)';
-                        $catatan = $catatan ?? 'Tenggat waktu FORM-2 terlewati. Sistem secara otomatis mencatatkan SOP FORM-3 pengembalian SPDP (Alur Monitoring Selesai/Terminal).';
+                        $catatan = $catatan ?? 'Batas waktu 30 hari setelah SOP FORM-2 terlewati tanpa penyerahan berkas. Sistem secara otomatis mencatatkan SOP FORM-3: Pengembalian SPDP kepada Penyidik dan Simpan Arsip (Perkara Selesai).';
+                    } else {
+                        $catatan = $catatan ?? 'Penerbitan SOP FORM-3: Berkas SPDP dikembalikan kepada Penyidik dan administrasi perkara disimpan ke arsip (Perkara Selesai).';
                     }
+                    // Nonaktifkan semua reminder aktif pada perkara ini karena sudah selesai & SPDP dikembalikan
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
+                    PerkaraReminder::where('perkara_id', $perkara->id)
+                        ->where('is_active', true)
+                        ->update(['is_active' => false]);
 
                     $hasForm3Timeline = PerkaraTimeline::where('perkara_id', $perkara->id)
                         ->where('tahap', self::TAHAP_MONITORING)
                         ->where('status_kegiatan', 'like', '%FORM-3%')
                         ->exists();
-                    if ($hasForm3Timeline) {
+
+                    if ($hasForm3Timeline && $actorType === 'SYSTEM') {
                         $eventName = '';
                     }
                     break;
@@ -325,7 +360,7 @@ class PerkaraWorkflowService
             'jenis_reminder' => $jenis,
             'tanggal_mulai' => $mulai,
             'deadline' => $deadline,
-            'status_urgensi' => 'Aman',
+            'status_urgensi' => PerkaraReminder::determineUrgensi($deadline),
             'is_active' => true,
         ]);
     }
