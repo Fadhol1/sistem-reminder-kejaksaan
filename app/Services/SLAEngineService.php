@@ -97,14 +97,14 @@ class SLAEngineService
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_P19) {
-            if ($status !== 'P-20 / Overdue') {
+            if (!str_contains($status, 'P-20')) {
                 return 'p20';
             }
             return null;
         }
 
         if ($tahap === PerkaraWorkflowService::TAHAP_P21) {
-            if ($status !== 'FORM-7 / Overdue') {
+            if (!str_contains($status, 'FORM-7')) {
                 return 'form7';
             }
             return null;
@@ -166,8 +166,11 @@ class SLAEngineService
                 continue;
             }
 
-            // Jika perkara sudah dalam status selesai FORM-3 atau Tahap II Selesai, tutup reminder
-            if (str_contains($perkara->status_saat_ini, 'FORM-3') || $perkara->status_saat_ini === 'Tahap II Selesai') {
+            // Jika perkara sudah dalam status selesai (FORM-3, P-20, FORM-7, atau Tahap II Selesai), tutup reminder
+            if (str_contains($perkara->status_saat_ini, 'FORM-3') ||
+                str_contains($perkara->status_saat_ini, 'P-20') ||
+                str_contains($perkara->status_saat_ini, 'FORM-7') ||
+                $perkara->status_saat_ini === 'Tahap II Selesai') {
                 $reminder->update(['is_active' => false]);
                 continue;
             }

@@ -29,6 +29,8 @@ class DashboardController extends Controller
         $perkaraAktif = (clone $perkaraQuery)
             ->where('status_saat_ini', '!=', 'Tahap II Selesai')
             ->where('status_saat_ini', 'not like', '%FORM-3%')
+            ->where('status_saat_ini', 'not like', '%P-20%')
+            ->where('status_saat_ini', 'not like', '%FORM-7%')
             ->count();
 
         $reminderQuery = PerkaraReminder::active();

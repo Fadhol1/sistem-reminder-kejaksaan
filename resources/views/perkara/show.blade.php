@@ -214,6 +214,36 @@
                             </p>
                             <p class="mt-1 text-slate-600">Berkas SPDP telah dikembalikan kepada Penyidik dan administrasi perkara disimpan ke arsip. Seluruh jadwal reminder dinonaktifkan.</p>
                         </div>
+                    @elseif(str_contains($perkara->status_saat_ini, 'P-20'))
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700">
+                            <p class="font-semibold text-slate-900 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                SPDP Dikembalikan (P-20 / Arsip)
+                            </p>
+                            <p class="mt-1 text-slate-600">Waktu penyidikan tambahan oleh Penyidik telah habis (>14 hari pasca P-19). Berkas SPDP dikembalikan kepada Penyidik dan perkara disimpan ke arsip. Seluruh jadwal reminder dinonaktifkan.</p>
+                        </div>
+                    @elseif(str_contains($perkara->status_saat_ini, 'FORM-7'))
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700">
+                            <p class="font-semibold text-slate-900 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Berkas & SPDP Dikembalikan (FORM-7 / Arsip)
+                            </p>
+                            <p class="mt-1 text-slate-600">Tenggat penyerahan tanggung jawab Tersangka dan Barang Bukti (Tahap II) terlewati (>14 hari pasca P-21). Berkas Perkara dan SPDP dikembalikan kepada Penyidik dan diarsipkan. Seluruh jadwal reminder dinonaktifkan.</p>
+                        </div>
+                    @elseif($perkara->status_saat_ini === 'Tahap II Selesai')
+                        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
+                            <p class="font-semibold text-emerald-900 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Perkara Selesai (Tahap II)
+                            </p>
+                            <p class="mt-1 text-emerald-700">Penyerahan Tersangka dan Barang Bukti telah selesai dilaksanakan secara lengkap.</p>
+                        </div>
                     @endif
 
                     @if($perkara->activeReminders->count() > 0)
@@ -240,22 +270,79 @@
             </div>
 
             @if(app()->environment('local') || config('app.debug'))
+            @php
+                $isArchivedDev = str_contains($perkara->status_saat_ini, 'FORM-3') ||
+                                 str_contains($perkara->status_saat_ini, 'P-20') ||
+                                 str_contains($perkara->status_saat_ini, 'FORM-7') ||
+                                 $perkara->status_saat_ini === 'Tahap II Selesai';
+                $devActiveReminder = $perkara->activeReminders->first();
+            @endphp
             <!-- Dev / Sandbox SLA Simulator Card (Khusus Local Environment) -->
-            <div class="bg-gradient-to-br from-amber-50/70 via-white to-orange-50/50 rounded-xl border-2 border-dashed border-amber-300 shadow-sm overflow-hidden">
-                <div class="px-5 py-3.5 bg-amber-100/70 border-b border-amber-200 flex items-center justify-between">
+            <div class="bg-gradient-to-br from-amber-50/80 via-white to-orange-50/60 rounded-xl border-2 border-dashed border-amber-300 shadow-sm overflow-hidden">
+                <div class="px-5 py-3.5 bg-amber-100/80 border-b border-amber-200 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white tracking-wider uppercase">DEV TOOL</span>
-                        <h4 class="font-bold text-xs sm:text-sm text-amber-950">Simulator Waktu & SLA</h4>
+                        <h4 class="font-bold text-xs sm:text-sm text-amber-950">Simulator Waktu & SLA Engine</h4>
                     </div>
-                    <span class="text-[10px] font-semibold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full">Local Testing</span>
+                    <span class="text-[10px] font-semibold text-amber-800 bg-amber-200/90 px-2 py-0.5 rounded-full">Local Testing</span>
                 </div>
 
                 <div class="p-5 space-y-4">
-                    <p class="text-xs text-amber-900/80 leading-relaxed">
-                        Manipulasi waktu deadline untuk menguji notifikasi & otomatisasi alur SLA (H-3, Jatuh Tempo, P-17, FORM-2, FORM-3) secara instan tanpa menunggu waktu nyata.
-                    </p>
+                    <!-- Contextual SLA Target Info -->
+                    @if($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P19)
+                        <div class="p-3 bg-orange-100/70 border border-orange-200 rounded-lg text-xs text-orange-950 space-y-1">
+                            <div class="flex items-center gap-1.5 font-bold text-orange-900">
+                                <span class="px-1.5 py-0.5 bg-orange-600 text-white rounded text-[10px] uppercase font-bold tracking-wider">Uji SLA 14 Hari P-19</span>
+                                <span>Pemenuhan Petunjuk Jaksa</span>
+                            </div>
+                            <p class="text-orange-900/90 leading-relaxed text-[11px]">
+                                Penyidik wajib memenuhi petunjuk jaksa maksimal 14 hari. Jika melewati batas waktu (>14 hari), <strong>SLA Engine otomatis menerbitkan P-20</strong> (Pengembalian SPDP), mengarsipkan perkara, dan menutup seluruh reminder.
+                            </p>
+                        </div>
+                    @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P21)
+                        <div class="p-3 bg-emerald-100/70 border border-emerald-200 rounded-lg text-xs text-emerald-950 space-y-1">
+                            <div class="flex items-center gap-1.5 font-bold text-emerald-900">
+                                <span class="px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[10px] uppercase font-bold tracking-wider">Uji SLA 14 Hari P-21</span>
+                                <span>Penyerahan Tanggung Jawab Tahap II</span>
+                            </div>
+                            <p class="text-emerald-900/90 leading-relaxed text-[11px]">
+                                Penyidik wajib menyerahkan Tersangka & Barang Bukti maksimal 14 hari pasca P-21. Jika melewati batas waktu (>14 hari), <strong>SLA Engine otomatis menerbitkan SOP FORM-7</strong> (Pengembalian Berkas & SPDP ke Penyidik), mengarsipkan perkara, dan menutup seluruh reminder.
+                            </p>
+                        </div>
+                    @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_MONITORING)
+                        <div class="p-3 bg-amber-100/70 border border-amber-200 rounded-lg text-xs text-amber-950 space-y-1">
+                            <div class="flex items-center gap-1.5 font-bold text-amber-900">
+                                <span class="px-1.5 py-0.5 bg-amber-600 text-white rounded text-[10px] uppercase font-bold tracking-wider">Uji SLA Siklus 30 Hari</span>
+                                <span>Monitoring Penyidikan</span>
+                            </div>
+                            <p class="text-amber-900/90 leading-relaxed text-[11px]">
+                                SPDP > 30 hari tanpa berkas ➔ <strong>P-17</strong> ➔ > 30 hari ➔ <strong>SOP FORM-2</strong> ➔ > 30 hari ➔ <strong>SOP FORM-3 (Arsip & Tutup Reminder)</strong>.
+                            </p>
+                        </div>
+                    @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_KOORDINASI)
+                        <div class="p-3 bg-blue-100/70 border border-blue-200 rounded-lg text-xs text-blue-950 space-y-1">
+                            <div class="flex items-center gap-1.5 font-bold text-blue-900">
+                                <span class="px-1.5 py-0.5 bg-blue-600 text-white rounded text-[10px] uppercase font-bold tracking-wider">Uji SLA 3 Hari</span>
+                                <span>Koordinasi Awal</span>
+                            </div>
+                            <p class="text-blue-900/90 leading-relaxed text-[11px]">
+                                Batas waktu koordinasi awal adalah 3 hari. Jika lewat, sistem mencatat tindak lanjut Laporan SOP Form-1B & Form-1C.
+                            </p>
+                        </div>
+                    @elseif($isArchivedDev)
+                        <div class="p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-700">
+                            <p class="font-bold text-slate-900 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Perkara Sudah Selesai / Diarsipkan
+                            </p>
+                            <p class="text-slate-600 mt-0.5 text-[11px]">Semua reminder perkara ini telah dinonaktifkan. Gunakan menu <strong>Reset State Simulasi</strong> di bawah jika ingin menguji alur perkara ini kembali.</p>
+                        </div>
+                    @endif
 
-                    <!-- Quick Action Buttons -->
+                    @if(!$isArchivedDev && $devActiveReminder)
+                    <!-- Quick Action Buttons for Active Case -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <!-- Mode: H-3 -->
                         <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
@@ -263,7 +350,7 @@
                             <input type="hidden" name="mode" value="set_h3">
                             <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors" title="Ubah deadline menjadi 3 hari lagi">
                                 <span class="w-2 h-2 rounded-full bg-amber-200"></span>
-                                Set H-3 (Kuning)
+                                Set H-3 (Peringatan)
                             </button>
                         </form>
 
@@ -281,11 +368,19 @@
                         <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST" class="sm:col-span-2">
                             @csrf
                             <input type="hidden" name="mode" value="set_overdue">
-                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow-xs transition-colors" title="Ubah deadline menjadi kemarin dan eksekusi SLA Engine">
+                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white shadow-sm transition-all" title="Ubah deadline menjadi kemarin dan eksekusi SLA Engine">
                                 <svg class="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                                 </svg>
-                                <span>Set Overdue & Jalankan Alur Otomatis</span>
+                                @if($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P19)
+                                    <span>🔥 Simulasikan >14 Hari ➔ Auto-P20 & Arsipkan</span>
+                                @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P21)
+                                    <span>🔥 Simulasikan >14 Hari ➔ Auto-FORM-7 & Arsipkan</span>
+                                @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_MONITORING)
+                                    <span>🔥 Simulasikan >30 Hari ➔ Eksekusi Alur Otomatis</span>
+                                @else
+                                    <span>🔥 Set Overdue & Eksekusi Alur Otomatis</span>
+                                @endif
                             </button>
                         </form>
                     </div>
@@ -305,6 +400,7 @@
                             </button>
                         </form>
                     </div>
+                    @endif
 
                     <!-- Force Trigger Engine Button -->
                     <div class="pt-1">
@@ -318,6 +414,41 @@
                                 <span>Paksa Evaluasi SLA Engine Sekarang</span>
                             </button>
                         </form>
+                    </div>
+
+                    <!-- Sandbox State Switcher / Reset Alur (Dev Only) -->
+                    <div class="pt-3 border-t border-amber-200/80">
+                        <p class="text-[11px] font-bold text-amber-950 mb-2 flex items-center gap-1">
+                            <span>⚡ Sandbox State Switcher (Uji Coba Ulang):</span>
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                            <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="mode" value="reset_tahap">
+                                <input type="hidden" name="target_tahap" value="P-19">
+                                <button type="submit" class="w-full px-2 py-1.5 rounded text-[11px] font-semibold bg-white hover:bg-orange-50 text-orange-800 border border-orange-300 shadow-2xs transition-colors" title="Set perkara ke Tahap P-19 untuk menguji SLA 14 Hari & P-20">
+                                    Set Tahap P-19 (14h)
+                                </button>
+                            </form>
+
+                            <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="mode" value="reset_tahap">
+                                <input type="hidden" name="target_tahap" value="P-21">
+                                <button type="submit" class="w-full px-2 py-1.5 rounded text-[11px] font-semibold bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs transition-colors" title="Set perkara ke Tahap P-21 untuk menguji SLA 14 Hari & FORM-7">
+                                    Set Tahap P-21 (14h)
+                                </button>
+                            </form>
+
+                            <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="mode" value="reset_tahap">
+                                <input type="hidden" name="target_tahap" value="Monitoring">
+                                <button type="submit" class="w-full px-2 py-1.5 rounded text-[11px] font-semibold bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs transition-colors" title="Set perkara ke Monitoring Penyidikan untuk menguji siklus 30 Hari">
+                                    Set Monitoring (30h)
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -89,7 +89,7 @@
         <div class="flex items-center justify-between px-5 h-16 border-b border-gray-200 bg-white shrink-0">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                 <div
-                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-800 flex items-center justify-center shadow-md shadow-emerald-700/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200">
+                    class="w-9 h-9 rounded-xl bg-linear-to-br from-emerald-600 via-teal-700 to-slate-800 flex items-center justify-center shadow-md shadow-emerald-700/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z" />
@@ -249,7 +249,7 @@
                         class="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0">
                 @else
                     <div
-                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0 shadow-xs">
+                        class="w-9 h-9 rounded-xl bg-linear-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0 shadow-xs">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
                 @endif
@@ -323,16 +323,18 @@
                             class="w-8 h-8 rounded-full object-cover border border-gray-200">
                     @else
                         <div
-                            class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center text-xs font-bold uppercase shadow-xs">
+                            class="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center text-xs font-bold uppercase shadow-xs">
                             {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                         </div>
                     @endif
                     <div class="hidden md:block text-left">
                         <p
-                            class="text-xs font-semibold text-gray-900 leading-tight max-w-[130px] truncate group-hover:text-indigo-600 transition-colors">
-                            {{ auth()->user()->name }}</p>
+                            class="text-xs font-semibold text-gray-900 leading-tight max-w-32.5 truncate group-hover:text-indigo-600 transition-colors">
+                            {{ auth()->user()->name }}
+                        </p>
                         <p class="text-[10px] text-gray-400 leading-tight truncate mt-0.5">
-                            {{ auth()->user()->nip ?? auth()->user()->email }}</p>
+                            {{ auth()->user()->nip ?? auth()->user()->email }}
+                        </p>
                     </div>
                 </a>
             </div>

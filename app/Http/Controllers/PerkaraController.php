@@ -61,11 +61,15 @@ class PerkaraController extends Controller
         if ($request->filled('status_filter')) {
             if ($request->status_filter === 'aktif') {
                 $query->where('status_saat_ini', '!=', 'Tahap II Selesai')
-                      ->where('status_saat_ini', 'not like', '%FORM-3%');
+                      ->where('status_saat_ini', 'not like', '%FORM-3%')
+                      ->where('status_saat_ini', 'not like', '%P-20%')
+                      ->where('status_saat_ini', 'not like', '%FORM-7%');
             } elseif ($request->status_filter === 'selesai') {
                 $query->where(function ($q) {
                     $q->where('status_saat_ini', 'Tahap II Selesai')
-                      ->orWhere('status_saat_ini', 'like', '%FORM-3%');
+                      ->orWhere('status_saat_ini', 'like', '%FORM-3%')
+                      ->orWhere('status_saat_ini', 'like', '%P-20%')
+                      ->orWhere('status_saat_ini', 'like', '%FORM-7%');
                 });
             }
         }
@@ -89,13 +93,17 @@ class PerkaraController extends Controller
             'perkara_aktif' => (clone $summaryQuery)
                 ->where('status_saat_ini', '!=', 'Tahap II Selesai')
                 ->where('status_saat_ini', 'not like', '%FORM-3%')
+                ->where('status_saat_ini', 'not like', '%P-20%')
+                ->where('status_saat_ini', 'not like', '%FORM-7%')
                 ->count(),
             'ada_overdue'   => (clone $summaryQuery)->whereHas('activeReminders', function ($rQ) {
                 $rQ->where('status_urgensi', 'Overdue');
             })->count(),
             'tahap_selesai' => (clone $summaryQuery)->where(function ($q) {
                 $q->where('status_saat_ini', 'Tahap II Selesai')
-                  ->orWhere('status_saat_ini', 'like', '%FORM-3%');
+                  ->orWhere('status_saat_ini', 'like', '%FORM-3%')
+                  ->orWhere('status_saat_ini', 'like', '%P-20%')
+                  ->orWhere('status_saat_ini', 'like', '%FORM-7%');
             })->count(),
         ];
 
@@ -336,6 +344,58 @@ class PerkaraController extends Controller
                 ->with('success', '[DEV SIMULASI] SLA Engine berhasil dieksekusi secara instan! Status terkini: "' . $perkara->status_saat_ini . '"');
         }
 
+        if ($mode === 'reset_tahap') {
+            $target = $request->input('target_tahap');
+            // Tutup semua reminder aktif lama
+            $perkara->activeReminders()->update(['is_active' => false]);
+
+            if ($target === 'P-19') {
+                $perkara->tahap_saat_ini = \App\Services\PerkaraWorkflowService::TAHAP_P19;
+                $perkara->status_saat_ini = 'Menunggu Pemenuhan Petunjuk';
+                $perkara->save();
+
+                \App\Services\PerkaraWorkflowService::createReminder(
+                    $perkara,
+                    \App\Services\PerkaraWorkflowService::TAHAP_P19,
+                    'SLA Pemenuhan Petunjuk',
+                    14
+                );
+
+                $message = '[DEV SIMULASI] Perkara berhasil diset ke Tahap P-19 (Menunggu Pemenuhan Petunjuk) dengan reminder SLA 14 Hari aktif.';
+            } elseif ($target === 'P-21') {
+                $perkara->tahap_saat_ini = \App\Services\PerkaraWorkflowService::TAHAP_P21;
+                $perkara->status_saat_ini = 'Menunggu Penyerahan Tahap II';
+                $perkara->save();
+
+                \App\Services\PerkaraWorkflowService::createReminder(
+                    $perkara,
+                    \App\Services\PerkaraWorkflowService::TAHAP_P21,
+                    'SLA Penyerahan Tahap II',
+                    14
+                );
+
+                $message = '[DEV SIMULASI] Perkara berhasil diset ke Tahap P-21 (Menunggu Penyerahan Tahap II) dengan reminder SLA 14 Hari aktif.';
+            } elseif ($target === 'Monitoring') {
+                $perkara->tahap_saat_ini = \App\Services\PerkaraWorkflowService::TAHAP_MONITORING;
+                $perkara->status_saat_ini = 'Menunggu Berkas Tahap I';
+                $perkara->tanggal_spdp = now();
+                $perkara->save();
+
+                \App\Services\PerkaraWorkflowService::createReminder(
+                    $perkara,
+                    \App\Services\PerkaraWorkflowService::TAHAP_MONITORING,
+                    'Batas Waktu Penyerahan Tahap I (30 Hari)',
+                    30
+                );
+
+                $message = '[DEV SIMULASI] Perkara berhasil diset ke Tahap Monitoring Penyidikan (Menunggu Berkas Tahap I) dengan reminder SLA 30 Hari aktif.';
+            } else {
+                $message = '[DEV SIMULASI] Target tahap reset tidak dikenali.';
+            }
+
+            return redirect()->route('perkara.show', $perkara->id)->with('success', $message);
+        }
+
         $activeReminder = $perkara->activeReminders()->first();
 
         // Jika tidak ada active reminder tapi mode set_overdue pada Menunggu Berkas Tahap I, kita tetap bisa jalankan simulasi SPDP > 30 hari
@@ -382,7 +442,19 @@ class PerkaraController extends Controller
                 app(\App\Services\SLAEngineService::class)->executeEngine();
                 $perkara->refresh();
 
-                $message = '[DEV SIMULASI] Deadline diset Overdue! SLA Engine langsung mengeksekusi alur otomatis. Status perkara kini: "' . $perkara->status_saat_ini . '".';
+                if (str_contains($perkara->status_saat_ini, 'P-20')) {
+                    $message = '[DEV SIMULASI] Batas waktu 14 hari P-19 terlewati! SLA Engine otomatis menerbitkan "P-20 (Waktu Penyidikan Tambahan Habis / Pengembalian SPDP)". Status perkara Diarsipkan & seluruh reminder dinonaktifkan.';
+                } elseif (str_contains($perkara->status_saat_ini, 'FORM-7')) {
+                    $message = '[DEV SIMULASI] Batas waktu 14 hari P-21 terlewati! SLA Engine otomatis menerbitkan "SOP FORM-7 (Pengembalian Berkas & SPDP ke Penyidik)". Status perkara Diarsipkan & seluruh reminder dinonaktifkan.';
+                } elseif (str_contains($perkara->status_saat_ini, 'FORM-3')) {
+                    $message = '[DEV SIMULASI] Batas waktu 30 hari SOP FORM-2 terlewati! SLA Engine otomatis menerbitkan "SOP FORM-3 (Pengembalian SPDP)". Status perkara Diarsipkan & seluruh reminder dinonaktifkan.';
+                } elseif (str_contains($perkara->status_saat_ini, 'FORM-2')) {
+                    $message = '[DEV SIMULASI] Batas waktu 30 hari P-17 terlewati! SLA Engine otomatis menerbitkan "SOP FORM-2 (P-17 Kedua)".';
+                } elseif (str_contains($perkara->status_saat_ini, 'P-17')) {
+                    $message = '[DEV SIMULASI] Batas waktu 30 hari SPDP terlewati! SLA Engine otomatis menerbitkan "P-17 (Permintaan Perkembangan Penyidikan)".';
+                } else {
+                    $message = '[DEV SIMULASI] Deadline diset Overdue! SLA Engine langsung mengeksekusi alur otomatis. Status perkara kini: "' . $perkara->status_saat_ini . '".';
+                }
                 break;
 
             case 'custom_days':
@@ -395,7 +467,13 @@ class PerkaraController extends Controller
                     if ($activeReminder->status_urgensi === 'Overdue') {
                         app(\App\Services\SLAEngineService::class)->executeEngine();
                         $perkara->refresh();
-                        $message = '[DEV SIMULASI] Deadline diset ' . $customDays . ' hari (Overdue). SLA Engine otomatis dieksekusi. Status kini: "' . $perkara->status_saat_ini . '".';
+                        if (str_contains($perkara->status_saat_ini, 'P-20')) {
+                            $message = '[DEV SIMULASI] Deadline diset ' . $customDays . ' hari (Overdue >14 hari). SLA Engine otomatis menerbitkan "P-20 (Pengembalian SPDP / Arsip)".';
+                        } elseif (str_contains($perkara->status_saat_ini, 'FORM-7')) {
+                            $message = '[DEV SIMULASI] Deadline diset ' . $customDays . ' hari (Overdue >14 hari). SLA Engine otomatis menerbitkan "SOP FORM-7 (Pengembalian Berkas & SPDP / Arsip)".';
+                        } else {
+                            $message = '[DEV SIMULASI] Deadline diset ' . $customDays . ' hari (Overdue). SLA Engine otomatis dieksekusi. Status kini: "' . $perkara->status_saat_ini . '".';
+                        }
                     } else {
                         $message = '[DEV SIMULASI] Deadline diset ' . $customDays . ' hari lagi (' . $activeReminder->deadline->translatedFormat('d F Y') . '). Status Urgensi: ' . $activeReminder->status_urgensi . '.';
                     }

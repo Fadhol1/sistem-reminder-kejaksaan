@@ -56,16 +56,16 @@ class PerkaraWorkflowService
                 break;
 
             case self::TAHAP_P19:
-                $actions[] = ['id' => 'terima_pemenuhan_p19', 'label' => 'Terima Pemenuhan Petunjuk'];
-                if ($status !== 'P-20 / Overdue') {
-                    $actions[] = ['id' => 'p20', 'label' => 'P-20 (Overdue)'];
+                if (!str_contains($status, 'P-20')) {
+                    $actions[] = ['id' => 'terima_pemenuhan_p19', 'label' => 'Terima Pemenuhan Petunjuk'];
+                    $actions[] = ['id' => 'p20', 'label' => 'Terbitkan P-20 (Pengembalian SPDP)'];
                 }
                 break;
 
             case self::TAHAP_P21:
-                $actions[] = ['id' => 'terima_tahap2', 'label' => 'Penyerahan Tahap II'];
-                if ($status !== 'FORM-7 / Overdue') {
-                    $actions[] = ['id' => 'form7', 'label' => 'FORM-7 (Overdue)'];
+                if (!str_contains($status, 'FORM-7')) {
+                    $actions[] = ['id' => 'terima_tahap2', 'label' => 'Penyerahan Tahap II'];
+                    $actions[] = ['id' => 'form7', 'label' => 'Terbitkan SOP FORM-7 (Pengembalian Berkas & SPDP)'];
                 }
                 break;
 
@@ -294,13 +294,27 @@ class PerkaraWorkflowService
                     self::resolveActiveReminders($perkara, self::TAHAP_P19);
                     break;
                 case 'p20':
-                    $newStatus = 'P-20 / Overdue';
-                    $eventName = 'Penerbitan P-20';
+                    $newStatus = 'P-20 (Waktu Penyidikan Tambahan Habis / Pengembalian SPDP)';
+                    $eventName = 'Penerbitan P-20 (Pengembalian SPDP)';
                     if ($actorType === 'SYSTEM') {
                         $eventName .= ' (System Auto-Transition)';
-                        $catatan = $catatan ?? 'Batas waktu 14 hari pemenuhan petunjuk (P-19) terlewati. Sistem menerbitkan P-20 secara otomatis.';
+                        $catatan = $catatan ?? 'Batas waktu 14 hari pemenuhan petunjuk (P-19) terlewati tanpa penyerahan kembali berkas dari penyidik. Sistem secara otomatis mencatat penerbitan P-20 (Waktu Penyidikan Tambahan Habis / Pengembalian SPDP - Perkara Selesai).';
+                    } else {
+                        $catatan = $catatan ?? 'Penerbitan P-20: Pemberitahuan waktu penyidikan tambahan telah habis dan berkas SPDP dikembalikan ke Penyidik (Perkara Selesai).';
                     }
                     self::resolveActiveReminders($perkara, self::TAHAP_P19);
+                    PerkaraReminder::where('perkara_id', $perkara->id)
+                        ->where('is_active', true)
+                        ->update(['is_active' => false]);
+
+                    $hasP20Timeline = PerkaraTimeline::where('perkara_id', $perkara->id)
+                        ->where('tahap', self::TAHAP_P19)
+                        ->where('status_kegiatan', 'like', '%P-20%')
+                        ->exists();
+
+                    if ($hasP20Timeline && $actorType === 'SYSTEM') {
+                        $eventName = '';
+                    }
                     break;
 
                 // Tahap P-21
@@ -311,13 +325,27 @@ class PerkaraWorkflowService
                     self::resolveActiveReminders($perkara, self::TAHAP_P21);
                     break;
                 case 'form7':
-                    $newStatus = 'FORM-7 / Overdue';
-                    $eventName = 'Penerbitan FORM-7';
+                    $newStatus = 'SOP FORM-7 (Pengembalian Berkas & SPDP ke Penyidik)';
+                    $eventName = 'Penerbitan SOP FORM-7 (Pengembalian Berkas & SPDP)';
                     if ($actorType === 'SYSTEM') {
                         $eventName .= ' (System Auto-Transition)';
-                        $catatan = $catatan ?? 'Batas waktu 14 hari Penyerahan Tahap II terlewati. Sistem menerbitkan FORM-7 secara otomatis.';
+                        $catatan = $catatan ?? 'Batas waktu 14 hari penyerahan tanggung jawab Tersangka dan Barang Bukti (Tahap II) terlewati. Sistem secara otomatis mencatat penerbitan SOP FORM-7 (Pengembalian berkas perkara & SPDP ke penyidik - Perkara Selesai).';
+                    } else {
+                        $catatan = $catatan ?? 'Penerbitan SOP FORM-7: Berkas perkara & SPDP dikembalikan ke Penyidik karena batas waktu Tahap II terlewati (Perkara Selesai).';
                     }
                     self::resolveActiveReminders($perkara, self::TAHAP_P21);
+                    PerkaraReminder::where('perkara_id', $perkara->id)
+                        ->where('is_active', true)
+                        ->update(['is_active' => false]);
+
+                    $hasForm7Timeline = PerkaraTimeline::where('perkara_id', $perkara->id)
+                        ->where('tahap', self::TAHAP_P21)
+                        ->where('status_kegiatan', 'like', '%FORM-7%')
+                        ->exists();
+
+                    if ($hasForm7Timeline && $actorType === 'SYSTEM') {
+                        $eventName = '';
+                    }
                     break;
 
                 // Tahap II

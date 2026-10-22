@@ -98,7 +98,7 @@
             <div>
                 <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Perkara Selesai</p>
                 <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['tahap_selesai'] ?? 0) }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Tahap II & SPDP Dikembalikan</p>
+                <p class="text-xs text-gray-400 mt-0.5">Tahap II, FORM-3, P-20 & FORM-7</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -279,7 +279,15 @@
                                         </span>
                                     @elseif(str_contains($perkara->status_saat_ini, 'FORM-3'))
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
-                                            ✓ SPDP Dikembalikan (Arsip)
+                                            ✓ SPDP Dikembalikan (FORM-3)
+                                        </span>
+                                    @elseif(str_contains($perkara->status_saat_ini, 'P-20'))
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+                                            ✓ SPDP Dikembalikan (P-20)
+                                        </span>
+                                    @elseif(str_contains($perkara->status_saat_ini, 'FORM-7'))
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+                                            ✓ Berkas & SPDP Dikembalikan (FORM-7)
                                         </span>
                                     @endif
                                 </div>
