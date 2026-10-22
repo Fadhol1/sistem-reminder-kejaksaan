@@ -24,7 +24,7 @@ class PerkaraApiController extends Controller
     {
         SLAEngineService::runThrottled();
 
-        $query = Perkara::with(['tersangkas', 'activeReminders'])->orderBy('created_at', 'desc');
+        $query = Perkara::with(['tersangkas', 'activeReminders', 'latestTimeline'])->orderBy('created_at', 'desc');
 
         // Filter berdasarkan role user (jaksa/penyidik)
         $user = $request->user();
@@ -229,13 +229,19 @@ class PerkaraApiController extends Controller
             // 1. Simpan perkara utama
             $perkara = Perkara::create([
                 'nomor_perkara' => $validated['nomor_perkara'],
-                'nama_tersangka' => $validated['nama_tersangka'],
                 'penyidik' => $validated['penyidik'],
                 'jaksa' => $validated['jaksa'],
                 'tanggal_spdp' => $validated['tanggal_spdp'],
                 'tahap_saat_ini' => $validated['tahap_saat_ini'],
                 'status_saat_ini' => $validated['status_saat_ini'],
             ]);
+
+            // Simpan data tersangka ke tabel tersangkas
+            if (!empty($validated['nama_tersangka'])) {
+                $perkara->tersangkas()->create([
+                    'nama' => $validated['nama_tersangka'],
+                ]);
+            }
 
             // 2. Buat entri timeline perdana
             $perkara->timelines()->create([

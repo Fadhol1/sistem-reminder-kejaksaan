@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'firebase' => [
+        'credentials_path' => env('FIREBASE_CREDENTIALS_PATH', base_path('firebase/reminderskejaksaan-firebase-adminsdk-fbsvc-c6400b7a5e.json')),
+        'project_id' => env('FIREBASE_PROJECT_ID', 'reminderskejaksaan'),
+    ],
+
 ];

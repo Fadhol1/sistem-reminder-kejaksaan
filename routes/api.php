@@ -29,6 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Change Password (requires current_password verification)
     Route::post('/password', [AuthController::class, 'changePassword'])->name('api.password.change');
 
+    // Device Token Management (FCM Push Notification)
+    Route::post('/device-token', [\App\Http\Controllers\Api\DeviceTokenController::class, 'register'])->name('api.device_token.register');
+    Route::delete('/device-token', [\App\Http\Controllers\Api\DeviceTokenController::class, 'revoke'])->name('api.device_token.revoke');
+    Route::get('/notifications', [\App\Http\Controllers\Api\NotificationApiController::class, 'index'])->name('api.notifications.index');
+
     // Perkara
     Route::prefix('perkara')->group(function () {
         Route::get('/', [PerkaraApiController::class, 'index'])->name('api.perkara.index');

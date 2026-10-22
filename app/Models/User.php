@@ -97,4 +97,28 @@ class User extends Authenticatable
     {
         return $this->role === 'penyidik';
     }
+
+    /**
+     * Relasi ke seluruh token perangkat FCM yang terdaftar untuk user ini.
+     */
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class, 'user_id');
+    }
+
+    /**
+     * Relasi ke token perangkat FCM yang masih aktif.
+     */
+    public function activeDeviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class, 'user_id')->where('is_active', true);
+    }
+
+    /**
+     * Relasi ke seluruh riwayat/log push notification untuk user ini.
+     */
+    public function notificationLogs(): HasMany
+    {
+        return $this->hasMany(PushNotificationLog::class, 'user_id');
+    }
 }

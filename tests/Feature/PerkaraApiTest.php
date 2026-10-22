@@ -12,6 +12,16 @@ class PerkaraApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $user = \App\Models\User::factory()->create([
+            'role' => 'pidum',
+        ]);
+        \Laravel\Sanctum\Sanctum::actingAs($user);
+    }
+
     public function test_store_perkara_creates_record_and_initial_timeline_and_reminder(): void
     {
         $payload = [
@@ -33,12 +43,16 @@ class PerkaraApiTest extends TestCase
                      'success' => true,
                      'data' => [
                          'nomor_perkara'  => 'BP/001/IX/2026/RESKRIM',
-                         'nama_tersangka' => 'Ahmad Santoso',
                      ],
                  ]);
 
         $this->assertDatabaseHas('perkaras', [
             'nomor_perkara' => 'BP/001/IX/2026/RESKRIM',
+        ]);
+
+        $this->assertDatabaseHas('tersangkas', [
+            'perkara_id' => $response->json('data.id'),
+            'nama' => 'Ahmad Santoso',
         ]);
 
         $this->assertDatabaseHas('perkara_timelines', [
@@ -55,13 +69,13 @@ class PerkaraApiTest extends TestCase
     {
         $perkara = Perkara::create([
             'nomor_perkara'   => 'BP/002/IX/2026/RESKRIM',
-            'nama_tersangka'  => 'Budi Darmawan',
             'penyidik'        => 'AIPTU Joko',
             'jaksa'           => 'Siti Aminah, S.H.',
             'tanggal_spdp'    => '2026-09-01',
             'tahap_saat_ini'  => 'Tahap I',
             'status_saat_ini' => 'Penelitian Berkas Perkara',
         ]);
+        $perkara->tersangkas()->create(['nama' => 'Budi Darmawan']);
 
         $perkara->timelines()->create([
             'tahap'            => 'Tahap I',
@@ -86,12 +100,13 @@ class PerkaraApiTest extends TestCase
                  ])
                  ->assertJsonStructure([
                      'data' => [
-                         '*' => [
-                             'id',
-                             'nomor_perkara',
-                             'nama_tersangka',
-                             'latest_timeline',
-                             'active_reminders',
+                         'data' => [
+                             '*' => [
+                                 'id',
+                                 'nomor_perkara',
+                                 'latest_timeline',
+                                 'active_reminders',
+                             ],
                          ],
                      ],
                  ]);
@@ -101,13 +116,13 @@ class PerkaraApiTest extends TestCase
     {
         $perkara = Perkara::create([
             'nomor_perkara'   => 'BP/003/IX/2026/RESKRIM',
-            'nama_tersangka'  => 'Hendro Kusumo',
             'penyidik'        => 'IPDA Surya',
             'jaksa'           => 'Diana Putri, S.H.',
             'tanggal_spdp'    => '2026-09-01',
             'tahap_saat_ini'  => 'SPDP',
             'status_saat_ini' => 'Diterima',
         ]);
+        $perkara->tersangkas()->create(['nama' => 'Hendro Kusumo']);
 
         $perkara->timelines()->create([
             'tahap'            => 'SPDP',
@@ -146,13 +161,13 @@ class PerkaraApiTest extends TestCase
     {
         $perkara = Perkara::create([
             'nomor_perkara'   => 'BP/004/IX/2026/RESKRIM',
-            'nama_tersangka'  => 'Tersangka X',
             'penyidik'        => 'Penyidik Y',
             'jaksa'           => 'Jaksa Z',
             'tanggal_spdp'    => '2026-09-01',
             'tahap_saat_ini'  => 'SPDP',
             'status_saat_ini' => 'Menunggu Berkas Tahap 1',
         ]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka X']);
 
         $oldReminder = $perkara->reminders()->create([
             'jenis_reminder' => 'P-17',
@@ -209,13 +224,13 @@ class PerkaraApiTest extends TestCase
     {
         $perkara = Perkara::create([
             'nomor_perkara'   => 'BP/005/IX/2026/RESKRIM',
-            'nama_tersangka'  => 'Tersangka Urgensi',
             'penyidik'        => 'Penyidik A',
             'jaksa'           => 'Jaksa B',
             'tanggal_spdp'    => '2026-09-01',
             'tahap_saat_ini'  => 'Tahap 1',
             'status_saat_ini' => 'Penelitian',
         ]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka Urgensi']);
 
         $perkara->reminders()->create([
             'jenis_reminder' => 'P-19 (Pengembalian Berkas)',
@@ -249,13 +264,14 @@ class PerkaraApiTest extends TestCase
                          'aman',
                      ],
                      'data' => [
-                         '*' => [
-                             'id',
-                             'jenis_reminder',
-                             'status_urgensi',
-                             'perkara' => [
-                                 'nomor_perkara',
-                                 'nama_tersangka',
+                         'data' => [
+                             '*' => [
+                                 'id',
+                                 'jenis_reminder',
+                                 'status_urgensi',
+                                 'perkara' => [
+                                     'nomor_perkara',
+                                 ],
                              ],
                          ],
                      ],

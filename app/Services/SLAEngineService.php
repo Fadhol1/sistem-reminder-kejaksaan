@@ -135,6 +135,12 @@ class SLAEngineService
                     Log::info("SLAEngineService: SPDP > 30 hari terdeteksi pada Perkara ID {$pSPDP->id}. Menjalankan auto-transition P-17.");
                     PerkaraWorkflowService::processAction($pSPDP, 'catat_p17', [], null, 'SYSTEM');
                     $processedCount++;
+
+                    try {
+                        app(\App\Services\Notification\NotificationService::class)->notifyAutoTransition($pSPDP, 'catat_p17');
+                    } catch (\Throwable $ne) {
+                        Log::error("SLAEngineService: Gagal kirim notifikasi auto-transition P-17: " . $ne->getMessage());
+                    }
                 } catch (\Exception $e) {
                     Log::error("SLAEngineService: Gagal memproses auto-transition catat_p17 Perkara ID {$pSPDP->id}: " . $e->getMessage());
                 }
@@ -149,6 +155,15 @@ class SLAEngineService
             if ($reminder->status_urgensi !== $calculatedUrgensi) {
                 $reminder->status_urgensi = $calculatedUrgensi;
                 $reminder->save();
+            }
+
+            // Integrasi Notifikasi SLA: Kirim push notification untuk urgensi H-3, Jatuh Tempo (H-0), dan Overdue
+            if (in_array($calculatedUrgensi, ['H-3', 'Jatuh Tempo', 'Overdue'])) {
+                try {
+                    app(\App\Services\Notification\NotificationService::class)->notifyReminderUrgency($reminder, $calculatedUrgensi);
+                } catch (\Throwable $ne) {
+                    Log::error("SLAEngineService: Gagal kirim notifikasi reminder ID {$reminder->id}: " . $ne->getMessage());
+                }
             }
 
             if ($reminder->status_urgensi !== 'Overdue') {
@@ -188,6 +203,12 @@ class SLAEngineService
                     Log::info("SLAEngineService: Transisi '{$transitionAction}' dijalankan untuk Perkara ID: {$perkara->id}");
                     PerkaraWorkflowService::processAction($perkara, $transitionAction, [], null, 'SYSTEM');
                     $processedCount++;
+
+                    try {
+                        app(\App\Services\Notification\NotificationService::class)->notifyAutoTransition($perkara, $transitionAction);
+                    } catch (\Throwable $ne) {
+                        Log::error("SLAEngineService: Gagal kirim notifikasi auto-transition '{$transitionAction}': " . $ne->getMessage());
+                    }
                 } catch (\Exception $e) {
                     Log::error("SLAEngineService: Gagal memproses auto-transition '{$transitionAction}' Perkara ID {$perkara->id}: " . $e->getMessage());
                 }
