@@ -55,13 +55,8 @@
                 </div>
 
                 <div>
-                    <label for="penyidik" class="block text-sm font-medium text-gray-700 mb-1">Penyidik</label>
-                    <select name="penyidik" id="penyidik" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                        <option value="" disabled {{ old('penyidik') ? '' : 'selected' }}>-- Pilih Penyidik --</option>
-                        @foreach($penyidiks as $p)
-                            <option value="{{ $p->name }}" {{ old('penyidik') == $p->name ? 'selected' : '' }}>{{ $p->name }}</option>
-                        @endforeach
-                    </select>
+                    <label for="penyidik" class="block text-sm font-medium text-gray-700 mb-1">Penyidik / Instansi Asal</label>
+                    <input type="text" name="penyidik" id="penyidik" value="{{ old('penyidik') }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('penyidik') border-red-500 @enderror">
                     @error('penyidik')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror

@@ -54,19 +54,7 @@ class NotificationService
             $recipients->push($perkara->jaksaUser);
         }
 
-        // 2. Penyidik terkait (hanya untuk event penerbitan surat resmi ke penyidik)
-        $penyidikEvents = [
-            self::EVENT_AUTO_P17,
-            self::EVENT_AUTO_FORM2,
-            self::EVENT_AUTO_FORM3,
-            self::EVENT_AUTO_P20,
-            self::EVENT_AUTO_FORM7,
-        ];
-        if (in_array($eventType, $penyidikEvents) && $perkara->penyidikUser) {
-            $recipients->push($perkara->penyidikUser);
-        }
-
-        // 3. Admin PIDUM (pengawas umum untuk perkara Overdue atau transisi arsip/pengembalian)
+        // 2. Admin PIDUM (pengawas umum untuk perkara Overdue atau transisi arsip/pengembalian)
         $pidumEvents = [
             self::EVENT_REMINDER_OVERDUE,
             self::EVENT_AUTO_FORM3,

@@ -45,7 +45,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role'     => ['required', 'in:pidum,jaksa,penyidik'],
+            'role'     => ['required', 'in:pidum,jaksa'],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 

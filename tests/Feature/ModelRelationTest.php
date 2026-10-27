@@ -22,20 +22,21 @@ class ModelRelationTest extends TestCase
             'role' => 'jaksa',
         ]);
 
-        $penyidik = User::create([
-            'name' => 'Penyidik Handoko',
-            'email' => 'penyidik@polri.go.id',
+        $pidum = User::create([
+            'name' => 'Admin Pidum',
+            'email' => 'pidum@kejaksaan.go.id',
             'password' => 'secret123',
-            'role' => 'penyidik',
+            'role' => 'pidum',
         ]);
 
         $this->assertTrue($jaksa->isJaksa());
-        $this->assertTrue($penyidik->isPenyidik());
+        $this->assertTrue($pidum->isPidum());
+        $this->assertFalse($jaksa->isPenyidik());
 
         $perkara = Perkara::create([
             'nomor_perkara' => 'BP/01/IX/2026/RESKRIM',
             'nama_tersangka' => 'John Doe',
-            'penyidik' => $penyidik->name,
+            'penyidik' => 'IPTU Handoko (Polres OKU)',
             'jaksa' => $jaksa->name,
             'tanggal_spdp' => '2026-09-01',
             'tahap_saat_ini' => 'Pra-Penuntutan',

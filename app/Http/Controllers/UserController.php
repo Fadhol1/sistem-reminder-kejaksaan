@@ -57,7 +57,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'role' => ['required', 'string', 'in:jaksa,penyidik,pidum'],
+            'role' => ['required', 'string', 'in:jaksa,pidum'],
             'nip' => ['nullable', 'string', 'max:50', 'unique:users'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
@@ -108,7 +108,7 @@ class UserController extends Controller
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'string', 'in:jaksa,penyidik,pidum'],
+            'role' => ['required', 'string', 'in:jaksa,pidum'],
             'nip' => ['nullable', 'string', 'max:50', 'unique:users,nip,'.$user->id],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],

@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Perkara;
 use App\Models\PerkaraReminder;
 use App\Models\PerkaraTimeline;
+use App\Services\PerkaraWorkflowService;
 use App\Services\SLAEngineService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class PerkaraApiController extends Controller
@@ -28,14 +30,10 @@ class PerkaraApiController extends Controller
 
         // Filter berdasarkan role user (jaksa/penyidik)
         $user = $request->user();
-        if ($user) {
-            if ($user->role === 'jaksa') {
-                $query->whereHas('jaksas', function ($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                });
-            } elseif ($user->role === 'penyidik') {
-                $query->where('penyidik', $user->name);
-            }
+        if ($user && $user->role === 'jaksa') {
+            $query->whereHas('jaksas', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
         }
 
         // Filter pencarian berdasarkan nomor perkara atau nama tersangka (via relasi)
@@ -160,15 +158,9 @@ class PerkaraApiController extends Controller
             'user:id,name,role'
         ])->orderBy('tanggal_kejadian', 'desc')->orderBy('id', 'desc');
 
-        if ($user && ($user->isJaksa() || $user->isPenyidik())) {
-            $query->whereHas('perkara', function ($q) use ($user) {
-                if ($user->isJaksa()) {
-                    $q->whereHas('jaksas', function ($sub) use ($user) {
-                        $sub->where('users.id', $user->id);
-                    });
-                } else {
-                    $q->where('penyidik', $user->name);
-                }
+        if ($user && $user->isJaksa()) {
+            $query->whereHas('perkara.jaksas', function ($sub) use ($user) {
+                $sub->where('users.id', $user->id);
             });
         }
 
@@ -481,10 +473,6 @@ class PerkaraApiController extends Controller
             $summaryQuery->whereHas('perkara.jaksas', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
-        } elseif ($user && $user->role === 'penyidik') {
-            $summaryQuery->whereHas('perkara', function ($q) use ($user) {
-                $q->where('penyidik', $user->name);
-            });
         }
 
         $summary = [
@@ -521,14 +509,10 @@ class PerkaraApiController extends Controller
             },
         ]);
 
-        // 1. Role-based scoping (Jaksa hanya melihat perkara miliknya, Penyidik miliknya, PIDUM semua)
+        // 1. Role-based scoping (Jaksa hanya melihat perkara miliknya, PIDUM semua)
         if ($user && $user->role === 'jaksa') {
             $query->whereHas('perkara.jaksas', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
-            });
-        } elseif ($user && $user->role === 'penyidik') {
-            $query->whereHas('perkara', function ($q) use ($user) {
-                $q->where('penyidik', $user->name);
             });
         }
 
@@ -577,10 +561,6 @@ class PerkaraApiController extends Controller
             $summaryQuery->whereHas('perkara.jaksas', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
-        } elseif ($user && $user->role === 'penyidik') {
-            $summaryQuery->whereHas('perkara', function ($q) use ($user) {
-                $q->where('penyidik', $user->name);
-            });
         }
 
         $summary = [
@@ -596,5 +576,150 @@ class PerkaraApiController extends Controller
             'summary' => $summary,
             'data'    => $logs,
         ]);
+    }
+
+    /**
+     * 7. GET AVAILABLE ACTIONS: Mengembalikan daftar aksi workflow yang dapat dieksekusi
+     * pada perkara tertentu berdasarkan tahap dan status saat ini serta otorisasi pengguna.
+     */
+    public function getAvailableActions(Request $request, int|string $id): JsonResponse
+    {
+        SLAEngineService::runThrottled();
+
+        $perkara = Perkara::find($id);
+
+        if (!$perkara) {
+            return response()->json([
+                'success' => false,
+                'message' => "Data perkara dengan ID {$id} tidak ditemukan.",
+                'data' => null,
+            ], 404);
+        }
+
+        $user = $request->user();
+
+        // 1. Jaksa hanya boleh melihat/mengeksekusi aksi jika ditugaskan pada perkara terkait via pivot perkara_jaksa
+        if ($user && $user->isJaksa()) {
+            $isAssigned = $perkara->jaksas()->where('users.id', $user->id)->exists();
+            if (!$isAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Anda tidak ditugaskan sebagai jaksa pada perkara ini.',
+                    'can_execute' => false,
+                    'data' => [],
+                ], 403);
+            }
+        } elseif (!$user || !$user->isPidum()) {
+            // Bukan PIDUM dan bukan Jaksa berwenang
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Anda tidak memiliki kewenangan atas perkara ini.',
+                'can_execute' => false,
+                'data' => [],
+            ], 403);
+        }
+
+        // 3. Ambil opsi aksi dinamis dari PerkaraWorkflowService (single source of truth)
+        $actions = PerkaraWorkflowService::getAvailableActions($perkara);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar aksi workflow yang tersedia berhasil dimuat.',
+            'perkara' => [
+                'id' => $perkara->id,
+                'nomor_perkara' => $perkara->nomor_perkara,
+                'tahap_saat_ini' => $perkara->tahap_saat_ini,
+                'status_saat_ini' => $perkara->status_saat_ini,
+            ],
+            'can_execute' => true,
+            'data' => $actions,
+        ]);
+    }
+
+    /**
+     * 8. PROCESS ACTION: Mengeksekusi aksi workflow perkara dari aplikasi Android SIPETA.
+     * Menggunakan locking pesimistik, verifikasi pivot perkara_jaksa,
+     * dan proteksi stale state / double-submit.
+     */
+    public function processAction(Request $request, int|string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'action_id' => 'required|string',
+            'tanggal' => 'nullable|date',
+            'catatan' => 'nullable|string|max:1000',
+        ], [
+            'action_id.required' => 'Action ID wajib diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'catatan.max' => 'Catatan maksimal 1000 karakter.',
+        ]);
+
+        $user = $request->user();
+
+        return DB::transaction(function () use ($id, $validated, $user) {
+            // 2. Lock perkara untuk update guna mencegah race condition / double-submit
+            $perkara = Perkara::lockForUpdate()->find($id);
+
+            if (!$perkara) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Data perkara dengan ID {$id} tidak ditemukan.",
+                    'data' => null,
+                ], 404);
+            }
+
+            // 3. Verifikasi Otorisasi Jaksa via pivot perkara_jaksa
+            if ($user && $user->isJaksa()) {
+                $isAssigned = $perkara->jaksas()->where('users.id', $user->id)->exists();
+                if (!$isAssigned) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Akses ditolak: Anda tidak ditugaskan sebagai jaksa pada perkara ini.',
+                    ], 403);
+                }
+            } elseif (!$user || !$user->isPidum()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Anda tidak memiliki kewenangan atas perkara ini.',
+                ], 403);
+            }
+
+            // 4. Validasi Ulang Action terhadap state mutakhir perkara (Proteksi Stale State)
+            $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
+            $actionValid = collect($availableActions)->contains('id', $validated['action_id']);
+
+            if (!$actionValid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tahap atau status perkara telah berubah atau aksi tidak valid untuk tahap saat ini. Silakan segarkan data perkara Anda.',
+                    'current_tahap' => $perkara->tahap_saat_ini,
+                    'current_status' => $perkara->status_saat_ini,
+                ], 409);
+            }
+
+            // 5. Eksekusi Workflow melalui PerkaraWorkflowService (Single Source of Truth)
+            try {
+                PerkaraWorkflowService::processAction(
+                    $perkara,
+                    $validated['action_id'],
+                    $validated,
+                    $user->id,
+                    'USER'
+                );
+            } catch (\Throwable $e) {
+                Log::error("Gagal memproses aksi perkara {$id}: " . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat memproses aksi perkara: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            $perkara->refresh();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Aksi perkara berhasil diproses.',
+                'data' => $perkara->load(['activeReminders', 'latestTimeline', 'jaksas:id,name,role']),
+            ], 200);
+        });
     }
 }

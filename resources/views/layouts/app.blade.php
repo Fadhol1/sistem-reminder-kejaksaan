@@ -262,7 +262,7 @@
                         <span
                             class="inline-block w-1.5 h-1.5 rounded-full {{ auth()->user()->isPidum() ? 'bg-red-600' : 'bg-amber-500' }}"></span>
                         <p class="text-[10px] text-gray-500 capitalize truncate font-medium">
-                            {{ auth()->user()->role === 'pidum' ? 'Admin Pidum' : (auth()->user()->role === 'jaksa' ? 'Jaksa Peneliti' : (auth()->user()->role === 'penyidik' ? 'Penyidik' : auth()->user()->role)) }}
+                            {{ auth()->user()->role === 'pidum' ? 'Admin Pidum' : 'Jaksa Peneliti' }}
                         </p>
                     </div>
                 </div>
@@ -314,7 +314,7 @@
                     class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold {{ auth()->user()->isPidum() ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-amber-50 text-amber-800 border border-amber-200' }}">
                     <span
                         class="w-1.5 h-1.5 rounded-full {{ auth()->user()->isPidum() ? 'bg-red-600' : 'bg-amber-500' }}"></span>
-                    {{ auth()->user()->role === 'pidum' ? 'Admin Pidum' : (auth()->user()->role === 'jaksa' ? 'Jaksa Peneliti' : (auth()->user()->role === 'penyidik' ? 'Penyidik' : ucfirst(auth()->user()->role))) }}
+                    {{ auth()->user()->role === 'pidum' ? 'Admin Pidum' : 'Jaksa Peneliti' }}
                 </span>
 
                 <!-- User Profile Pill Link -->

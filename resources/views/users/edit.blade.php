@@ -39,7 +39,6 @@
                 <select name="role" id="role" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('role') border-red-500 @enderror"
                     @if($user->id === auth()->id()) disabled @endif>
                     <option value="jaksa" {{ old('role', $user->role) == 'jaksa' ? 'selected' : '' }}>Jaksa</option>
-                    <option value="penyidik" {{ old('role', $user->role) == 'penyidik' ? 'selected' : '' }}>Penyidik</option>
                     <option value="pidum" {{ old('role', $user->role) == 'pidum' ? 'selected' : '' }}>PIDUM (Admin Kejaksaan)</option>
                 </select>
                 @if($user->id === auth()->id()) 

@@ -19,16 +19,10 @@ class TimelineController extends Controller
             'user'
         ])->orderBy('tanggal_kejadian', 'desc')->orderBy('id', 'desc');
 
-        // 1. Role filtering (Jaksa/Penyidik scoping)
-        if ($user->isJaksa() || $user->isPenyidik()) {
-            $query->whereHas('perkara', function ($q) use ($user) {
-                if ($user->isJaksa()) {
-                    $q->whereHas('jaksas', function ($sub) use ($user) {
-                        $sub->where('users.id', $user->id);
-                    });
-                } else {
-                    $q->where('penyidik', $user->name);
-                }
+        // 1. Role filtering (Jaksa scoping)
+        if ($user->isJaksa()) {
+            $query->whereHas('perkara.jaksas', function ($sub) use ($user) {
+                $sub->where('users.id', $user->id);
             });
         }
 
@@ -70,15 +64,9 @@ class TimelineController extends Controller
 
         // 6. Ringkasan Statistik Audit Trail (scoped sesuai role user)
         $summaryQuery = PerkaraTimeline::query();
-        if ($user->isJaksa() || $user->isPenyidik()) {
-            $summaryQuery->whereHas('perkara', function ($q) use ($user) {
-                if ($user->isJaksa()) {
-                    $q->whereHas('jaksas', function ($sub) use ($user) {
-                        $sub->where('users.id', $user->id);
-                    });
-                } else {
-                    $q->where('penyidik', $user->name);
-                }
+        if ($user->isJaksa()) {
+            $summaryQuery->whereHas('perkara.jaksas', function ($sub) use ($user) {
+                $sub->where('users.id', $user->id);
             });
         }
 

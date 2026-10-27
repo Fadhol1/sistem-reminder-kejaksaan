@@ -23,16 +23,10 @@ class PerkaraController extends Controller
 
         $query = Perkara::with(['tersangkas', 'jaksas', 'activeReminders'])->orderBy('created_at', 'desc');
 
-        // 1. Role filtering (Jaksa & Penyidik hanya melihat perkaranya)
-        if ($user && ($user->isJaksa() || $user->isPenyidik())) {
-            $query->where(function ($q) use ($user) {
-                if ($user->isJaksa()) {
-                    $q->whereHas('jaksas', function ($sub) use ($user) {
-                        $sub->where('users.id', $user->id);
-                    });
-                } else {
-                    $q->where('penyidik', $user->name);
-                }
+        // 1. Role filtering (Jaksa hanya melihat perkaranya di pivot)
+        if ($user && $user->isJaksa()) {
+            $query->whereHas('jaksas', function ($sub) use ($user) {
+                $sub->where('users.id', $user->id);
             });
         }
 
@@ -76,15 +70,9 @@ class PerkaraController extends Controller
 
         // 5. Ringkasan Statistik Perkara (scoped sesuai role user)
         $summaryQuery = Perkara::query();
-        if ($user && ($user->isJaksa() || $user->isPenyidik())) {
-            $summaryQuery->where(function ($q) use ($user) {
-                if ($user->isJaksa()) {
-                    $q->whereHas('jaksas', function ($sub) use ($user) {
-                        $sub->where('users.id', $user->id);
-                    });
-                } else {
-                    $q->where('penyidik', $user->name);
-                }
+        if ($user && $user->isJaksa()) {
+            $summaryQuery->whereHas('jaksas', function ($sub) use ($user) {
+                $sub->where('users.id', $user->id);
             });
         }
 
@@ -132,9 +120,8 @@ class PerkaraController extends Controller
         }
 
         $jaksas = \App\Models\User::where('role', 'jaksa')->orderBy('name')->get();
-        $penyidiks = \App\Models\User::where('role', 'penyidik')->orderBy('name')->get();
 
-        return view('perkara.create', compact('jaksas', 'penyidiks'));
+        return view('perkara.create', compact('jaksas'));
     }
 
     /**

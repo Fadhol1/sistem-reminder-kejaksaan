@@ -59,7 +59,6 @@
                 <select name="role" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus-visible:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                     <option value="">Semua Role</option>
                     <option value="jaksa" {{ request('role') == 'jaksa' ? 'selected' : '' }}>Jaksa</option>
-                    <option value="penyidik" {{ request('role') == 'penyidik' ? 'selected' : '' }}>Penyidik</option>
                     <option value="pidum" {{ request('role') == 'pidum' ? 'selected' : '' }}>PIDUM / Admin</option>
                 </select>
             </div>

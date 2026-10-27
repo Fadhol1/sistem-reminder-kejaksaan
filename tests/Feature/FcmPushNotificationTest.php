@@ -20,7 +20,6 @@ class FcmPushNotificationTest extends TestCase
     use RefreshDatabase;
 
     protected User $jaksa;
-    protected User $penyidik;
     protected User $pidum;
     protected Perkara $perkara;
 
@@ -34,12 +33,6 @@ class FcmPushNotificationTest extends TestCase
             'role' => 'jaksa',
         ]);
 
-        $this->penyidik = User::factory()->create([
-            'name' => 'IPTU Penyidik',
-            'email' => 'penyidik@polri.go.id',
-            'role' => 'penyidik',
-        ]);
-
         $this->pidum = User::factory()->create([
             'name' => 'Admin PIDUM',
             'email' => 'pidum@kejaksaan.go.id',
@@ -49,7 +42,7 @@ class FcmPushNotificationTest extends TestCase
         $this->perkara = Perkara::create([
             'nomor_perkara' => 'BP/FCM/TEST/2026',
             'jaksa' => $this->jaksa->name,
-            'penyidik' => $this->penyidik->name,
+            'penyidik' => 'IPTU Penyidik Polri',
             'tahap_saat_ini' => 'Monitoring Penyidikan',
             'status_saat_ini' => 'Menunggu Berkas Tahap I',
             'tanggal_spdp' => now()->subDays(10)->toDateString(),
@@ -107,8 +100,8 @@ class FcmPushNotificationTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Sekarang Penyidik login di perangkat yang sama
-        Sanctum::actingAs($this->penyidik);
+        // Sekarang User lain (Admin PIDUM) login di perangkat yang sama
+        Sanctum::actingAs($this->pidum);
 
         $response = $this->postJson('/api/device-token', [
             'fcm_token' => $tokenStr,
@@ -117,9 +110,9 @@ class FcmPushNotificationTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Token sekarang harus menjadi milik Penyidik dan tetap aktif
+        // Token sekarang harus menjadi milik PIDUM dan tetap aktif
         $this->assertDatabaseHas('user_device_tokens', [
-            'user_id' => $this->penyidik->id,
+            'user_id' => $this->pidum->id,
             'fcm_token_hash' => UserDeviceToken::hashToken($tokenStr),
             'is_active' => true,
         ]);
@@ -168,20 +161,18 @@ class FcmPushNotificationTest extends TestCase
     {
         $service = new NotificationService();
 
-        // Reminder H-3: Hanya Jaksa terkait yang menerima (Penyidik tidak menerima)
+        // Reminder H-3: Hanya Jaksa terkait yang menerima
         $recipientsH3 = $service->resolveRecipients($this->perkara, NotificationService::EVENT_REMINDER_H3);
         $this->assertTrue($recipientsH3->contains('id', $this->jaksa->id));
-        $this->assertFalse($recipientsH3->contains('id', $this->penyidik->id));
+        $this->assertFalse($recipientsH3->contains('id', $this->pidum->id));
 
-        // Auto P-17: Jaksa terkait dan Penyidik terkait menerima surat
+        // Auto P-17: Jaksa terkait menerima surat
         $recipientsP17 = $service->resolveRecipients($this->perkara, NotificationService::EVENT_AUTO_P17);
         $this->assertTrue($recipientsP17->contains('id', $this->jaksa->id));
-        $this->assertTrue($recipientsP17->contains('id', $this->penyidik->id));
 
-        // Auto P-20 / FORM-3 / FORM-7 (Arsip): Jaksa, Penyidik, dan Admin PIDUM menerima
+        // Auto P-20 / FORM-3 / FORM-7 (Arsip): Jaksa terkait dan Admin PIDUM menerima
         $recipientsP20 = $service->resolveRecipients($this->perkara, NotificationService::EVENT_AUTO_P20);
         $this->assertTrue($recipientsP20->contains('id', $this->jaksa->id));
-        $this->assertTrue($recipientsP20->contains('id', $this->penyidik->id));
         $this->assertTrue($recipientsP20->contains('id', $this->pidum->id));
     }
 

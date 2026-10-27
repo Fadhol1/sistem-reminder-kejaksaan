@@ -21,8 +21,6 @@ class DashboardController extends Controller
             $perkaraQuery->whereHas('jaksas', function ($query) use ($user) {
                 $query->where('users.id', $user->id);
             });
-        } elseif ($user->isPenyidik()) {
-            $perkaraQuery->where('penyidik', $user->name);
         }
 
         $totalPerkara = (clone $perkaraQuery)->count();
@@ -34,15 +32,9 @@ class DashboardController extends Controller
             ->count();
 
         $reminderQuery = PerkaraReminder::active();
-        if ($user->isJaksa() || $user->isPenyidik()) {
-            $reminderQuery->whereHas('perkara', function ($query) use ($user) {
-                if ($user->isJaksa()) {
-                    $query->whereHas('jaksas', function ($q) use ($user) {
-                        $q->where('users.id', $user->id);
-                    });
-                } else {
-                    $query->where('penyidik', $user->name);
-                }
+        if ($user->isJaksa()) {
+            $reminderQuery->whereHas('perkara.jaksas', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
             });
         }
 

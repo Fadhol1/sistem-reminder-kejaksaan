@@ -93,9 +93,12 @@ class User extends Authenticatable
         return $this->role === 'jaksa';
     }
 
+    /**
+     * @deprecated Role penyidik telah dihapus dari sistem (penyidik adalah entitas eksternal)
+     */
     public function isPenyidik(): bool
     {
-        return $this->role === 'penyidik';
+        return false;
     }
 
     /**

@@ -42,30 +42,13 @@
             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Pilih Peran / Tugas Kedinasan <span class="text-red-500">*</span>
             </label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 
-                <!-- Opsi 1: Penyidik -->
-                <label for="role-penyidik" class="relative block cursor-pointer select-none">
-                    <input type="radio" name="role" value="penyidik" id="role-penyidik"
-                        class="peer sr-only" {{ old('role', 'penyidik') === 'penyidik' ? 'checked' : '' }}>
-                    <div class="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 peer-checked:border-red-600 peer-checked:bg-red-50/40 peer-checked:ring-2 peer-checked:ring-red-600/20 transition-all duration-200 text-center space-y-1.5 h-full flex flex-col justify-between items-center shadow-2xs">
-                        <div class="w-8 h-8 rounded-lg bg-slate-100 peer-checked:bg-red-100 flex items-center justify-center text-slate-600 peer-checked:text-red-700">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-800 peer-checked:text-red-900">Penyidik</p>
-                            <p class="text-[10px] text-slate-400 peer-checked:text-red-700">Polri / PPNS</p>
-                        </div>
-                    </div>
-                </label>
-
-                <!-- Opsi 2: Jaksa -->
+                <!-- Opsi 1: Jaksa -->
                 <label for="role-jaksa" class="relative block cursor-pointer select-none">
                     <input type="radio" name="role" value="jaksa" id="role-jaksa"
-                        class="peer sr-only" {{ old('role') === 'jaksa' ? 'checked' : '' }}>
-                    <div class="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 peer-checked:border-red-600 peer-checked:bg-red-50/40 peer-checked:ring-2 peer-checked:ring-red-600/20 transition-all duration-200 text-center space-y-1.5 h-full flex flex-col justify-between items-center shadow-2xs">
+                        class="peer sr-only" {{ old('role', 'jaksa') === 'jaksa' ? 'checked' : '' }}>
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 peer-checked:border-red-600 peer-checked:bg-red-50/40 peer-checked:ring-2 peer-checked:ring-red-600/20 transition-all duration-200 text-center space-y-1.5 h-full flex flex-col justify-between items-center shadow-2xs">
                         <div class="w-8 h-8 rounded-lg bg-slate-100 peer-checked:bg-red-100 flex items-center justify-center text-slate-600 peer-checked:text-red-700">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
@@ -82,11 +65,11 @@
                     </div>
                 </label>
 
-                <!-- Opsi 3: Pidum / Admin -->
+                <!-- Opsi 2: Pidum / Admin -->
                 <label for="role-pidum" class="relative block cursor-pointer select-none">
                     <input type="radio" name="role" value="pidum" id="role-pidum"
                         class="peer sr-only" {{ old('role') === 'pidum' ? 'checked' : '' }}>
-                    <div class="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 peer-checked:border-red-600 peer-checked:bg-red-50/40 peer-checked:ring-2 peer-checked:ring-red-600/20 transition-all duration-200 text-center space-y-1.5 h-full flex flex-col justify-between items-center shadow-2xs">
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 peer-checked:border-red-600 peer-checked:bg-red-50/40 peer-checked:ring-2 peer-checked:ring-red-600/20 transition-all duration-200 text-center space-y-1.5 h-full flex flex-col justify-between items-center shadow-2xs">
                         <div class="w-8 h-8 rounded-lg bg-slate-100 peer-checked:bg-red-100 flex items-center justify-center text-slate-600 peer-checked:text-red-700">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
