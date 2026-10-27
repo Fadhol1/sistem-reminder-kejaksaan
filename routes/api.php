@@ -19,15 +19,25 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Auth & Profile
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+    // Profile & User Endpoints (supports GET, PUT, PATCH, POST)
     Route::get('/user', [AuthController::class, 'user'])->name('api.user');
+    Route::match(['put', 'patch', 'post'], '/user', [AuthController::class, 'updateProfile'])->name('api.user.update');
 
-    // Profile Endpoint (recommended for mobile)
     Route::get('/profile', [AuthController::class, 'getProfile'])->name('api.profile.get');
-    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update');
-    Route::post('/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update.post'); // POST alias (for multipart/form-data with foto)
+    Route::match(['put', 'patch', 'post'], '/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update');
+
+    // Dedicated Update Nomor HP / Phone Endpoints (supports PUT, PATCH, POST)
+    Route::match(['put', 'patch', 'post'], '/user/nomor-hp', [AuthController::class, 'updateNomorHp'])->name('api.user.nomor_hp.update');
+    Route::match(['put', 'patch', 'post'], '/user/phone', [AuthController::class, 'updateNomorHp']);
+    Route::match(['put', 'patch', 'post'], '/profile/nomor-hp', [AuthController::class, 'updateNomorHp'])->name('api.profile.nomor_hp.update');
+    Route::match(['put', 'patch', 'post'], '/profile/phone', [AuthController::class, 'updateNomorHp']);
+    Route::match(['put', 'patch', 'post'], '/nomor-hp', [AuthController::class, 'updateNomorHp'])->name('api.nomor_hp.update');
+    Route::match(['put', 'patch', 'post'], '/phone', [AuthController::class, 'updateNomorHp']);
+    Route::match(['put', 'patch', 'post'], '/user/update-phone', [AuthController::class, 'updateNomorHp']);
 
     // Change Password (requires current_password verification)
     Route::post('/password', [AuthController::class, 'changePassword'])->name('api.password.change');
+    Route::post('/user/change-password', [AuthController::class, 'changePassword'])->name('api.user.change_password');
 
     // Device Token Management (FCM Push Notification)
     Route::post('/device-token', [\App\Http\Controllers\Api\DeviceTokenController::class, 'register'])->name('api.device_token.register');

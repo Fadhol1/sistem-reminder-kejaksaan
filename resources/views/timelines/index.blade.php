@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-gray-200">
         <div>
             <div class="flex items-center gap-2">
-                <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+                <span class="p-2 rounded-lg bg-red-50 text-red-700 border border-red-200">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -102,14 +102,14 @@
                         </div>
                         <input type="text" name="search" value="{{ request('search') }}" 
                             placeholder="Nomor perkara, tersangka, status, atau catatan..." 
-                            class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                     </div>
                 </div>
 
                 <!-- Tahapan Filter -->
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tahap Perkara</label>
-                    <select name="tahap" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <select name="tahap" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                         <option value="">Semua Tahap</option>
                         @foreach($tahapList as $tahap)
                             <option value="{{ $tahap }}" {{ request('tahap') == $tahap ? 'selected' : '' }}>
@@ -122,7 +122,7 @@
                 <!-- Aktor Filter -->
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Pelaksana</label>
-                    <select name="actor" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <select name="actor" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                         <option value="">Semua Pelaksana</option>
                         <option value="SYSTEM" {{ request('actor') == 'SYSTEM' ? 'selected' : '' }}>🤖 Otomasi Sistem</option>
                         <option value="USER" {{ request('actor') == 'USER' ? 'selected' : '' }}>👤 Petugas / Manual</option>
@@ -171,7 +171,7 @@
                     Kriteria pencarian atau filter yang Anda terapkan tidak menghasilkan catatan apapun.
                 </p>
                 <div class="mt-4">
-                    <a href="{{ route('timelines.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition">
+                    <a href="{{ route('timelines.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-800 hover:bg-red-100 border border-red-200 transition">
                         Reset Filter Pencarian
                     </a>
                 </div>
@@ -225,7 +225,7 @@
                                                 </svg>
                                             </span>
                                         @else
-                                            <span class="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white ring-4 ring-white shadow-sm group-hover:bg-indigo-600 transition">
+                                            <span class="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white ring-4 ring-white shadow-sm group-hover:bg-red-700 transition">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                                 </svg>
@@ -241,9 +241,9 @@
                                                 <!-- Nomor Perkara Link -->
                                                 @if($log->perkara)
                                                     <a href="{{ route('perkara.show', $log->perkara_id) }}" 
-                                                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 transition shadow-2xs">
+                                                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-red-800 border border-red-200 hover:bg-red-50 hover:border-red-300 transition shadow-2xs">
                                                         <span>SPDP: {{ $log->perkara->nomor_perkara }}</span>
-                                                        <svg class="w-3 h-3 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <svg class="w-3 h-3 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                         </svg>
                                                     </a>
@@ -292,7 +292,7 @@
                                                 @if($isOverdueAction)
                                                     <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
                                                 @else
-                                                    <span class="inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-red-600"></span>
                                                 @endif
                                                 {{ $log->status_kegiatan }}
                                             </h4>
@@ -335,7 +335,7 @@
 
                                             <!-- Catatan / Keterangan Event -->
                                             @if($log->catatan)
-                                                <div class="mt-3 relative pl-3.5 py-1 border-l-2 border-indigo-400/80 bg-indigo-50/40 rounded-r-md">
+                                                <div class="mt-3 relative pl-3.5 py-1 border-l-2 border-red-300 bg-red-50/40 rounded-r-md">
                                                     <p class="text-xs sm:text-sm text-gray-700 italic">
                                                         "{{ $log->catatan }}"
                                                     </p>

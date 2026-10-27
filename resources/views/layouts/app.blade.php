@@ -8,7 +8,7 @@
     <title>@yield('title', 'SIPETA') - Sistem Pengingat Tahapan Perkara</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800|instrument-sans:400,500,600,700" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -89,19 +89,22 @@
         <div class="flex items-center justify-between px-5 h-16 border-b border-gray-200 bg-white shrink-0">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                 <div
-                    class="w-9 h-9 rounded-xl bg-linear-to-br from-emerald-600 via-teal-700 to-slate-800 flex items-center justify-center shadow-md shadow-emerald-700/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z" />
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] flex items-center justify-center shadow-md shadow-red-950/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200 border border-amber-400/30">
+                    <svg class="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                        <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                        <path d="M7 21h10"/>
+                        <path d="M12 3v18"/>
+                        <path d="M3 7h18"/>
                     </svg>
                 </div>
                 <div class="min-w-0">
                     <div class="flex items-center gap-1.5">
-                        <span class="text-base font-bold text-gray-900 tracking-tight leading-none">SIPETA</span>
+                        <span class="text-base font-extrabold text-gray-900 tracking-tight leading-none">SIPETA</span>
                         <span
-                            class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">v1.0</span>
+                            class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">PIDUM</span>
                     </div>
-                    <p class="text-[11px] text-gray-500 font-medium truncate mt-0.5">Kejaksaan Negeri • Pidum</p>
+                    <p class="text-[11px] text-gray-500 font-medium truncate mt-0.5">Kejaksaan Negeri RI</p>
                 </div>
             </a>
 
@@ -120,13 +123,13 @@
 
             <!-- Group: Menu Utama -->
             <div>
-                <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Menu Utama</p>
+                <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Menu Utama</p>
                 <div class="space-y-1">
                     <!-- Dashboard -->
                     <a href="{{ route('dashboard') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('dashboard') ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-xs ring-1 ring-indigo-200/60' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70' }}">
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-150 {{ request()->routeIs('dashboard') ? 'bg-red-50 text-red-800 font-bold shadow-2xs ring-1 ring-red-200/80 border-l-4 border-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium' }}">
                         <div class="flex items-center gap-3 min-w-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600' }} shrink-0"
+                            <svg class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-red-700' : 'text-slate-400' }} shrink-0"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
@@ -134,15 +137,15 @@
                             <span class="truncate">Dashboard</span>
                         </div>
                         @if(request()->routeIs('dashboard'))
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-700 shrink-0"></span>
                         @endif
                     </a>
 
                     <!-- Data Perkara -->
                     <a href="{{ route('perkara.index') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('perkara.*') ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-xs ring-1 ring-indigo-200/60' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70' }}">
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-150 {{ request()->routeIs('perkara.*') ? 'bg-red-50 text-red-800 font-bold shadow-2xs ring-1 ring-red-200/80 border-l-4 border-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium' }}">
                         <div class="flex items-center gap-3 min-w-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('perkara.*') ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600' }} shrink-0"
+                            <svg class="w-5 h-5 {{ request()->routeIs('perkara.*') ? 'text-red-700' : 'text-slate-400' }} shrink-0"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -150,15 +153,15 @@
                             <span class="truncate">Data Perkara</span>
                         </div>
                         @if(request()->routeIs('perkara.*'))
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-700 shrink-0"></span>
                         @endif
                     </a>
 
                     <!-- Jadwal Reminder -->
                     <a href="{{ route('reminders.index') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('reminders.*') ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-xs ring-1 ring-indigo-200/60' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70' }}">
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-150 {{ request()->routeIs('reminders.*') ? 'bg-red-50 text-red-800 font-bold shadow-2xs ring-1 ring-red-200/80 border-l-4 border-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium' }}">
                         <div class="flex items-center gap-3 min-w-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('reminders.*') ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600' }} shrink-0"
+                            <svg class="w-5 h-5 {{ request()->routeIs('reminders.*') ? 'text-red-700' : 'text-slate-400' }} shrink-0"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -166,7 +169,7 @@
                             <span class="truncate">Jadwal Reminder</span>
                         </div>
                         @if(request()->routeIs('reminders.*'))
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-700 shrink-0"></span>
                         @endif
                     </a>
                 </div>
@@ -174,13 +177,13 @@
 
             <!-- Group: Audit & Log -->
             <div>
-                <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Audit & Log</p>
+                <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Audit & Log</p>
                 <div class="space-y-1">
                     <!-- Timeline & SLA -->
                     <a href="{{ route('timelines.index') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('timelines.*') ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-xs ring-1 ring-indigo-200/60' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70' }}">
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-150 {{ request()->routeIs('timelines.*') ? 'bg-red-50 text-red-800 font-bold shadow-2xs ring-1 ring-red-200/80 border-l-4 border-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium' }}">
                         <div class="flex items-center gap-3 min-w-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('timelines.*') ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600' }} shrink-0"
+                            <svg class="w-5 h-5 {{ request()->routeIs('timelines.*') ? 'text-red-700' : 'text-slate-400' }} shrink-0"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -188,7 +191,7 @@
                             <span class="truncate">Kronologis (Timeline)</span>
                         </div>
                         @if(request()->routeIs('timelines.*'))
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-700 shrink-0"></span>
                         @endif
                     </a>
                 </div>
@@ -197,12 +200,12 @@
             <!-- Group: Administrasi (Pidum Only) -->
             @if (auth()->user()->isPidum())
                 <div>
-                    <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Administrasi</p>
+                    <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Administrasi</p>
                     <div class="space-y-1">
                         <a href="{{ route('users.index') }}"
-                            class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('users.*') ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-xs ring-1 ring-indigo-200/60' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70' }}">
+                            class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-150 {{ request()->routeIs('users.*') ? 'bg-red-50 text-red-800 font-bold shadow-2xs ring-1 ring-red-200/80 border-l-4 border-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium' }}">
                             <div class="flex items-center gap-3 min-w-0">
-                                <svg class="w-5 h-5 {{ request()->routeIs('users.*') ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600' }} shrink-0"
+                                <svg class="w-5 h-5 {{ request()->routeIs('users.*') ? 'text-red-700' : 'text-slate-400' }} shrink-0"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.243m15.016 0a9.145 9.145 0 01-2.198.445 6.66 6.66 0 00-1.026-.118 4.125 4.125 0 00-7.533 2.243m15.016 0a3.513 3.513 0 00-1.026-.118 4.125 4.125 0 00-7.533 2.243M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -210,7 +213,7 @@
                                 <span class="truncate">Manajemen Pengguna</span>
                             </div>
                             @if(request()->routeIs('users.*'))
-                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-700 shrink-0"></span>
                             @endif
                         </a>
                     </div>
@@ -219,12 +222,12 @@
 
             <!-- Group: Pengaturan Akun -->
             <div>
-                <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Pengaturan</p>
+                <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Pengaturan</p>
                 <div class="space-y-1">
                     <a href="{{ route('profile.edit') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 {{ request()->routeIs('profile.*') ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-xs ring-1 ring-indigo-200/60' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70' }}">
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-150 {{ request()->routeIs('profile.*') ? 'bg-red-50 text-red-800 font-bold shadow-2xs ring-1 ring-red-200/80 border-l-4 border-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium' }}">
                         <div class="flex items-center gap-3 min-w-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('profile.*') ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600' }} shrink-0"
+                            <svg class="w-5 h-5 {{ request()->routeIs('profile.*') ? 'text-red-700' : 'text-slate-400' }} shrink-0"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -232,7 +235,7 @@
                             <span class="truncate">Pengaturan Profil</span>
                         </div>
                         @if(request()->routeIs('profile.*'))
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-700 shrink-0"></span>
                         @endif
                     </a>
                 </div>
@@ -241,7 +244,7 @@
         </nav>
 
         <!-- Sidebar Footer: Profile Card & Logout -->
-        <div class="border-t border-gray-200 p-3 bg-gray-50/70 shrink-0">
+        <div class="border-t border-gray-200 p-3 bg-slate-50/70 shrink-0">
             <!-- Compact User Identity Box -->
             <div class="p-2.5 rounded-xl bg-white border border-gray-200/80 shadow-xs mb-2.5 flex items-center gap-3">
                 @if(auth()->user()->foto_profil)
@@ -249,7 +252,7 @@
                         class="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0">
                 @else
                     <div
-                        class="w-9 h-9 rounded-xl bg-linear-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0 shadow-xs">
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#881337] via-[#991b1b] to-[#700d1a] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0 shadow-xs border border-amber-400/20">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
                 @endif
@@ -257,7 +260,7 @@
                     <p class="text-xs font-semibold text-gray-900 truncate leading-tight">{{ auth()->user()->name }}</p>
                     <div class="flex items-center gap-1.5 mt-0.5">
                         <span
-                            class="inline-block w-1.5 h-1.5 rounded-full {{ auth()->user()->isPidum() ? 'bg-emerald-500' : 'bg-indigo-500' }}"></span>
+                            class="inline-block w-1.5 h-1.5 rounded-full {{ auth()->user()->isPidum() ? 'bg-red-600' : 'bg-amber-500' }}"></span>
                         <p class="text-[10px] text-gray-500 capitalize truncate font-medium">
                             {{ auth()->user()->role === 'pidum' ? 'Admin Pidum' : (auth()->user()->role === 'jaksa' ? 'Jaksa Peneliti' : (auth()->user()->role === 'penyidik' ? 'Penyidik' : auth()->user()->role)) }}
                         </p>
@@ -269,7 +272,7 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all duration-150">
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-red-700 hover:text-white hover:bg-red-700 border border-red-200 hover:border-red-700 transition-all duration-150 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
@@ -308,9 +311,9 @@
             <div class="flex items-center gap-3 shrink-0">
                 <!-- Role Badge -->
                 <span
-                    class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold {{ auth()->user()->isPidum() ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200' }}">
+                    class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold {{ auth()->user()->isPidum() ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-amber-50 text-amber-800 border border-amber-200' }}">
                     <span
-                        class="w-1.5 h-1.5 rounded-full {{ auth()->user()->isPidum() ? 'bg-emerald-500' : 'bg-indigo-500' }}"></span>
+                        class="w-1.5 h-1.5 rounded-full {{ auth()->user()->isPidum() ? 'bg-red-600' : 'bg-amber-500' }}"></span>
                     {{ auth()->user()->role === 'pidum' ? 'Admin Pidum' : (auth()->user()->role === 'jaksa' ? 'Jaksa Peneliti' : (auth()->user()->role === 'penyidik' ? 'Penyidik' : ucfirst(auth()->user()->role))) }}
                 </span>
 
@@ -323,13 +326,13 @@
                             class="w-8 h-8 rounded-full object-cover border border-gray-200">
                     @else
                         <div
-                            class="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center text-xs font-bold uppercase shadow-xs">
+                            class="w-8 h-8 rounded-full bg-gradient-to-br from-[#881337] to-[#700d1a] text-white flex items-center justify-center text-xs font-bold uppercase shadow-xs border border-amber-400/20">
                             {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                         </div>
                     @endif
                     <div class="hidden md:block text-left">
                         <p
-                            class="text-xs font-semibold text-gray-900 leading-tight max-w-32.5 truncate group-hover:text-indigo-600 transition-colors">
+                            class="text-xs font-semibold text-gray-900 leading-tight max-w-32.5 truncate group-hover:text-red-700 transition-colors">
                             {{ auth()->user()->name }}
                         </p>
                         <p class="text-[10px] text-gray-400 leading-tight truncate mt-0.5">

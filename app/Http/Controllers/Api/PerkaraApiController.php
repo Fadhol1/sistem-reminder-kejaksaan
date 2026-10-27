@@ -357,6 +357,14 @@ class PerkaraApiController extends Controller
                 ]);
             }
 
+            // Notifikasi perkembangan alur perkara
+            try {
+                $stageName = $validated['status_kegiatan'] ?? $validated['tahap'];
+                app(\App\Services\Notification\NotificationService::class)->notifyStageTransition($perkara, $stageName, $validated['catatan'] ?? null, auth()->id());
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal notif timeline: ' . $e->getMessage());
+            }
+
             // 3. Kelola reminder terkait:
             // Nonaktifkan reminder aktif sebelumnya jika diinstruksikan atau jika ada reminder baru yang menggantikan
             $hasNewReminderData = $request->boolean('create_reminder') || !empty($validated['jenis_reminder']);

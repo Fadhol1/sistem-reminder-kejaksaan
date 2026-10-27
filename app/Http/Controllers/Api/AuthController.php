@@ -51,6 +51,18 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
+        // Support parameter aliases: no_hp, phone, phone_number, telepon -> nomor_hp
+        if (!$request->has('nomor_hp')) {
+            $aliasHp = $request->input('no_hp') 
+                ?? $request->input('phone') 
+                ?? $request->input('phone_number') 
+                ?? $request->input('nomor_telepon')
+                ?? $request->input('telepon');
+            if ($aliasHp !== null) {
+                $request->merge(['nomor_hp' => $aliasHp]);
+            }
+        }
+
         $rules = [
             'name'            => ['sometimes', 'required', 'string', 'max:255'],
             'email'           => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -96,7 +108,54 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diperbarui',
-            'data'    => ['user' => $profileData]
+            'data'    => [
+                'user'     => $profileData,
+                'nomor_hp' => $user->nomor_hp,
+            ]
+        ]);
+    }
+
+    /**
+     * Dedicated Update Nomor HP Endpoint
+     * Supports: PUT/PATCH/POST /api/user/nomor-hp, /api/profile/nomor-hp, /api/nomor-hp
+     */
+    public function updateNomorHp(Request $request)
+    {
+        $user = $request->user();
+
+        // Support parameter aliases: nomor_hp, no_hp, phone, phone_number, telepon
+        $nomorHp = $request->input('nomor_hp') 
+            ?? $request->input('no_hp') 
+            ?? $request->input('phone') 
+            ?? $request->input('phone_number')
+            ?? $request->input('nomor_telepon')
+            ?? $request->input('telepon');
+
+        $request->merge(['nomor_hp' => $nomorHp]);
+
+        $validated = $request->validate([
+            'nomor_hp' => ['required', 'string', 'max:20'],
+        ], [
+            'nomor_hp.required' => 'Nomor HP wajib diisi.',
+            'nomor_hp.max'      => 'Nomor HP maksimal 20 karakter.',
+        ]);
+
+        $user->nomor_hp = $validated['nomor_hp'];
+        $user->save();
+        $user->refresh();
+
+        $profileData = $user->toArray();
+        $profileData['foto_profil_url'] = $user->foto_profil
+            ? Storage::url($user->foto_profil)
+            : null;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nomor HP berhasil diperbarui',
+            'data'    => [
+                'nomor_hp' => $user->nomor_hp,
+                'user'     => $profileData,
+            ]
         ]);
     }
 
@@ -137,6 +196,14 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $user = $request->user();
+
+        // Support parameter aliases: new_password -> password
+        if (!$request->has('password') && $request->has('new_password')) {
+            $request->merge([
+                'password' => $request->input('new_password'),
+                'password_confirmation' => $request->input('new_password_confirmation') ?? $request->input('password_confirmation'),
+            ]);
+        }
 
         $request->validate([
             'current_password'  => ['required', 'string'],

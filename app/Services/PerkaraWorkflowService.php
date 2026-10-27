@@ -373,6 +373,12 @@ class PerkaraWorkflowService
                     'tanggal_kejadian' => $tanggal,
                     'catatan' => $catatan,
                 ]);
+
+                try {
+                    app(\App\Services\Notification\NotificationService::class)->notifyStageTransition($perkara, $eventName, $catatan, $userId);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Gagal notif transisi: ' . $e->getMessage());
+                }
             }
         });
     }

@@ -10,8 +10,8 @@
             <h3 class="text-xl font-semibold text-gray-900">Manajemen Pengguna</h3>
             <p class="text-sm text-gray-500 mt-1">Kelola akun akses Jaksa, Penyidik, dan Admin PIDUM.</p>
         </div>
-        <a href="{{ route('users.create') }}" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full sm:w-auto">
-            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <a href="{{ route('users.create') }}" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition w-full sm:w-auto">
+            <svg class="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
             Tambah Pengguna
@@ -53,10 +53,10 @@
     <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <form action="{{ route('users.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus-visible:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus-visible:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
             </div>
             <div class="sm:w-48">
-                <select name="role" class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus-visible:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <select name="role" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus-visible:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                     <option value="">Semua Role</option>
                     <option value="jaksa" {{ request('role') == 'jaksa' ? 'selected' : '' }}>Jaksa</option>
                     <option value="penyidik" {{ request('role') == 'penyidik' ? 'selected' : '' }}>Penyidik</option>
@@ -93,17 +93,17 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="h-10 w-10 shrink-0 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-700 font-semibold overflow-hidden border border-gray-200">
+                                    <div class="h-10 w-10 shrink-0 rounded-full bg-red-50 flex items-center justify-center text-red-700 font-semibold overflow-hidden border border-red-100">
                                         @if($user->foto_profil)
                                             <img src="{{ Storage::url($user->foto_profil) }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
                                         @else
-                                            <svg class="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                             </svg>
                                         @endif
                                     </div>
                                     <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                        <div class="text-sm font-semibold text-gray-900">{{ $user->name }}</div>
                                         <div class="text-xs text-gray-500">{{ $user->email }}</div>
                                         @if($user->jabatan)
                                             <div class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-wide">{{ $user->jabatan }}</div>
@@ -113,9 +113,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize 
-                                    @if($user->role == 'pidum') bg-purple-100 text-purple-800 
-                                    @elseif($user->role == 'jaksa') bg-green-100 text-green-800
-                                    @else bg-blue-100 text-blue-800 @endif
+                                    @if($user->role == 'pidum') bg-red-100 text-red-800 border border-red-200
+                                    @elseif($user->role == 'jaksa') bg-emerald-100 text-emerald-800 border border-emerald-200
+                                    @else bg-blue-100 text-blue-800 border border-blue-200 @endif
                                 ">
                                     {{ $user->role }}
                                 </span>
@@ -125,7 +125,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end items-center space-x-2">
-                                    <a href="{{ route('users.edit', $user->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-md transition-colors">Edit</a>
+                                    <a href="{{ route('users.edit', $user->id) }}" class="text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">Edit</a>
                                     
                                     <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini secara permanen?');">
                                         @csrf

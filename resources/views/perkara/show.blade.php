@@ -14,18 +14,11 @@
         </div>
         @if(auth()->user()->isPidum())
         <div class="flex items-center space-x-2">
-            <a href="{{ route('perkara.edit', $perkara->id) }}" class="inline-flex items-center justify-center rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-white border border-gray-300 shadow-sm hover:bg-gray-50 h-9 px-4 py-2">
-                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                </svg>
-                Edit Perkara
-            </a>
-            
-            <button type="button" onclick="openDeleteModal()" class="inline-flex items-center justify-center rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 bg-red-600 border border-transparent text-white shadow-sm hover:bg-red-700 h-9 px-4 py-2 transition-colors">
-                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <button type="button" onclick="openDeleteModal()" class="inline-flex items-center justify-center rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 bg-red-50 border border-red-200 text-red-700 shadow-2xs hover:bg-red-100 h-9 px-3.5 py-2 transition-colors">
+                <svg class="mr-1.5 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
-                Hapus
+                Hapus Perkara
             </button>
         </div>
         @endif
@@ -105,7 +98,7 @@
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                     <h4 class="font-semibold text-gray-900 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-4 h-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Riwayat Perjalanan Perkara (Audit Trail)
@@ -137,7 +130,7 @@
                                             </svg>
                                         </span>
                                     @else
-                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-white ring-4 ring-white shadow-2xs group-hover:bg-indigo-600 transition">
+                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-white ring-4 ring-white shadow-2xs group-hover:bg-red-700 transition">
                                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                             </svg>
@@ -197,7 +190,7 @@
                 <div class="p-6 space-y-4">
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Tahap</p>
-                        <span class="inline-block rounded-md bg-indigo-50 px-2.5 py-1 text-sm font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-700/10">{{ $perkara->tahap_saat_ini }}</span>
+                        <span class="inline-block rounded-md bg-red-50 px-2.5 py-1 text-sm font-semibold text-red-800 ring-1 ring-inset ring-red-700/20">{{ $perkara->tahap_saat_ini }}</span>
                     </div>
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Status</p>
@@ -407,8 +400,8 @@
                         <form action="{{ route('perkara.devSimulate', $perkara->id) }}" method="POST">
                             @csrf
                             <input type="hidden" name="mode" value="trigger_engine">
-                            <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors">
-                                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 transition-colors">
+                                <svg class="w-3.5 h-3.5 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                                 </svg>
                                 <span>Paksa Evaluasi SLA Engine Sekarang</span>
@@ -468,7 +461,7 @@
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Aksi</label>
-                                <select name="action_id" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                                <select name="action_id" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
                                     <option value="" disabled selected>-- Pilih Aksi --</option>
                                     @foreach($availableActions as $action)
                                         <option value="{{ $action['id'] }}">{{ $action['label'] }}</option>
@@ -478,15 +471,15 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
-                                <textarea name="catatan" rows="2" class="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600"></textarea>
+                                <textarea name="catatan" rows="2" class="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20"></textarea>
                             </div>
 
-                            <button type="submit" class="w-full inline-flex h-9 items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                            <button type="submit" class="w-full inline-flex h-10 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
                                 Simpan Perkembangan
                             </button>
                         </form>

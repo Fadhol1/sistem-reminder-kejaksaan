@@ -19,7 +19,7 @@
 
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('name') border-red-500 @enderror">
+                <input type="text" name="name" id="name" value="{{ old('name') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('name') border-red-500 @enderror">
                 @error('name')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -27,7 +27,7 @@
 
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
-                <input type="email" name="email" id="email" value="{{ old('email') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('email') border-red-500 @enderror">
+                <input type="email" name="email" id="email" value="{{ old('email') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('email') border-red-500 @enderror">
                 <p class="mt-1 text-xs text-gray-500">Email ini akan digunakan untuk proses Login.</p>
                 @error('email')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -36,7 +36,7 @@
 
             <div>
                 <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role / Peran</label>
-                <select name="role" id="role" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('role') border-red-500 @enderror">
+                <select name="role" id="role" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('role') border-red-500 @enderror">
                     <option value="" disabled selected>-- Pilih Role Akses --</option>
                     <option value="jaksa" {{ old('role') == 'jaksa' ? 'selected' : '' }}>Jaksa</option>
                     <option value="penyidik" {{ old('role') == 'penyidik' ? 'selected' : '' }}>Penyidik</option>
@@ -49,7 +49,7 @@
             
             <div>
                 <label for="nip" class="block text-sm font-medium text-gray-700 mb-1">NIP (Opsional)</label>
-                <input type="text" name="nip" id="nip" value="{{ old('nip') }}" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('nip') border-red-500 @enderror">
+                <input type="text" name="nip" id="nip" value="{{ old('nip') }}" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nip') border-red-500 @enderror">
                 @error('nip')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -57,7 +57,7 @@
 
             <div>
                 <label for="nrp" class="block text-sm font-medium text-gray-700 mb-1">NRP (Opsional)</label>
-                <input type="text" name="nrp" id="nrp" value="{{ old('nrp') }}" placeholder="Nomor Registrasi Penyidik" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('nrp') border-red-500 @enderror">
+                <input type="text" name="nrp" id="nrp" value="{{ old('nrp') }}" placeholder="Nomor Registrasi Penyidik" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nrp') border-red-500 @enderror">
                 @error('nrp')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -65,7 +65,7 @@
 
             <div>
                 <label for="nomor_hp" class="block text-sm font-medium text-gray-700 mb-1">Nomor HP (Opsional)</label>
-                <input type="text" name="nomor_hp" id="nomor_hp" value="{{ old('nomor_hp') }}" placeholder="Contoh: 08123456789" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('nomor_hp') border-red-500 @enderror">
+                <input type="text" name="nomor_hp" id="nomor_hp" value="{{ old('nomor_hp') }}" placeholder="Contoh: 08123456789" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nomor_hp') border-red-500 @enderror">
                 @error('nomor_hp')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -73,7 +73,7 @@
 
             <div>
                 <label for="pangkat_golongan" class="block text-sm font-medium text-gray-700 mb-1">Pangkat / Golongan (Opsional)</label>
-                <input type="text" name="pangkat_golongan" id="pangkat_golongan" value="{{ old('pangkat_golongan') }}" placeholder="Contoh: Jaksa Madya (IV/a)" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('pangkat_golongan') border-red-500 @enderror">
+                <input type="text" name="pangkat_golongan" id="pangkat_golongan" value="{{ old('pangkat_golongan') }}" placeholder="Contoh: Jaksa Madya (IV/a)" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('pangkat_golongan') border-red-500 @enderror">
                 @error('pangkat_golongan')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -81,7 +81,7 @@
 
             <div>
                 <label for="jabatan" class="block text-sm font-medium text-gray-700 mb-1">Jabatan (Opsional)</label>
-                <input type="text" name="jabatan" id="jabatan" value="{{ old('jabatan') }}" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('jabatan') border-red-500 @enderror">
+                <input type="text" name="jabatan" id="jabatan" value="{{ old('jabatan') }}" class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('jabatan') border-red-500 @enderror">
                 @error('jabatan')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -89,7 +89,7 @@
 
             <div>
                 <label for="foto_profil" class="block text-sm font-medium text-gray-700 mb-1">Foto Profil (Opsional)</label>
-                <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-md">
+                <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 border border-gray-300 rounded-md">
                 <p class="mt-1 text-xs text-gray-500">Maksimal ukuran file 2MB (Hanya gambar JPG/PNG).</p>
                 @error('foto_profil')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -103,7 +103,7 @@
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Kata Sandi Baru</label>
                         <div class="relative">
-                            <input type="password" name="password" id="password" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('password') border-red-500 @enderror">
+                            <input type="password" name="password" id="password" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('password') border-red-500 @enderror">
                             <button type="button" onclick="togglePassword('password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
                                 <svg class="h-5 w-5 eye-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path class="eye-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -120,7 +120,7 @@
                     <div>
                         <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Kata Sandi</label>
                         <div class="relative">
-                            <input type="password" name="password_confirmation" id="password_confirmation" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                            <input type="password" name="password_confirmation" id="password_confirmation" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
                             <button type="button" onclick="togglePassword('password_confirmation', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
                                 <svg class="h-5 w-5 eye-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path class="eye-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -135,10 +135,10 @@
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200 space-x-3 mt-6">
-                <a href="{{ route('users.index') }}" class="inline-flex h-9 items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                <a href="{{ route('users.index') }}" class="inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
                     Batal
                 </a>
-                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
                     Simpan Pengguna
                 </button>
             </div>

@@ -24,6 +24,7 @@ class NotificationService
     public const EVENT_AUTO_P20 = 'AUTO_TRANSITION_P20';
     public const EVENT_AUTO_FORM7 = 'AUTO_TRANSITION_FORM7';
     public const EVENT_AUTO_KOORDINASI = 'AUTO_TRANSITION_KOORDINASI';
+    public const EVENT_STAGE_TRANSITION = 'STAGE_TRANSITION';
 
     protected FcmSenderService $fcmSender;
 
@@ -185,6 +186,50 @@ class NotificationService
 
         foreach ($recipients as $recipient) {
             $idempotencyKey = "trans_{$actionId}_p{$perkara->id}_{$dateKey}_u{$recipient->id}";
+
+            $result = $this->dispatchNotification(
+                user: $recipient,
+                perkara: $perkara,
+                reminder: null,
+                eventType: $eventType,
+                idempotencyKey: $idempotencyKey,
+                title: $title,
+                body: $body
+            );
+
+            $results[] = $result;
+        }
+
+        return $results;
+    }
+
+        /**
+     * Kirim notifikasi saat perkara berlanjut ke langkah atau tahap berikutnya.
+     */
+    public function notifyStageTransition(Perkara $perkara, string $stageOrEventName, ?string $catatan = null, ?int $actorUserId = null): array
+    {
+        $eventType = self::EVENT_STAGE_TRANSITION;
+        $title = '📌 Perkembangan Perkara: ' . $perkara->nomor_perkara;
+        $body = 'Perkara telah berlanjut ke: ' . $stageOrEventName . ($catatan ? ' (' . $catatan . ')' : '');
+
+        $recipients = $this->resolveRecipients($perkara, $eventType);
+
+        if ($recipients->isEmpty()) {
+            if ($perkara->jaksaUser) {
+                $recipients->push($perkara->jaksaUser);
+            } elseif ($actorUserId) {
+                $actor = User::find($actorUserId);
+                if ($actor) {
+                    $recipients->push($actor);
+                }
+            }
+        }
+
+        $nowMicro = (int) (microtime(true) * 1000);
+        $results = [];
+
+        foreach ($recipients as $recipient) {
+            $idempotencyKey = 'stage_p' . $perkara->id . '_' . $nowMicro . '_u' . $recipient->id;
 
             $result = $this->dispatchNotification(
                 user: $recipient,

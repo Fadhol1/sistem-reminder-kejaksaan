@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-gray-200">
         <div>
             <div class="flex items-center gap-2">
-                <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+                <span class="p-2 rounded-lg bg-red-50 text-red-700 border border-red-200">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                     </svg>
@@ -21,8 +21,8 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-50 text-red-800 border border-red-200">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
                 Monitoring Otomatis SLA
             </span>
         </div>
@@ -103,11 +103,11 @@
                 </div>
                 <input type="text" name="search" value="{{ request('search') }}" 
                     placeholder="Cari berdasarkan Nomor SPDP, tersangka, atau jenis reminder..." 
-                    class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
             </div>
 
             <div class="sm:w-64">
-                <select name="urgensi" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <select name="urgensi" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                     <option value="">Semua Tingkat Urgensi</option>
                     <option value="semua_mendesak" {{ request('urgensi') == 'semua_mendesak' ? 'selected' : '' }}>🚨 Hanya Menampilkan Mendesak</option>
                     <option value="Overdue" {{ request('urgensi') == 'Overdue' ? 'selected' : '' }}>⛔ Overdue / Lewat Batas</option>
@@ -160,7 +160,7 @@
                         <tr class="hover:bg-gray-50/60 transition-colors">
                             <!-- Kolom Perkara -->
                             <td class="px-6 py-4">
-                                <a href="{{ route('perkara.show', $ur->perkara_id) }}" class="font-bold text-gray-900 hover:text-indigo-600 hover:underline inline-flex items-center gap-1.5">
+                                <a href="{{ route('perkara.show', $ur->perkara_id) }}" class="font-bold text-gray-900 hover:text-red-700 hover:underline inline-flex items-center gap-1.5">
                                     {{ $ur->perkara->nomor_perkara ?? 'Perkara #' . $ur->perkara_id }}
                                     <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -255,7 +255,7 @@
                                 </p>
                                 @if(request()->hasAny(['search', 'urgensi']))
                                     <div class="mt-3">
-                                        <a href="{{ route('reminders.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                                        <a href="{{ route('reminders.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 hover:text-red-900">
                                             Reset Filter Pencarian
                                         </a>
                                     </div>

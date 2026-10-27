@@ -22,7 +22,7 @@
 
                 <div>
                     <label for="nomor_perkara" class="block text-sm font-medium text-gray-700 mb-1">Nomor Perkara / SPDP</label>
-                    <input type="text" name="nomor_perkara" id="nomor_perkara" value="{{ old('nomor_perkara', $perkara->nomor_perkara) }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600 @error('nomor_perkara') border-red-500 @enderror">
+                    <input type="text" name="nomor_perkara" id="nomor_perkara" value="{{ old('nomor_perkara', $perkara->nomor_perkara) }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nomor_perkara') border-red-500 @enderror">
                     @error('nomor_perkara')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
@@ -34,7 +34,7 @@
                     <div id="tersangka-container" class="space-y-2">
                         @foreach(old('tersangkas', $perkara->tersangkas) as $index => $tersangka)
                         <div class="tersangka-row flex gap-2 items-center">
-                            <input type="text" name="tersangkas[{{ $index }}][nama]" value="{{ is_array($tersangka) ? ($tersangka['nama'] ?? '') : $tersangka->nama }}" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                            <input type="text" name="tersangkas[{{ $index }}][nama]" value="{{ is_array($tersangka) ? ($tersangka['nama'] ?? '') : $tersangka->nama }}" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
                             <button type="button" onclick="removeRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
                             </button>
@@ -42,7 +42,7 @@
                         @endforeach
                     </div>
 
-                    <button type="button" onclick="addRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                    <button type="button" onclick="addRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-900">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                         Tambah Tersangka
                     </button>
@@ -54,10 +54,10 @@
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200 space-x-3 mt-6">
-                <a href="{{ route('perkara.show', $perkara->id) }}" class="inline-flex h-9 items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                <a href="{{ route('perkara.show', $perkara->id) }}" class="inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
                     Batal
                 </a>
-                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">
+                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
                     Simpan Perubahan
                 </button>
             </div>
@@ -71,7 +71,7 @@
     function addRow() {
         const container = document.getElementById('tersangka-container');
         const html = '<div class="tersangka-row flex gap-2 items-center">' +
-            '<input type="text" name="tersangkas[' + rowIndex + '][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600">' +
+            '<input type="text" name="tersangkas[' + rowIndex + '][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
             '<button type="button" onclick="removeRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">' +
             '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
             '</button></div>';

@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-gray-200">
         <div>
             <div class="flex items-center gap-2">
-                <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+                <span class="p-2 rounded-lg bg-red-50 text-red-700 border border-red-200">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                     </svg>
@@ -22,7 +22,7 @@
 
         @if(auth()->user()->isPidum())
             <div>
-                <a href="{{ route('perkara.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition">
+                <a href="{{ route('perkara.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
@@ -123,14 +123,14 @@
                         </div>
                         <input type="text" name="search" value="{{ request('search') }}" 
                             placeholder="Nomor SPDP, nama tersangka, jaksa, atau penyidik..." 
-                            class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            class="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                     </div>
                 </div>
 
                 <!-- Tahapan Dropdown -->
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tahap Perkara</label>
-                    <select name="tahap" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <select name="tahap" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                         <option value="">Semua Tahap</option>
                         @foreach($tahapList as $tahap)
                             <option value="{{ $tahap }}" {{ request('tahap') == $tahap ? 'selected' : '' }}>
@@ -143,7 +143,7 @@
                 <!-- Status Filter Dropdown -->
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Status Penanganan</label>
-                    <select name="status_filter" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <select name="status_filter" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                         <option value="">Semua Status</option>
                         <option value="aktif" {{ request('status_filter') == 'aktif' ? 'selected' : '' }}>Perkara Berjalan</option>
                         <option value="selesai" {{ request('status_filter') == 'selesai' ? 'selected' : '' }}>Perkara Selesai</option>
@@ -200,7 +200,7 @@
                         <tr class="hover:bg-gray-50/60 transition-colors">
                             <!-- Kolom No. Perkara -->
                             <td class="px-6 py-4">
-                                <a href="{{ route('perkara.show', $perkara->id) }}" class="font-bold text-gray-900 hover:text-indigo-600 hover:underline inline-flex items-center gap-1.5">
+                                <a href="{{ route('perkara.show', $perkara->id) }}" class="font-bold text-gray-900 hover:text-red-700 hover:underline inline-flex items-center gap-1.5">
                                     {{ $perkara->nomor_perkara }}
                                     <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -222,7 +222,7 @@
                                     <span class="font-medium text-gray-900">{{ $firstNama }}</span>
                                     @if($sisa > 0)
                                         <button type="button" onclick="toggleTersangka('tersangka-{{ $perkara->id }}')" 
-                                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
+                                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition">
                                             +{{ $sisa }} lainnya
                                             <svg class="w-3 h-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
@@ -295,13 +295,27 @@
 
                             <!-- Kolom Aksi -->
                             <td class="px-6 py-4 text-right">
-                                <a href="{{ route('perkara.show', $perkara->id) }}" 
-                                   class="inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-300 shadow-2xs hover:bg-gray-50 hover:border-gray-400 py-1.5 px-3 transition text-gray-700">
-                                    <span>Detail</span>
-                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </a>
+                                <div class="inline-flex items-center justify-end gap-1.5">
+                                    <a href="{{ route('perkara.show', $perkara->id) }}" 
+                                       class="inline-flex items-center gap-1 rounded-lg text-xs font-semibold bg-white border border-gray-300 shadow-2xs hover:bg-gray-50 hover:border-gray-400 py-1.5 px-2.5 transition text-gray-700"
+                                       title="Lihat Detail & Riwayat Perkara">
+                                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span>Detail</span>
+                                    </a>
+                                    @if(auth()->user()->isPidum())
+                                        <a href="{{ route('perkara.edit', $perkara->id) }}" 
+                                           class="inline-flex items-center gap-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs hover:bg-amber-100 hover:border-amber-400 py-1.5 px-2.5 transition"
+                                           title="Ubah Data Perkara">
+                                            <svg class="w-3.5 h-3.5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                            </svg>
+                                            <span>Edit</span>
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
 
@@ -314,7 +328,7 @@
                                     <div class="flex flex-wrap gap-2">
                                         @foreach($tersangkaList as $tersangka)
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white text-gray-800 border border-gray-200 shadow-2xs">
-                                                <span class="font-bold text-indigo-600">{{ $loop->iteration }}.</span>
+                                                <span class="font-bold text-red-700">{{ $loop->iteration }}.</span>
                                                 {{ $tersangka->nama }}
                                             </span>
                                         @endforeach
@@ -336,7 +350,7 @@
                                 </p>
                                 @if(request()->hasAny(['search', 'tahap', 'status_filter']))
                                     <div class="mt-3">
-                                        <a href="{{ route('perkara.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                                        <a href="{{ route('perkara.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 hover:text-red-900">
                                             Reset Filter Pencarian
                                         </a>
                                     </div>
