@@ -246,7 +246,13 @@
                                 </div>
                                 <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                                     <span class="text-gray-400">Penyidik:</span>
-                                    <span>{{ $perkara->penyidik ?? '-' }}</span>
+                                    <span>
+                                        @if($perkara->penyidiks && $perkara->penyidiks->count() > 0)
+                                            {{ $perkara->penyidiks->pluck('nama')->join(', ') }}
+                                        @else
+                                            {{ $perkara->penyidik ?? '-' }}
+                                        @endif
+                                    </span>
                                 </div>
                             </td>
 

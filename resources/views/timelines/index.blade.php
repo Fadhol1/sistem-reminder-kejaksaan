@@ -281,7 +281,7 @@
                                             <div class="text-right">
                                                 <span class="text-xs text-gray-500 font-medium">
                                                     {{ $log->tanggal_kejadian->translatedFormat('d M Y') }} • 
-                                                    <span class="font-semibold text-gray-700">{{ $log->created_at->format('H:i') }} WIB</span>
+                                                    <span class="font-semibold text-gray-700">{{ $log->created_at->timezone(config('app.timezone', 'Asia/Jakarta'))->format('H:i') }} WIB</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -315,7 +315,13 @@
 
                                                     <div>
                                                         <span class="text-gray-400 font-medium">Penyidik:</span>
-                                                        <span class="font-medium text-gray-700">{{ $log->perkara->penyidik ?? '-' }}</span>
+                                                        <span class="font-medium text-gray-700">
+                                                            @if($log->perkara->penyidiks && $log->perkara->penyidiks->count() > 0)
+                                                                {{ $log->perkara->penyidiks->pluck('nama')->implode(', ') }}
+                                                            @else
+                                                                {{ $log->perkara->penyidik ?? '-' }}
+                                                            @endif
+                                                        </span>
                                                     </div>
 
                                                     <span class="text-gray-300">|</span>

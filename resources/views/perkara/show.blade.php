@@ -78,8 +78,18 @@
                         <span class="font-medium text-gray-900">{{ $perkara->bidang }} / {{ $perkara->satuan_kerja ?? '-' }}</span>
                     </div>
                     <div>
-                        <span class="block text-gray-500 mb-1">Penyidik</span>
-                        <span class="font-medium text-gray-900">{{ $perkara->penyidik }}</span>
+                        <span class="block text-gray-500 mb-1">Daftar Penyidik</span>
+                        <ul class="font-medium text-gray-900 space-y-1">
+                            @if($perkara->penyidiks && $perkara->penyidiks->count() > 0)
+                                @foreach($perkara->penyidiks as $penyidikItem)
+                                    <li>{{ $penyidikItem->nama }}</li>
+                                @endforeach
+                            @elseif(!empty($perkara->penyidik))
+                                <li>{{ $perkara->penyidik }}</li>
+                            @else
+                                <li>-</li>
+                            @endif
+                        </ul>
                     </div>
                     <div>
                         <span class="block text-gray-500 mb-1">Jaksa Penuntut Umum</span>
@@ -155,7 +165,7 @@
                                             @endif
                                         </div>
                                         <time class="text-xs text-gray-400 font-medium">
-                                            {{ $timeline->tanggal_kejadian->translatedFormat('d M Y') }} • {{ $timeline->created_at->format('H:i') }} WIB
+                                            {{ $timeline->tanggal_kejadian->translatedFormat('d M Y') }} • {{ $timeline->created_at->timezone(config('app.timezone', 'Asia/Jakarta'))->format('H:i') }} WIB
                                         </time>
                                     </div>
 

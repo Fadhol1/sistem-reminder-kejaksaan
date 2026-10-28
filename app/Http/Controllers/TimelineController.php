@@ -14,7 +14,7 @@ class TimelineController extends Controller
 
         $query = PerkaraTimeline::with([
             'perkara' => function ($q) {
-                $q->with(['tersangkas', 'jaksas']);
+                $q->with(['tersangkas', 'penyidiks', 'jaksas']);
             },
             'user'
         ])->orderBy('tanggal_kejadian', 'desc')->orderBy('id', 'desc');
@@ -37,6 +37,9 @@ class TimelineController extends Controller
                         $subQ->where('nomor_perkara', 'like', "%{$search}%")
                             ->orWhere('jaksa', 'like', "%{$search}%")
                             ->orWhere('penyidik', 'like', "%{$search}%")
+                            ->orWhereHas('penyidiks', function ($pQ) use ($search) {
+                                $pQ->where('nama', 'like', "%{$search}%");
+                            })
                             ->orWhereHas('tersangkas', function ($tQ) use ($search) {
                                 $tQ->where('nama', 'like', "%{$search}%");
                             });

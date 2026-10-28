@@ -21,7 +21,7 @@ class PerkaraController extends Controller
 
         $user = $request->user();
 
-        $query = Perkara::with(['tersangkas', 'jaksas', 'activeReminders'])->orderBy('created_at', 'desc');
+        $query = Perkara::with(['tersangkas', 'penyidiks', 'jaksas', 'activeReminders'])->orderBy('created_at', 'desc');
 
         // 1. Role filtering (Jaksa hanya melihat perkaranya di pivot)
         if ($user && $user->isJaksa()) {
@@ -37,6 +37,9 @@ class PerkaraController extends Controller
                 $q->where('nomor_perkara', 'like', "%{$search}%")
                     ->orWhere('jaksa', 'like', "%{$search}%")
                     ->orWhere('penyidik', 'like', "%{$search}%")
+                    ->orWhereHas('penyidiks', function ($pQ) use ($search) {
+                        $pQ->where('nama', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('tersangkas', function ($subQ) use ($search) {
                         $subQ->where('nama', 'like', "%{$search}%");
                     })
@@ -133,23 +136,48 @@ class PerkaraController extends Controller
             abort(403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat menyimpan perkara baru.');
         }
 
+        // Normalisasi jika input dikirim sebagai single string 'penyidik'
+        if (!$request->has('penyidiks') && $request->filled('penyidik')) {
+            $request->merge([
+                'penyidiks' => [
+                    ['nama' => $request->input('penyidik')]
+                ]
+            ]);
+        }
+
         $validated = $request->validate([
             'nomor_perkara' => 'required|string|unique:perkaras,nomor_perkara',
             'tanggal_spdp' => 'required|date',
             'tersangkas' => 'required|array|min:1',
             'tersangkas.*.nama' => 'required|string|max:255',
-            'penyidik' => 'required|string',
+            'penyidiks' => 'required|array|min:1',
+            'penyidiks.*.nama' => 'required|string|max:255',
+            'penyidik' => 'nullable|string|max:255',
             'jaksas' => 'required|array|min:1',
             'jaksas.*' => 'exists:users,id',
+        ], [
+            'nomor_perkara.required' => 'Nomor perkara / SPDP wajib diisi.',
+            'nomor_perkara.unique' => 'Nomor perkara sudah terdaftar di sistem.',
+            'penyidiks.required' => 'Daftar penyidik wajib diisi.',
+            'penyidiks.min' => 'Minimal harus ada satu penyidik.',
+            'penyidiks.*.nama.required' => 'Nama / Instansi penyidik wajib diisi.',
+            'tersangkas.required' => 'Daftar tersangka wajib diisi.',
+            'tersangkas.min' => 'Minimal harus ada satu tersangka.',
+            'tersangkas.*.nama.required' => 'Nama tersangka wajib diisi.',
+            'jaksas.required' => 'Pilih minimal satu Jaksa Penuntut Umum.',
+            'jaksas.min' => 'Pilih minimal satu Jaksa Penuntut Umum.',
         ]);
 
         DB::transaction(function () use ($validated) {
             $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? 'Multiple Jaksa';
 
+            $penyidikNames = collect($validated['penyidiks'])->pluck('nama')->filter()->values();
+            $summaryPenyidik = $penyidikNames->implode(', ');
+
             $perkara = Perkara::create([
                 'nomor_perkara' => $validated['nomor_perkara'],
                 'tanggal_spdp' => $validated['tanggal_spdp'],
-                'penyidik' => $validated['penyidik'],
+                'penyidik' => $summaryPenyidik,
                 'jaksa' => $firstJaksa, // Field lama tetap diisi sebatas fallback
                 'bidang' => 'PIDUM', // Hardcode for now as per requirement
                 'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_KOORDINASI,
@@ -159,10 +187,17 @@ class PerkaraController extends Controller
             // Sync Multiple Jaksas to Pivot
             $perkara->jaksas()->sync($validated['jaksas']);
 
-            //SImpan semua tersangka
+            // Simpan semua tersangka
             foreach ($validated['tersangkas'] as $tersangkaData) {
                 $perkara->tersangkas()->create([
                     'nama' => $tersangkaData['nama'],
+                ]);
+            }
+
+            // Simpan semua penyidik
+            foreach ($penyidikNames as $pNama) {
+                $perkara->penyidiks()->create([
+                    'nama' => $pNama,
                 ]);
             }
 
@@ -192,7 +227,7 @@ class PerkaraController extends Controller
             abort(403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit perkara.');
         }
 
-        $perkara = Perkara::with(['tersangkas', 'jaksas'])->findOrFail($id);
+        $perkara = Perkara::with(['tersangkas', 'penyidiks', 'jaksas'])->findOrFail($id);
         $jaksas = \App\Models\User::where('role', 'jaksa')->orderBy('name')->get();
         $selectedJaksaIds = $perkara->jaksas->pluck('id')->toArray();
 
@@ -210,9 +245,20 @@ class PerkaraController extends Controller
 
         $perkara = Perkara::findOrFail($id);
 
+        // Normalisasi jika input dikirim sebagai single string 'penyidik'
+        if (!$request->has('penyidiks') && $request->filled('penyidik')) {
+            $request->merge([
+                'penyidiks' => [
+                    ['nama' => $request->input('penyidik')]
+                ]
+            ]);
+        }
+
         $validated = $request->validate([
             'nomor_perkara' => 'required|string|unique:perkaras,nomor_perkara,' . $perkara->id,
-            'penyidik' => 'required|string|max:255',
+            'penyidiks' => 'required|array|min:1',
+            'penyidiks.*.nama' => 'required|string|max:255',
+            'penyidik' => 'nullable|string|max:255',
             'jaksas' => 'required|array|min:1',
             'jaksas.*' => 'exists:users,id',
             'tersangkas' => 'required|array|min:1',
@@ -220,7 +266,9 @@ class PerkaraController extends Controller
         ], [
             'nomor_perkara.required' => 'Nomor perkara / SPDP wajib diisi.',
             'nomor_perkara.unique' => 'Nomor perkara sudah terdaftar di sistem.',
-            'penyidik.required' => 'Nama / Instansi penyidik wajib diisi.',
+            'penyidiks.required' => 'Daftar penyidik wajib diisi.',
+            'penyidiks.min' => 'Minimal harus ada satu penyidik.',
+            'penyidiks.*.nama.required' => 'Nama / Instansi penyidik wajib diisi.',
             'jaksas.required' => 'Pilih minimal satu Jaksa Penuntut Umum.',
             'jaksas.min' => 'Pilih minimal satu Jaksa Penuntut Umum.',
             'tersangkas.required' => 'Daftar tersangka wajib diisi.',
@@ -231,9 +279,12 @@ class PerkaraController extends Controller
         DB::transaction(function () use ($validated, $perkara) {
             $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? 'Multiple Jaksa';
 
+            $penyidikNames = collect($validated['penyidiks'])->pluck('nama')->filter()->values();
+            $summaryPenyidik = $penyidikNames->implode(', ');
+
             $perkara->update([
                 'nomor_perkara' => $validated['nomor_perkara'],
-                'penyidik' => $validated['penyidik'],
+                'penyidik' => $summaryPenyidik,
                 'jaksa' => $firstJaksa, // Fallback kolom string lama
             ]);
 
@@ -245,6 +296,14 @@ class PerkaraController extends Controller
             foreach ($validated['tersangkas'] as $tersangkaData) {
                 $perkara->tersangkas()->create([
                     'nama' => $tersangkaData['nama'],
+                ]);
+            }
+
+            // Sync Penyidik
+            $perkara->penyidiks()->delete();
+            foreach ($penyidikNames as $pNama) {
+                $perkara->penyidiks()->create([
+                    'nama' => $pNama,
                 ]);
             }
         });
@@ -259,7 +318,7 @@ class PerkaraController extends Controller
     {
         SLAEngineService::runThrottled();
 
-        $perkara = Perkara::with(['timelines.user', 'activeReminders'])->findOrFail($id);
+        $perkara = Perkara::with(['timelines.user', 'activeReminders', 'tersangkas', 'penyidiks', 'jaksas'])->findOrFail($id);
 
         $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
 

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Tersangka;
+use App\Models\Penyidik;
 
 class Perkara extends Model
 {
@@ -68,6 +69,11 @@ class Perkara extends Model
     public function tersangkas(): HasMany
     {
         return $this->hasMany(Tersangka::class, 'perkara_id');
+    }
+
+    public function penyidiks(): HasMany
+    {
+        return $this->hasMany(Penyidik::class, 'perkara_id');
     }
 
     /**

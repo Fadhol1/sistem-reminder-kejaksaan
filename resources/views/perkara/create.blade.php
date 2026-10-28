@@ -36,33 +36,71 @@
                     @enderror
                 </div>
 
-                <div class="md:col-span-2">
+                <div class="col-span-1 md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Daftar Tersangka</label>
 
                     <div id="tersangka-container" class="space-y-2">
-                        <div class="tersangka-row flex gap-2 items-center">
-                            <input type="text" name="tersangkas[0][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                            <button type="button" onclick="removeRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                            </button>
-                        </div>
+                        @if(old('tersangkas'))
+                            @foreach(old('tersangkas') as $index => $tersangka)
+                                <div class="tersangka-row flex gap-2 items-center">
+                                    <input type="text" name="tersangkas[{{ $index }}][nama]" value="{{ is_array($tersangka) ? ($tersangka['nama'] ?? '') : $tersangka }}" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                    <button type="button" onclick="removeTersangkaRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="tersangka-row flex gap-2 items-center">
+                                <input type="text" name="tersangkas[0][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                <button type="button" onclick="removeTersangkaRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        @endif
                     </div>
 
-                    <button type="button" onclick="addRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-900">
+                    <button type="button" onclick="addTersangkaRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-900">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                         Tambah Tersangka
                     </button>
-                </div>
-
-                <div>
-                    <label for="penyidik" class="block text-sm font-medium text-gray-700 mb-1">Penyidik / Instansi Asal</label>
-                    <input type="text" name="penyidik" id="penyidik" value="{{ old('penyidik') }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('penyidik') border-red-500 @enderror">
-                    @error('penyidik')
+                    @error('tersangkas')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div>
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Daftar Penyidik / Instansi Asal</label>
+
+                    <div id="penyidik-container" class="space-y-2">
+                        @if(old('penyidiks'))
+                            @foreach(old('penyidiks') as $pIndex => $pItem)
+                                <div class="penyidik-row flex gap-2 items-center">
+                                    <input type="text" name="penyidiks[{{ $pIndex }}][nama]" value="{{ is_array($pItem) ? ($pItem['nama'] ?? '') : $pItem }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                    <button type="button" onclick="removePenyidikRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="penyidik-row flex gap-2 items-center">
+                                <input type="text" name="penyidiks[0][nama]" value="{{ old('penyidik') }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                <button type="button" onclick="removePenyidikRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+
+                    <button type="button" onclick="addPenyidikRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-900">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Tambah Penyidik
+                    </button>
+                    @error('penyidiks')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jaksa Penuntut Umum (Pilih Minimal 1)</label>
                     
                     <!-- Fitur Search Jaksa -->
@@ -114,26 +152,53 @@
 </div>
 
 <script>
-    let rowIndex = document.querySelectorAll('.tersangka-row').length;
+    let tersangkaRowIndex = document.querySelectorAll('.tersangka-row').length;
 
-    function addRow() {
+    function addTersangkaRow() {
         const container = document.getElementById('tersangka-container');
         const html = '<div class="tersangka-row flex gap-2 items-center">' +
-            '<input type="text" name="tersangkas[' + rowIndex + '][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
-            '<button type="button" onclick="removeRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">' +
+            '<input type="text" name="tersangkas[' + tersangkaRowIndex + '][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
+            '<button type="button" onclick="removeTersangkaRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">' +
             '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
             '</button></div>';
         container.insertAdjacentHTML('beforeend', html);
-        rowIndex++;
+        tersangkaRowIndex++;
         container.lastElementChild.querySelector('input').focus();
     }
 
-    function removeRow(btn) {
+    function removeTersangkaRow(btn) {
         const container = document.getElementById('tersangka-container');
-        if (container.children.length > 1) {
+        if (container.querySelectorAll('.tersangka-row').length > 1) {
             btn.closest('.tersangka-row').remove();
         } else {
             alert('Minimal harus ada satu tersangka.');
+        }
+    }
+
+    // Aliases for compatibility
+    function addRow() { addTersangkaRow(); }
+    function removeRow(btn) { removeTersangkaRow(btn); }
+
+    let penyidikRowIndex = document.querySelectorAll('.penyidik-row').length;
+
+    function addPenyidikRow() {
+        const container = document.getElementById('penyidik-container');
+        const html = '<div class="penyidik-row flex gap-2 items-center">' +
+            '<input type="text" name="penyidiks[' + penyidikRowIndex + '][nama]" value="" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
+            '<button type="button" onclick="removePenyidikRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+            '</button></div>';
+        container.insertAdjacentHTML('beforeend', html);
+        penyidikRowIndex++;
+        container.lastElementChild.querySelector('input').focus();
+    }
+
+    function removePenyidikRow(btn) {
+        const container = document.getElementById('penyidik-container');
+        if (container.querySelectorAll('.penyidik-row').length > 1) {
+            btn.closest('.penyidik-row').remove();
+        } else {
+            alert('Minimal harus ada satu penyidik.');
         }
     }
 
@@ -150,8 +215,6 @@
             const txtValue = label.textContent || label.innerText;
             if (txtValue.toLowerCase().indexOf(filter) > -1) {
                 items[i].classList.remove('hidden');
-                // Paksa flex display by tailwind default, though remove hidden should suffice for flex wrappers if we use inline logic.
-                // Using non-inline styles via tailwind utility classes is cleaner.
                 items[i].style.display = "";
                 visibleCount++;
             } else {

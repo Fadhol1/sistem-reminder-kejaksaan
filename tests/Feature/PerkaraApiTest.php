@@ -382,4 +382,121 @@ class PerkaraApiTest extends TestCase
             'tersangkas' => [['nama' => 'Tersangka X']],
         ])->assertStatus(403);
     }
+
+    public function test_pidum_can_store_perkara_with_multiple_penyidiks(): void
+    {
+        $jaksa = \App\Models\User::factory()->create(['role' => 'jaksa']);
+
+        $payload = [
+            'nomor_perkara' => 'BP/TEST/MULTI-PENYIDIK/01',
+            'tanggal_spdp' => '2026-10-28',
+            'tersangkas' => [
+                ['nama' => 'Tersangka Satu'],
+                ['nama' => 'Tersangka Dua'],
+            ],
+            'penyidiks' => [
+                ['nama' => 'IPTU Bambang Wijaya / Polres OKU'],
+                ['nama' => 'AIPDA Supriadi / Polres OKU'],
+            ],
+            'jaksas' => [$jaksa->id],
+        ];
+
+        $response = $this->post(route('perkara.store'), $payload);
+
+        $response->assertRedirect(route('perkara.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('perkaras', [
+            'nomor_perkara' => 'BP/TEST/MULTI-PENYIDIK/01',
+            'penyidik' => 'IPTU Bambang Wijaya / Polres OKU, AIPDA Supriadi / Polres OKU',
+        ]);
+
+        $perkara = Perkara::where('nomor_perkara', 'BP/TEST/MULTI-PENYIDIK/01')->first();
+        $this->assertNotNull($perkara);
+        $this->assertCount(2, $perkara->penyidiks);
+        $this->assertEqualsCanonicalizing(
+            ['IPTU Bambang Wijaya / Polres OKU', 'AIPDA Supriadi / Polres OKU'],
+            $perkara->penyidiks->pluck('nama')->toArray()
+        );
+    }
+
+    public function test_pidum_can_update_perkara_with_multiple_penyidiks(): void
+    {
+        $jaksa = \App\Models\User::factory()->create(['role' => 'jaksa']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/EDIT/MULTI-PENYIDIK/02',
+            'penyidik'        => 'Penyidik Awal',
+            'jaksa'           => $jaksa->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Pendaftaran SPDP',
+        ]);
+        $perkara->jaksas()->attach([$jaksa->id]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka 1']);
+        $perkara->penyidiks()->create(['nama' => 'Penyidik Awal']);
+
+        $payload = [
+            'nomor_perkara' => 'BP/EDIT/MULTI-PENYIDIK/02',
+            'penyidiks' => [
+                ['nama' => 'Kompol Agus / Ditreskrimum'],
+                ['nama' => 'AKP Budi / Subdit Jatanras'],
+                ['nama' => 'Bripka Chandra / Penyidik Pembantu'],
+            ],
+            'jaksas' => [$jaksa->id],
+            'tersangkas' => [
+                ['nama' => 'Tersangka 1'],
+            ],
+        ];
+
+        $response = $this->put(route('perkara.update', $perkara->id), $payload);
+
+        $response->assertRedirect(route('perkara.show', $perkara->id));
+        $response->assertSessionHas('success');
+
+        $fresh = $perkara->fresh(['penyidiks']);
+        $this->assertCount(3, $fresh->penyidiks);
+        $this->assertEqualsCanonicalizing(
+            ['Kompol Agus / Ditreskrimum', 'AKP Budi / Subdit Jatanras', 'Bripka Chandra / Penyidik Pembantu'],
+            $fresh->penyidiks->pluck('nama')->toArray()
+        );
+        $this->assertEquals('Kompol Agus / Ditreskrimum, AKP Budi / Subdit Jatanras, Bripka Chandra / Penyidik Pembantu', $fresh->penyidik);
+    }
+
+    public function test_perkara_show_displays_all_penyidiks(): void
+    {
+        $jaksa = \App\Models\User::factory()->create(['role' => 'jaksa']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/SHOW/MULTI/01',
+            'penyidik'        => 'Penyidik Ringkasan',
+            'jaksa'           => $jaksa->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Pendaftaran SPDP',
+        ]);
+        $perkara->jaksas()->attach([$jaksa->id]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka Utama']);
+        $perkara->penyidiks()->create(['nama' => 'Penyidik Kesatu / Reskrim']);
+        $perkara->penyidiks()->create(['nama' => 'Penyidik Kedua / Reskrim']);
+
+        $response = $this->get(route('perkara.show', $perkara->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Penyidik');
+        $response->assertSee('Penyidik Kesatu / Reskrim');
+        $response->assertSee('Penyidik Kedua / Reskrim');
+    }
+
+    public function test_pidum_can_view_create_perkara_page_with_multiple_penyidik_inputs(): void
+    {
+        $response = $this->get(route('perkara.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Penyidik / Instansi Asal');
+        $response->assertSee('penyidiks[0][nama]');
+        $response->assertSee('addPenyidikRow');
+        $response->assertSee('removePenyidikRow');
+        $response->assertSee('Tambah Penyidik');
+    }
 }

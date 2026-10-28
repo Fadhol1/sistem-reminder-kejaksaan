@@ -95,6 +95,7 @@ class PerkaraApiController extends Controller
             'activeReminders',
             'jaksas:id,name,email,role',
             'tersangkas',
+            'penyidiks',
         ])->find($id);
 
         if (!$perkara) {
@@ -232,6 +233,13 @@ class PerkaraApiController extends Controller
             if (!empty($validated['nama_tersangka'])) {
                 $perkara->tersangkas()->create([
                     'nama' => $validated['nama_tersangka'],
+                ]);
+            }
+
+            // Simpan data penyidik ke tabel penyidiks
+            if (!empty($validated['penyidik'])) {
+                $perkara->penyidiks()->create([
+                    'nama' => $validated['penyidik'],
                 ]);
             }
 
