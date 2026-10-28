@@ -34,17 +34,10 @@ class PerkaraWorkflowService
                 break;
 
             case self::TAHAP_MONITORING:
-                if ($status === 'Menunggu Berkas Tahap I') {
-                    $actions[] = ['id' => 'catat_p17', 'label' => 'Kirim P-17'];
-                } elseif ($status === 'P-17' || (str_contains($status, 'P-17') && !str_contains($status, 'Kedua') && !str_contains($status, 'FORM-2'))) {
-                    $actions[] = ['id' => 'catat_p17_2', 'label' => 'Kirim SOP FORM-2 (P-17 Kedua)'];
-                } elseif (str_contains($status, 'FORM-2')) {
-                    $actions[] = ['id' => 'catat_form3', 'label' => 'Kirim SOP FORM-3 (Pengembalian SPDP)'];
-                }
-
-                // Selama belum diterbitkan SOP FORM-3 (SPDP dikembalikan), Jaksa tetap bisa mencatat penerimaan berkas Tahap I
+                // Pada tahap monitoring penyidikan, penerbitan P-17, SOP FORM-2, dan FORM-3 dijalankan secara otomatis oleh sistem (SLA Engine ketika melewati 30 hari).
+                // Aksi manual yang tersedia untuk Jaksa hanya satu button: Konfirmasi Penerimaan Berkas (selama berkas belum FORM-3 / SPDP dikembalikan).
                 if (!str_contains($status, 'FORM-3')) {
-                    $actions[] = ['id' => 'terima_berkas', 'label' => 'Penyerahan Berkas Tahap I (P-24)'];
+                    $actions[] = ['id' => 'terima_berkas', 'label' => 'Konfirmasi Penerimaan Berkas'];
                 }
                 break;
 

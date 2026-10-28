@@ -18,9 +18,9 @@
             @csrf
             @method('PUT')
 
-            <div class="grid grid-cols-1 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <div>
+                <div class="col-span-1 md:col-span-2">
                     <label for="nomor_perkara" class="block text-sm font-medium text-gray-700 mb-1">Nomor Perkara / SPDP</label>
                     <input type="text" name="nomor_perkara" id="nomor_perkara" value="{{ old('nomor_perkara', $perkara->nomor_perkara) }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nomor_perkara') border-red-500 @enderror">
                     @error('nomor_perkara')
@@ -28,7 +28,15 @@
                     @enderror
                 </div>
 
-                <div>
+                <div class="col-span-1 md:col-span-2">
+                    <label for="penyidik" class="block text-sm font-medium text-gray-700 mb-1">Penyidik / Instansi Asal</label>
+                    <input type="text" name="penyidik" id="penyidik" value="{{ old('penyidik', $perkara->penyidik) }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('penyidik') border-red-500 @enderror">
+                    @error('penyidik')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Daftar Tersangka</label>
 
                     <div id="tersangka-container" class="space-y-2">
@@ -47,6 +55,43 @@
                         Tambah Tersangka
                     </button>
                     @error('tersangkas')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jaksa Penuntut Umum (Pilih Minimal 1)</label>
+                    
+                    <!-- Fitur Search Jaksa -->
+                    <div class="relative mb-2">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg aria-hidden="true" class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="searchJaksaInput" onkeyup="filterJaksa()" placeholder="Cari nama jaksa..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-red-600 focus:border-red-600 block w-full pl-9 p-2">
+                    </div>
+
+                    <div id="jaksaListContainer" class="max-h-52 overflow-y-auto p-3 border border-gray-300 rounded-md bg-white space-y-3">
+                        @foreach($jaksas as $j)
+                            @php
+                                $isChecked = (is_array(old('jaksas')) && in_array($j->id, old('jaksas'))) || 
+                                             (!old('jaksas') && in_array($j->id, $selectedJaksaIds));
+                            @endphp
+                            <div class="flex items-center jaksa-item">
+                                <input id="jaksa_{{ $j->id }}" name="jaksas[]" type="checkbox" value="{{ $j->id }}" 
+                                    {{ $isChecked ? 'checked' : '' }}
+                                    class="h-4 w-4 rounded border-gray-300 text-red-700 focus:ring-red-600">
+                                <label for="jaksa_{{ $j->id }}" class="ml-3 block text-sm font-medium text-gray-700 cursor-pointer jaksa-name">
+                                    {{ $j->name }}
+                                </label>
+                            </div>
+                        @endforeach
+                        
+                        <!-- Pesan 'Tidak Ditemukan' -->
+                        <div id="jaksaEmptyMessage" class="hidden text-sm text-gray-500 text-center py-2">
+                            Jaksa tidak ditemukan.
+                        </div>
+                    </div>
+                    @error('jaksas')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
@@ -86,6 +131,34 @@
             btn.closest('.tersangka-row').remove();
         } else {
             alert('Minimal harus ada satu tersangka.');
+        }
+    }
+
+    function filterJaksa() {
+        const input = document.getElementById('searchJaksaInput');
+        const filter = input.value.toLowerCase();
+        const container = document.getElementById('jaksaListContainer');
+        const items = container.getElementsByClassName('jaksa-item');
+        const emptyMessage = document.getElementById('jaksaEmptyMessage');
+        let visibleCount = 0;
+
+        for (let i = 0; i < items.length; i++) {
+            const label = items[i].querySelector('.jaksa-name');
+            if (label) {
+                const txtValue = label.textContent || label.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    items[i].style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    items[i].style.display = 'none';
+                }
+            }
+        }
+
+        if (visibleCount === 0) {
+            emptyMessage.classList.remove('hidden');
+        } else {
+            emptyMessage.classList.add('hidden');
         }
     }
 </script>

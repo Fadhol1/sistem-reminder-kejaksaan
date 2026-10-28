@@ -277,4 +277,109 @@ class PerkaraApiTest extends TestCase
                      ],
                  ]);
     }
+
+    public function test_pidum_can_view_edit_perkara_page_with_jaksas_and_penyidik(): void
+    {
+        $jaksa1 = \App\Models\User::factory()->create(['role' => 'jaksa', 'name' => 'Jaksa Satu, S.H.']);
+        $jaksa2 = \App\Models\User::factory()->create(['role' => 'jaksa', 'name' => 'Jaksa Dua, S.H.']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/EDIT/01/2026',
+            'penyidik'        => 'Penyidik Asli',
+            'jaksa'           => $jaksa1->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Pendaftaran SPDP',
+        ]);
+        $perkara->jaksas()->attach([$jaksa1->id]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka Lama']);
+
+        $response = $this->get(route('perkara.edit', $perkara->id));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('perkara.edit');
+        $response->assertViewHas('perkara');
+        $response->assertViewHas('jaksas');
+        $response->assertViewHas('selectedJaksaIds', [$jaksa1->id]);
+        $response->assertSee('Penyidik Asli');
+        $response->assertSee('Jaksa Satu, S.H.');
+        $response->assertSee('Jaksa Dua, S.H.');
+    }
+
+    public function test_pidum_can_update_perkara_with_new_penyidik_and_jaksas(): void
+    {
+        $jaksa1 = \App\Models\User::factory()->create(['role' => 'jaksa', 'name' => 'Jaksa Satu, S.H.']);
+        $jaksa2 = \App\Models\User::factory()->create(['role' => 'jaksa', 'name' => 'Jaksa Dua, S.H.']);
+        $jaksa3 = \App\Models\User::factory()->create(['role' => 'jaksa', 'name' => 'Jaksa Tiga, S.H.']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/EDIT/02/2026',
+            'penyidik'        => 'Penyidik Awal',
+            'jaksa'           => $jaksa1->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Pendaftaran SPDP',
+        ]);
+        $perkara->jaksas()->attach([$jaksa1->id]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka 1']);
+
+        $payload = [
+            'nomor_perkara' => 'BP/EDIT/02/2026-REVISI',
+            'penyidik' => 'IPTU Hendro / Unit Tipidter Polres',
+            'jaksas' => [$jaksa2->id, $jaksa3->id],
+            'tersangkas' => [
+                ['nama' => 'Tersangka Revisi 1'],
+                ['nama' => 'Tersangka Revisi 2'],
+            ],
+        ];
+
+        $response = $this->put(route('perkara.update', $perkara->id), $payload);
+
+        $response->assertRedirect(route('perkara.show', $perkara->id));
+        $response->assertSessionHas('success');
+
+        // Verify updated database records
+        $this->assertDatabaseHas('perkaras', [
+            'id' => $perkara->id,
+            'nomor_perkara' => 'BP/EDIT/02/2026-REVISI',
+            'penyidik' => 'IPTU Hendro / Unit Tipidter Polres',
+            'jaksa' => $jaksa2->name,
+        ]);
+
+        // Verify synced jaksas
+        $freshPerkara = $perkara->fresh(['jaksas', 'tersangkas']);
+        $this->assertEqualsCanonicalizing(
+            [$jaksa2->id, $jaksa3->id],
+            $freshPerkara->jaksas->pluck('id')->toArray()
+        );
+
+        // Verify synced tersangkas
+        $this->assertEqualsCanonicalizing(
+            ['Tersangka Revisi 1', 'Tersangka Revisi 2'],
+            $freshPerkara->tersangkas->pluck('nama')->toArray()
+        );
+    }
+
+    public function test_non_pidum_cannot_edit_or_update_perkara(): void
+    {
+        $jaksaUser = \App\Models\User::factory()->create(['role' => 'jaksa']);
+        \Laravel\Sanctum\Sanctum::actingAs($jaksaUser);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/EDIT/03/2026',
+            'penyidik'        => 'Penyidik X',
+            'jaksa'           => 'Jaksa X',
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Pendaftaran SPDP',
+        ]);
+
+        $this->get(route('perkara.edit', $perkara->id))->assertStatus(403);
+        $this->put(route('perkara.update', $perkara->id), [
+            'nomor_perkara' => 'BP/EDIT/03/2026',
+            'penyidik' => 'Penyidik X',
+            'jaksas' => [$jaksaUser->id],
+            'tersangkas' => [['nama' => 'Tersangka X']],
+        ])->assertStatus(403);
+    }
 }

@@ -193,7 +193,7 @@ class TestEngine extends Command
                 'Test' => 'TEST 8 - INVALID ACTION',
                 'Expected' => 'P-21 (hasil_lengkap) is not available for P-17',
                 'Actual' => "Available: " . implode(',', $actionsP8),
-                'Status' => (!in_array('hasil_lengkap', $actionsP8) && in_array('catat_p17_2', $actionsP8)) ? 'PASS' : 'FAIL'
+                'Status' => (!in_array('hasil_lengkap', $actionsP8) && !in_array('catat_p17_2', $actionsP8) && in_array('terima_berkas', $actionsP8)) ? 'PASS' : 'FAIL'
             ];
 
             // TEST 9
@@ -262,7 +262,7 @@ class TestEngine extends Command
                 'Test' => 'TEST 13 - P-17 KEDUA / FORM-2 BRANCHING / OVERDUE',
                 'Expected' => 'FORM-3 Available action, auto trans',
                 'Actual' => "Available action: " . implode(',', $actionsP13) . " | Result Status: {$p13->fresh()->status_saat_ini}",
-                'Status' => (in_array('catat_form3', $actionsP13) && !in_array('catat_p17_2', $actionsP13) && $p13->fresh()->status_saat_ini === 'FORM-3') ? 'PASS' : 'FAIL'
+                'Status' => (!in_array('catat_form3', $actionsP13) && in_array('terima_berkas', $actionsP13) && $p13->fresh()->status_saat_ini === 'FORM-3') ? 'PASS' : 'FAIL'
             ];
 
             // ==========================================
@@ -410,7 +410,8 @@ class TestEngine extends Command
                 $rKNew && $rKNew->jenis_reminder === 'Batas Penyerahan Tahap I' &&
                 $tlK !== null &&
                 !in_array('lanjut_monitoring', $actionsKAfter) &&
-                in_array('catat_p17', $actionsKAfter)
+                !in_array('catat_p17', $actionsKAfter) &&
+                in_array('terima_berkas', $actionsKAfter)
             );
 
             $results[] = [

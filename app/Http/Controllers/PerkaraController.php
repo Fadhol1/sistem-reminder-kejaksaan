@@ -192,9 +192,11 @@ class PerkaraController extends Controller
             abort(403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit perkara.');
         }
 
-        $perkara = Perkara::with('tersangkas')->findOrFail($id);
+        $perkara = Perkara::with(['tersangkas', 'jaksas'])->findOrFail($id);
+        $jaksas = \App\Models\User::where('role', 'jaksa')->orderBy('name')->get();
+        $selectedJaksaIds = $perkara->jaksas->pluck('id')->toArray();
 
-        return view('perkara.edit', compact('perkara'));
+        return view('perkara.edit', compact('perkara', 'jaksas', 'selectedJaksaIds'));
     }
 
     /**
@@ -210,14 +212,33 @@ class PerkaraController extends Controller
 
         $validated = $request->validate([
             'nomor_perkara' => 'required|string|unique:perkaras,nomor_perkara,' . $perkara->id,
+            'penyidik' => 'required|string|max:255',
+            'jaksas' => 'required|array|min:1',
+            'jaksas.*' => 'exists:users,id',
             'tersangkas' => 'required|array|min:1',
             'tersangkas.*.nama' => 'required|string|max:255',
+        ], [
+            'nomor_perkara.required' => 'Nomor perkara / SPDP wajib diisi.',
+            'nomor_perkara.unique' => 'Nomor perkara sudah terdaftar di sistem.',
+            'penyidik.required' => 'Nama / Instansi penyidik wajib diisi.',
+            'jaksas.required' => 'Pilih minimal satu Jaksa Penuntut Umum.',
+            'jaksas.min' => 'Pilih minimal satu Jaksa Penuntut Umum.',
+            'tersangkas.required' => 'Daftar tersangka wajib diisi.',
+            'tersangkas.min' => 'Minimal harus ada satu tersangka.',
+            'tersangkas.*.nama.required' => 'Nama tersangka wajib diisi.',
         ]);
 
         DB::transaction(function () use ($validated, $perkara) {
+            $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? 'Multiple Jaksa';
+
             $perkara->update([
                 'nomor_perkara' => $validated['nomor_perkara'],
+                'penyidik' => $validated['penyidik'],
+                'jaksa' => $firstJaksa, // Fallback kolom string lama
             ]);
+
+            // Sync Jaksas di tabel pivot perkara_jaksa
+            $perkara->jaksas()->sync($validated['jaksas']);
 
             // Sync Tersangka (Delete old ones and replace with new ones to simplify editing)
             $perkara->tersangkas()->delete();

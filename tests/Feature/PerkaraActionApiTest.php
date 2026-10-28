@@ -390,6 +390,78 @@ class PerkaraActionApiTest extends TestCase
     /**
      * Perkara tidak ditemukan mengembalikan 404.
      */
+    /**
+     * 12. Tahap Monitoring Penyidikan hanya menyediakan SATU tombol aksi manual: Konfirmasi Penerimaan Berkas (terima_berkas).
+     * Tidak ada button manual catat_p17 maupun catat_p17_2 / catat_form3 karena penerbitan surat monitoring berjalan otomatis oleh SLA Engine.
+     * Khusus pada Tahap P-24 tetap menyediakan 2 tombol perkondisian (P-21 Lengkap & P-19 Belum Lengkap).
+     */
+    public function test_monitoring_penyidikan_only_provides_single_terima_berkas_action(): void
+    {
+        Sanctum::actingAs($this->jaksaAssigned);
+
+        // Kasus 1: Status Menunggu Berkas Tahap I
+        $this->perkara->update([
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_MONITORING,
+            'status_saat_ini' => 'Menunggu Berkas Tahap I',
+        ]);
+
+        $res1 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $res1->assertStatus(200);
+        $actions1 = $res1->json('data');
+        $this->assertCount(1, $actions1);
+        $this->assertEquals('terima_berkas', $actions1[0]['id']);
+        $this->assertEquals('Konfirmasi Penerimaan Berkas', $actions1[0]['label']);
+
+        // Kasus 2: Status P-17 (setelah auto-transition SLA 30 hari pertama)
+        $this->perkara->update([
+            'status_saat_ini' => 'P-17',
+        ]);
+
+        $res2 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $res2->assertStatus(200);
+        $actions2 = $res2->json('data');
+        $this->assertCount(1, $actions2);
+        $this->assertEquals('terima_berkas', $actions2[0]['id']);
+
+        // Kasus 3: Status P-17 Kedua / FORM-2 (setelah auto-transition SLA 30 hari kedua)
+        $this->perkara->update([
+            'status_saat_ini' => 'P-17 Kedua / FORM-2',
+        ]);
+
+        $res3 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $res3->assertStatus(200);
+        $actions3 = $res3->json('data');
+        $this->assertCount(1, $actions3);
+        $this->assertEquals('terima_berkas', $actions3[0]['id']);
+
+        // Manual eksekusi catat_p17 ditolak (409 Conflict) karena bukan aksi manual yang diizinkan
+        $resReject = $this->postJson("/api/perkara/{$this->perkara->id}/actions", [
+            'action_id' => 'catat_p17',
+        ]);
+        $resReject->assertStatus(409);
+
+        // Eksekusi terima_berkas berhasil dan transisi ke Tahap P-24
+        $resExecute = $this->postJson("/api/perkara/{$this->perkara->id}/actions", [
+            'action_id' => 'terima_berkas',
+            'catatan' => 'Berkas perkara Tahap I diterima dari penyidik.',
+        ]);
+        $resExecute->assertStatus(200);
+
+        $this->assertDatabaseHas('perkaras', [
+            'id' => $this->perkara->id,
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_P24,
+            'status_saat_ini' => 'Menunggu Penelitian Berkas',
+        ]);
+
+        // Kasus 4: Khusus pada tahap P-24 tetap tersedia 2 tombol opsi perkondisian (P-21 vs P-19)
+        $resP24 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $resP24->assertStatus(200);
+        $actionsP24 = collect($resP24->json('data'))->pluck('id')->toArray();
+        $this->assertCount(2, $actionsP24);
+        $this->assertContains('hasil_lengkap', $actionsP24);
+        $this->assertContains('hasil_belum_lengkap', $actionsP24);
+    }
+
     public function test_non_existent_perkara_returns_404(): void
     {
         Sanctum::actingAs($this->jaksaAssigned);
