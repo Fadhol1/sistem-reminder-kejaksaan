@@ -46,7 +46,7 @@ class Perkara extends Model
     protected function casts(): array
     {
         return [
-            'tanggal_spdp' => 'date',
+            'tanggal_spdp' => 'date:Y-m-d',
         ];
     }
 

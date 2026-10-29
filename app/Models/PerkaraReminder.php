@@ -51,8 +51,8 @@ class PerkaraReminder extends Model
     protected function casts(): array
     {
         return [
-            'tanggal_mulai' => 'date',
-            'deadline' => 'date',
+            'tanggal_mulai' => 'date:Y-m-d',
+            'deadline' => 'date:Y-m-d',
             'is_active' => 'boolean',
         ];
     }

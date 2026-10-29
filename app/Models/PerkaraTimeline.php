@@ -40,7 +40,7 @@ class PerkaraTimeline extends Model
     protected function casts(): array
     {
         return [
-            'tanggal_kejadian' => 'date',
+            'tanggal_kejadian' => 'date:Y-m-d',
         ];
     }
 

@@ -651,5 +651,34 @@ class PerkaraApiTest extends TestCase
         $actions = \App\Services\PerkaraWorkflowService::getAvailableActions($perkara);
         $this->assertEmpty($actions);
     }
+
+    public function test_reminder_and_perkara_dates_are_serialized_as_ymd_without_timezone_day_shift(): void
+    {
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/TZ/TEST/01',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => 'Jaksa Peneliti',
+            'tanggal_spdp'    => '2026-10-29',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Koordinasi Awal',
+        ]);
+
+        $reminder = $perkara->reminders()->create([
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tanggal_mulai'  => '2026-10-26',
+            'deadline'       => '2026-10-29',
+            'status_urgensi' => 'Jatuh Tempo',
+            'is_active'      => true,
+        ]);
+
+        $serializedReminder = $reminder->toArray();
+        $this->assertEquals('2026-10-29', $serializedReminder['deadline']);
+        $this->assertEquals('2026-10-26', $serializedReminder['tanggal_mulai']);
+        $this->assertEquals(0, $serializedReminder['sisa_hari']);
+        $this->assertEquals('Jatuh Tempo', $serializedReminder['status_urgensi']);
+
+        $serializedPerkara = $perkara->toArray();
+        $this->assertEquals('2026-10-29', $serializedPerkara['tanggal_spdp']);
+    }
 }
 
