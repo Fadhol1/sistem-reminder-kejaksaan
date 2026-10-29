@@ -14,6 +14,22 @@
         </div>
         @if(auth()->user()->isPidum())
         <div class="flex items-center space-x-2">
+            @if($perkara->isKoordinasiAwalOverdue())
+                <span class="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-gray-100 border border-gray-200 text-gray-400 h-9 px-3.5 py-2 cursor-not-allowed select-none"
+                    title="Perkara pada tahap Koordinasi Awal yang overdue terkunci dan tidak dapat diubah">
+                    <svg class="mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                    Terkunci (Overdue)
+                </span>
+            @else
+                <a href="{{ route('perkara.edit', $perkara->id) }}" class="inline-flex items-center justify-center rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 bg-amber-50 border border-amber-300 text-amber-900 shadow-2xs hover:bg-amber-100 h-9 px-3.5 py-2 transition-colors" title="Ubah Data Perkara">
+                    <svg class="mr-1.5 h-4 w-4 text-amber-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                    </svg>
+                    Edit Perkara
+                </a>
+            @endif
             <button type="button" onclick="openDeleteModal()" class="inline-flex items-center justify-center rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 bg-red-50 border border-red-200 text-red-700 shadow-2xs hover:bg-red-100 h-9 px-3.5 py-2 transition-colors">
                 <svg class="mr-1.5 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -23,6 +39,24 @@
         </div>
         @endif
     </div>
+
+    @if($perkara->isKoordinasiAwalOverdue())
+        <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-4 shadow-2xs">
+            <div class="flex items-start gap-3">
+                <div class="rounded-lg bg-rose-100 p-2 text-rose-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-sm font-bold text-rose-900">Perkara Terkunci (Koordinasi Awal Overdue)</h4>
+                    <p class="mt-0.5 text-xs text-rose-700">
+                        Batas waktu SLA 3 hari untuk tahap Koordinasi Awal telah terlampaui. Data perkara serta pencatatan perkembangan telah dikunci secara otomatis oleh sistem demi menjaga integritas riwayat dan kepatuhan SOP penanganan perkara.
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
 
     @if(session('success'))
         <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
@@ -459,11 +493,37 @@
 
             <!-- Catat Perkembangan Action Card -->
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                     <h4 class="font-medium text-gray-900">Catat Perkembangan</h4>
+                    @if($perkara->isKoordinasiAwalOverdue())
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+                            </svg>
+                            Terkunci (Overdue)
+                        </span>
+                    @endif
                 </div>
                 <div class="p-6">
-                    @if(count($availableActions) > 0)
+                    @if($perkara->isKoordinasiAwalOverdue())
+                        <div class="rounded-xl bg-gradient-to-br from-rose-50/80 via-rose-50/50 to-red-50/30 border border-rose-200 p-5 text-center shadow-2xs">
+                            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 shadow-2xs border border-rose-200">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                </svg>
+                            </div>
+                            <h5 class="text-sm font-bold text-rose-900 mb-1.5">Pencatatan Perkembangan Dinonaktifkan</h5>
+                            <p class="text-xs text-rose-700 leading-relaxed max-w-sm mx-auto mb-3">
+                                Perkara pada tahap <strong>Koordinasi Awal</strong> telah melewati batas waktu SLA 3 hari (Overdue). Aksi perkembangan telah dikunci oleh sistem sesuai SOP Kejaksaan.
+                            </p>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white border border-rose-200 text-xs font-medium text-rose-800 shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Status: Overdue / Tindak Lanjut Form-1B & Form-1C
+                            </div>
+                        </div>
+                    @elseif(count($availableActions) > 0)
                         <p class="text-sm text-gray-500 mb-4">Pilih aksi selanjutnya sesuai alur perkara:</p>
                         
                         <form action="{{ route('perkara.catatPerkembangan', $perkara->id) }}" method="POST" class="space-y-4">

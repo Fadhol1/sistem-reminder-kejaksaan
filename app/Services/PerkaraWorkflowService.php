@@ -21,6 +21,11 @@ class PerkaraWorkflowService
     // Mendapatkan opsi aksi berdasarkan tahap dan status saat ini
     public static function getAvailableActions(Perkara $perkara): array
     {
+        // Jika perkara pada tahap Koordinasi Awal telah overdue, semua aksi perkembangan dinonaktifkan / dikunci
+        if ($perkara->isKoordinasiAwalOverdue()) {
+            return [];
+        }
+
         $tahap = $perkara->tahap_saat_ini;
         $status = $perkara->status_saat_ini;
 
@@ -28,7 +33,7 @@ class PerkaraWorkflowService
 
         switch ($tahap) {
             case self::TAHAP_KOORDINASI:
-                if (in_array($status, ['Menunggu Koordinasi', 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C', 'Koordinasi Selesai'])) {
+                if (in_array($status, ['Menunggu Koordinasi', 'Koordinasi Selesai'])) {
                     $actions[] = ['id' => 'koordinasi_selesai', 'label' => 'Koordinasi Selesai'];
                 }
                 break;
@@ -74,6 +79,10 @@ class PerkaraWorkflowService
 
     public static function processAction(Perkara $perkara, string $actionId, array $data, ?int $userId = null, string $actorType = 'USER'): void
     {
+        if ($perkara->isKoordinasiAwalOverdue() && $actionId !== 'tindak_lanjut_koordinasi_overdue') {
+            throw new \DomainException('Perkara pada tahap Koordinasi Awal telah overdue dan terkunci dari pencatatan perkembangan.');
+        }
+
         DB::transaction(function () use ($perkara, $actionId, $data, $userId, $actorType) {
             $catatan = $data['catatan'] ?? null;
             $tanggal = isset($data['tanggal']) ? Carbon::parse($data['tanggal']) : now();

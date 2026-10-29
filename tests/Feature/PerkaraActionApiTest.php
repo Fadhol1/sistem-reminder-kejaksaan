@@ -476,4 +476,31 @@ class PerkaraActionApiTest extends TestCase
         $responseProcess->assertStatus(404)
             ->assertJson(['success' => false]);
     }
+
+    public function test_api_actions_rejected_when_koordinasi_awal_is_overdue(): void
+    {
+        Sanctum::actingAs($this->jaksaAssigned);
+
+        // Tandai perkara menjadi overdue
+        $this->perkara->status_saat_ini = 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C';
+        $this->perkara->save();
+
+        // GET available-actions -> 403 Forbidden
+        $responseAvailable = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $responseAvailable->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+                'can_execute' => false,
+            ]);
+
+        // POST actions -> 403 Forbidden
+        $responseProcess = $this->postJson("/api/perkara/{$this->perkara->id}/actions", [
+            'action_id' => 'koordinasi_selesai',
+        ]);
+        $responseProcess->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+            ]);
+    }
 }
+

@@ -338,7 +338,14 @@ class PerkaraApiController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $request, $perkaraId) {
-            $perkara = Perkara::findOrFail($perkaraId);
+            $perkara = Perkara::with(['activeReminders', 'reminders'])->findOrFail($perkaraId);
+
+            if ($perkara->isKoordinasiAwalOverdue()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses Ditolak: Perkara pada tahap Koordinasi Awal telah overdue / melewati batas waktu SLA dan terkunci dari pembaruan data.',
+                ], 403);
+            }
 
             // 1. Simpan riwayat perkembangan ke perkara_timelines
             $timeline = $perkara->timelines()->create([
@@ -627,6 +634,16 @@ class PerkaraApiController extends Controller
             ], 403);
         }
 
+        // 2. Proteksi Overdue Koordinasi Awal
+        if ($perkara->isKoordinasiAwalOverdue()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perkara pada tahap Koordinasi Awal telah overdue dan terkunci dari pencatatan perkembangan.',
+                'can_execute' => false,
+                'data' => [],
+            ], 403);
+        }
+
         // 3. Ambil opsi aksi dinamis dari PerkaraWorkflowService (single source of truth)
         $actions = PerkaraWorkflowService::getAvailableActions($perkara);
 
@@ -691,7 +708,15 @@ class PerkaraApiController extends Controller
                 ], 403);
             }
 
-            // 4. Validasi Ulang Action terhadap state mutakhir perkara (Proteksi Stale State)
+            // 4. Proteksi Overdue Koordinasi Awal
+            if ($perkara->isKoordinasiAwalOverdue()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Perkara pada tahap Koordinasi Awal telah overdue dan terkunci dari pencatatan perkembangan.',
+                ], 403);
+            }
+
+            // 5. Validasi Ulang Action terhadap state mutakhir perkara (Proteksi Stale State)
             $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
             $actionValid = collect($availableActions)->contains('id', $validated['action_id']);
 

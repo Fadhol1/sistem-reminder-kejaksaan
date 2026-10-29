@@ -332,14 +332,24 @@
                                         <span>Detail</span>
                                     </a>
                                     @if(auth()->user()->isPidum())
-                                        <a href="{{ route('perkara.edit', $perkara->id) }}" 
-                                            class="inline-flex items-center gap-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs hover:bg-amber-100 hover:border-amber-400 py-1.5 px-2.5 transition"
-                                            title="Ubah Data Perkara">
-                                            <svg class="w-3.5 h-3.5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                            </svg>
-                                            <span>Edit</span>
-                                        </a>
+                                        @if($perkara->isKoordinasiAwalOverdue())
+                                            <span class="inline-flex items-center gap-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-400 border border-gray-200 py-1.5 px-2.5 cursor-not-allowed select-none"
+                                                title="Perkara pada tahap Koordinasi Awal yang overdue terkunci dan tidak dapat diubah">
+                                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                                </svg>
+                                                <span>Terkunci</span>
+                                            </span>
+                                        @else
+                                            <a href="{{ route('perkara.edit', $perkara->id) }}" 
+                                                class="inline-flex items-center gap-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs hover:bg-amber-100 hover:border-amber-400 py-1.5 px-2.5 transition"
+                                                title="Ubah Data Perkara">
+                                                <svg class="w-3.5 h-3.5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                                </svg>
+                                                <span>Edit</span>
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                             </td>

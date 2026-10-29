@@ -227,7 +227,12 @@ class PerkaraController extends Controller
             abort(403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit perkara.');
         }
 
-        $perkara = Perkara::with(['tersangkas', 'penyidiks', 'jaksas'])->findOrFail($id);
+        $perkara = Perkara::with(['tersangkas', 'penyidiks', 'jaksas', 'activeReminders', 'reminders'])->findOrFail($id);
+
+        if ($perkara->isKoordinasiAwalOverdue()) {
+            abort(403, 'Akses Ditolak: Perkara pada tahap Koordinasi Awal telah overdue / melewati batas waktu SLA dan terkunci dari pengubahan.');
+        }
+
         $jaksas = \App\Models\User::where('role', 'jaksa')->orderBy('name')->get();
         $selectedJaksaIds = $perkara->jaksas->pluck('id')->toArray();
 
@@ -243,7 +248,11 @@ class PerkaraController extends Controller
             abort(403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit perkara.');
         }
 
-        $perkara = Perkara::findOrFail($id);
+        $perkara = Perkara::with(['activeReminders', 'reminders'])->findOrFail($id);
+
+        if ($perkara->isKoordinasiAwalOverdue()) {
+            abort(403, 'Akses Ditolak: Perkara pada tahap Koordinasi Awal telah overdue / melewati batas waktu SLA dan terkunci dari pembaruan data.');
+        }
 
         // Normalisasi jika input dikirim sebagai single string 'penyidik'
         if (!$request->has('penyidiks') && $request->filled('penyidik')) {
@@ -335,6 +344,10 @@ class PerkaraController extends Controller
         }
 
         $perkara = Perkara::findOrFail($id);
+
+        if ($perkara->isKoordinasiAwalOverdue()) {
+            return redirect()->back()->with('error', 'Akses Ditolak: Perkara pada tahap Koordinasi Awal telah overdue dan terkunci dari pencatatan perkembangan.');
+        }
 
         $validated = $request->validate([
             'action_id' => 'required|string',

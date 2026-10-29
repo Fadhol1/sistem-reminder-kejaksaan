@@ -499,4 +499,157 @@ class PerkaraApiTest extends TestCase
         $response->assertSee('removePenyidikRow');
         $response->assertSee('Tambah Penyidik');
     }
+
+    public function test_pidum_cannot_view_edit_page_when_koordinasi_awal_is_overdue(): void
+    {
+        $jaksa = \App\Models\User::factory()->create(['role' => 'jaksa']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/OVERDUE/EDIT/01',
+            'penyidik'        => 'Penyidik Polsek',
+            'jaksa'           => $jaksa->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C',
+        ]);
+        $perkara->jaksas()->attach([$jaksa->id]);
+
+        $response = $this->get(route('perkara.edit', $perkara->id));
+
+        $response->assertStatus(403);
+    }
+
+    public function test_pidum_cannot_update_perkara_when_koordinasi_awal_is_overdue(): void
+    {
+        $jaksa = \App\Models\User::factory()->create(['role' => 'jaksa']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/OVERDUE/UPDATE/02',
+            'penyidik'        => 'Penyidik Asli',
+            'jaksa'           => $jaksa->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Menunggu Koordinasi',
+        ]);
+        $perkara->jaksas()->attach([$jaksa->id]);
+        $perkara->tersangkas()->create(['nama' => 'Tersangka Asli']);
+        $perkara->penyidiks()->create(['nama' => 'Penyidik Asli']);
+
+        // Create overdue active reminder
+        $perkara->reminders()->create([
+            'tahap'          => 'Koordinasi Awal',
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tanggal_mulai'  => '2026-10-01',
+            'deadline'       => '2026-10-04',
+            'status_urgensi' => 'Overdue',
+            'is_active'      => true,
+        ]);
+
+        $payload = [
+            'nomor_perkara' => 'BP/OVERDUE/UPDATE/02-HACK',
+            'penyidiks'     => [['nama' => 'Penyidik Baru']],
+            'jaksas'        => [$jaksa->id],
+            'tersangkas'    => [['nama' => 'Tersangka Baru']],
+        ];
+
+        $response = $this->put(route('perkara.update', $perkara->id), $payload);
+
+        $response->assertStatus(403);
+
+        // Verify database is NOT updated
+        $this->assertDatabaseHas('perkaras', [
+            'id'            => $perkara->id,
+            'nomor_perkara' => 'BP/OVERDUE/UPDATE/02',
+            'penyidik'      => 'Penyidik Asli',
+        ]);
+    }
+
+    public function test_api_store_timeline_rejects_update_when_koordinasi_awal_is_overdue(): void
+    {
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/API/OVERDUE/03',
+            'penyidik'        => 'Penyidik Asli',
+            'jaksa'           => 'Jaksa Asli',
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C',
+        ]);
+
+        $response = $this->postJson('/api/perkara/timeline', [
+            'perkara_id'            => $perkara->id,
+            'tahap'                 => 'Monitoring Penyidikan',
+            'status_kegiatan'       => 'Penerimaan Berkas',
+            'tanggal_kejadian'      => '2026-10-29',
+            'update_status_perkara' => true,
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_catat_perkembangan_is_rejected_when_koordinasi_awal_is_overdue(): void
+    {
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/OVERDUE/CATAT/01',
+            'penyidik'        => 'Penyidik Polsek',
+            'jaksa'           => 'Jaksa Peneliti',
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C',
+        ]);
+
+        $response = $this->post(route('perkara.catatPerkembangan', $perkara->id), [
+            'action_id' => 'koordinasi_selesai',
+            'tanggal'   => '2026-10-29',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+    }
+
+    public function test_perkara_show_displays_catat_perkembangan_disabled_when_overdue(): void
+    {
+        $jaksa = \App\Models\User::factory()->create(['role' => 'jaksa']);
+
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/SHOW/OVERDUE/02',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => $jaksa->name,
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Menunggu Koordinasi',
+        ]);
+        $perkara->jaksas()->attach([$jaksa->id]);
+
+        $perkara->reminders()->create([
+            'tahap'          => 'Koordinasi Awal',
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tanggal_mulai'  => '2026-10-01',
+            'deadline'       => '2026-10-04',
+            'status_urgensi' => 'Overdue',
+            'is_active'      => true,
+        ]);
+
+        $response = $this->get(route('perkara.show', $perkara->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('Pencatatan Perkembangan Dinonaktifkan');
+        $response->assertSee('Terkunci (Overdue)');
+        $response->assertDontSee('Simpan Perkembangan');
+    }
+
+    public function test_workflow_service_get_available_actions_returns_empty_when_koordinasi_awal_is_overdue(): void
+    {
+        $perkara = Perkara::create([
+            'nomor_perkara'   => 'BP/WORKFLOW/OVERDUE/03',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => 'Jaksa Peneliti',
+            'tanggal_spdp'    => '2026-10-01',
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C',
+        ]);
+
+        $actions = \App\Services\PerkaraWorkflowService::getAvailableActions($perkara);
+        $this->assertEmpty($actions);
+    }
 }
+
