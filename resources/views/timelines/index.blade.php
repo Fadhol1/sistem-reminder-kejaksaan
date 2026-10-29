@@ -29,58 +29,58 @@
     </div>
 
     <!-- 4 Stats / KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <!-- Card 1: Total Aktivitas -->
-        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Catatan</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['total_aktivitas'] ?? 0) }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Semua jejak audit trail</p>
+                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Catatan</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-0.5">{{ number_format($stats['total_aktivitas'] ?? 0) }}</h3>
+                <p class="text-[11px] text-gray-400 mt-0.5">Semua jejak audit trail</p>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <div class="w-10 h-10 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
             </div>
         </div>
 
         <!-- Card 2: Hari Ini -->
-        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Aktivitas Hari Ini</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['hari_ini'] ?? 0) }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">{{ now()->translatedFormat('d F Y') }}</p>
+                <p class="text-xs font-medium text-emerald-700 uppercase tracking-wider">Aktivitas Hari Ini</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-0.5">{{ number_format($stats['hari_ini'] ?? 0) }}</h3>
+                <p class="text-[11px] text-gray-400 mt-0.5">{{ now()->translatedFormat('d F Y') }}</p>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                 </svg>
             </div>
         </div>
 
         <!-- Card 3: Otomasi SLA Sistem -->
-        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Otomasi SLA Sistem</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['oleh_sistem'] ?? 0) }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Auto Form-1B/1C, P-17, dll.</p>
+                <p class="text-xs font-medium text-purple-700 uppercase tracking-wider">Otomasi SLA Sistem</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-0.5">{{ number_format($stats['oleh_sistem'] ?? 0) }}</h3>
+                <p class="text-[11px] text-gray-400 mt-0.5">Auto Form-1B/1C, P-17, dll.</p>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                 </svg>
             </div>
         </div>
 
         <!-- Card 4: Tindakan Petugas -->
-        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Tindakan Petugas</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['oleh_petugas'] ?? 0) }}</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Jaksa, Penyidik & Admin</p>
+                <p class="text-xs font-medium text-slate-700 uppercase tracking-wider">Tindakan Petugas</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-0.5">{{ number_format($stats['oleh_petugas'] ?? 0) }}</h3>
+                <p class="text-[11px] text-gray-400 mt-0.5">Jaksa, Penyidik & Admin</p>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
             </div>
@@ -88,7 +88,7 @@
     </div>
 
     <!-- Filter & Search Controls -->
-    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
         <form action="{{ route('timelines.index') }}" method="GET" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                 <!-- Search Keyword -->
@@ -124,18 +124,18 @@
                     <label class="block text-xs font-medium text-gray-700 mb-1">Pelaksana</label>
                     <select name="actor" class="block w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
                         <option value="">Semua Pelaksana</option>
-                        <option value="SYSTEM" {{ request('actor') == 'SYSTEM' ? 'selected' : '' }}>🤖 Otomasi Sistem</option>
-                        <option value="USER" {{ request('actor') == 'USER' ? 'selected' : '' }}>👤 Petugas / Manual</option>
+                        <option value="SYSTEM" {{ request('actor') == 'SYSTEM' ? 'selected' : '' }}>Otomasi Sistem</option>
+                        <option value="USER" {{ request('actor') == 'USER' ? 'selected' : '' }}>Petugas / Manual</option>
                     </select>
                 </div>
 
                 <!-- Submit & Reset Buttons -->
                 <div class="md:col-span-2 flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition">
-                        Terapkan
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-2xs hover:bg-slate-800 transition-colors">
+                        Saring
                     </button>
                     @if(request()->hasAny(['search', 'tahap', 'actor', 'tanggal_dari', 'tanggal_sampai']))
-                        <a href="{{ route('timelines.index') }}" title="Reset Semua Filter" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                        <a href="{{ route('timelines.index') }}" title="Reset Semua Filter" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -205,13 +205,8 @@
                                     
                                     // Tahap Badge Color Palette
                                     $tahapBg = match($log->tahap) {
-                                        'Koordinasi Awal' => 'bg-blue-50 text-blue-700 border-blue-200',
-                                        'Monitoring Penyidikan' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                        'P-24' => 'bg-purple-50 text-purple-700 border-purple-200',
-                                        'P-19' => 'bg-orange-50 text-orange-700 border-orange-200',
-                                        'P-21' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                        'Tahap II' => 'bg-teal-50 text-teal-700 border-teal-200',
-                                        default => 'bg-gray-100 text-gray-700 border-gray-200',
+                                        'Tahap II Selesai' => 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                                        default => 'bg-slate-100 text-slate-700 border-slate-200',
                                     };
                                 @endphp
 

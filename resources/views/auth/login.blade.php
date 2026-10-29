@@ -109,7 +109,7 @@
 
         <!-- Tombol Submit Masuk -->
         <button type="submit"
-            class="w-full py-3.5 px-6 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] shadow-lg shadow-red-950/20 hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer">
+            class="w-full py-3.5 px-6 rounded-xl text-sm font-bold text-white bg-[#881337] hover:bg-[#700d1a] shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
             <span>Masuk ke Dashboard SIPETA</span>
             <svg class="w-4 h-4 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />

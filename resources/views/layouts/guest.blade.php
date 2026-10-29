@@ -41,7 +41,7 @@
         <!-- ========================================================
              KOLOM KIRI: SISI MERAH (IDENTITAS RESMI KEJAKSAAN & FITUR)
              ======================================================== -->
-        <div class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-10 lg:p-10 xl:p-12 overflow-hidden shadow-2xl lg:shadow-none">
+        <div class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-8 lg:p-7 xl:p-10 overflow-y-auto shadow-2xl lg:shadow-none custom-auth-scroll">
             
             <!-- Ornamen Dekoratif Latar Belakang (Guilloche / Mesh Halus) -->
             <div class="absolute inset-0 pointer-events-none opacity-[0.06] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]"></div>
@@ -93,7 +93,7 @@
             </div>
 
             <!-- BAGIAN TENGAH: Pilar Integritas & Standar Tata Kelola Hukum (Aman & Profesional untuk Publik) -->
-            <div class="relative z-10 my-8 lg:my-6 xl:my-8 space-y-4">
+            <div class="relative z-10 my-6 lg:my-4 xl:my-6 space-y-3">
                 
                 <!-- Card Pilar Tata Kelola Kedinasan -->
                 <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 shadow-2xl space-y-3.5">

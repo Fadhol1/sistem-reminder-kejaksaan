@@ -190,7 +190,10 @@
                                             </span>
                                             @if($isSystem)
                                                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                                                    🤖 Otomasi Sistem
+                                                    <svg class="w-3 h-3 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                                                    </svg>
+                                                    Otomasi Sistem
                                                 </span>
                                             @else
                                                 <span class="text-xs text-gray-500 font-medium">
@@ -306,6 +309,76 @@
                 </div>
             </div>
 
+            <!-- Catat Perkembangan Action Card -->
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                    <h4 class="font-medium text-gray-900">Catat Perkembangan</h4>
+                    @if($perkara->isKoordinasiAwalOverdue())
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+                            </svg>
+                            Terkunci (Overdue)
+                        </span>
+                    @endif
+                </div>
+                <div class="p-6">
+                    @if($perkara->isKoordinasiAwalOverdue())
+                        <div class="rounded-xl bg-gradient-to-br from-rose-50/80 via-rose-50/50 to-red-50/30 border border-rose-200 p-5 text-center shadow-2xs">
+                            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 shadow-2xs border border-rose-200">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                </svg>
+                            </div>
+                            <h5 class="text-sm font-bold text-rose-900 mb-1.5">Pencatatan Perkembangan Dinonaktifkan</h5>
+                            <p class="text-xs text-rose-700 leading-relaxed max-w-sm mx-auto mb-3">
+                                Perkara pada tahap <strong>Koordinasi Awal</strong> telah melewati batas waktu SLA 3 hari (Overdue). Aksi perkembangan telah dikunci oleh sistem sesuai SOP Kejaksaan.
+                            </p>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white border border-rose-200 text-xs font-medium text-rose-800 shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Status: Overdue / Tindak Lanjut Form-1B & Form-1C
+                            </div>
+                        </div>
+                    @elseif(count($availableActions) > 0)
+                        <p class="text-sm text-gray-500 mb-4">Pilih aksi selanjutnya sesuai alur perkara:</p>
+                        
+                        <form action="{{ route('perkara.catatPerkembangan', $perkara->id) }}" method="POST" class="space-y-4">
+                            @csrf
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Aksi</label>
+                                <select name="action_id" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                    <option value="" disabled selected>-- Pilih Aksi --</option>
+                                    @foreach($availableActions as $action)
+                                        <option value="{{ $action['id'] }}">{{ $action['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
+                                <textarea name="catatan" rows="2" class="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full inline-flex h-10 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                                Simpan Perkembangan
+                            </button>
+                        </form>
+                    @else
+                        <div class="text-center p-4">
+                            <p class="text-sm text-gray-500">Tidak ada aksi lanjutan yang tersedia (Perkara Selesai atau status statis).</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             @if(app()->environment('local') || config('app.debug'))
             @php
                 $isArchivedDev = str_contains($perkara->status_saat_ini, 'FORM-3') ||
@@ -314,17 +387,22 @@
                                  $perkara->status_saat_ini === 'Tahap II Selesai';
                 $devActiveReminder = $perkara->activeReminders->first();
             @endphp
-            <!-- Dev / Sandbox SLA Simulator Card (Khusus Local Environment) -->
-            <div class="bg-gradient-to-br from-amber-50/80 via-white to-orange-50/60 rounded-xl border-2 border-dashed border-amber-300 shadow-sm overflow-hidden">
-                <div class="px-5 py-3.5 bg-amber-100/80 border-b border-amber-200 flex items-center justify-between">
+            <!-- Dev / Sandbox SLA Simulator Card (Collapsible) -->
+            <details class="group bg-white rounded-xl border border-amber-300 shadow-2xs overflow-hidden">
+                <summary class="px-5 py-3.5 bg-amber-50/80 border-b border-amber-200 flex items-center justify-between cursor-pointer select-none hover:bg-amber-100/70 transition-colors list-none">
                     <div class="flex items-center gap-2">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white tracking-wider uppercase">DEV TOOL</span>
                         <h4 class="font-bold text-xs sm:text-sm text-amber-950">Simulator Waktu & SLA Engine</h4>
                     </div>
-                    <span class="text-[10px] font-semibold text-amber-800 bg-amber-200/90 px-2 py-0.5 rounded-full">Local Testing</span>
-                </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-semibold text-amber-800 bg-amber-200/90 px-2 py-0.5 rounded-full">Sandbox</span>
+                        <svg class="w-4 h-4 text-amber-700 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </div>
+                </summary>
 
-                <div class="p-5 space-y-4">
+                <div class="p-5 space-y-4 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30">
                     <!-- Contextual SLA Target Info -->
                     @if($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P19)
                         <div class="p-3 bg-orange-100/70 border border-orange-200 rounded-lg text-xs text-orange-950 space-y-1">
@@ -410,13 +488,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                                 </svg>
                                 @if($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P19)
-                                    <span>🔥 Simulasikan >14 Hari ➔ Auto-P20 & Arsipkan</span>
+                                    <span>Simulasikan >14 Hari ➔ Auto-P20 & Arsipkan</span>
                                 @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_P21)
-                                    <span>🔥 Simulasikan >14 Hari ➔ Auto-FORM-7 & Arsipkan</span>
+                                    <span>Simulasikan >14 Hari ➔ Auto-FORM-7 & Arsipkan</span>
                                 @elseif($perkara->tahap_saat_ini === \App\Services\PerkaraWorkflowService::TAHAP_MONITORING)
-                                    <span>🔥 Simulasikan >30 Hari ➔ Eksekusi Alur Otomatis</span>
+                                    <span>Simulasikan >30 Hari ➔ Eksekusi Alur Otomatis</span>
                                 @else
-                                    <span>🔥 Set Overdue & Eksekusi Alur Otomatis</span>
+                                    <span>Set Overdue & Eksekusi Alur Otomatis</span>
                                 @endif
                             </button>
                         </form>
@@ -488,78 +566,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </details>
             @endif
-
-            <!-- Catat Perkembangan Action Card -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                    <h4 class="font-medium text-gray-900">Catat Perkembangan</h4>
-                    @if($perkara->isKoordinasiAwalOverdue())
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                            <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
-                            </svg>
-                            Terkunci (Overdue)
-                        </span>
-                    @endif
-                </div>
-                <div class="p-6">
-                    @if($perkara->isKoordinasiAwalOverdue())
-                        <div class="rounded-xl bg-gradient-to-br from-rose-50/80 via-rose-50/50 to-red-50/30 border border-rose-200 p-5 text-center shadow-2xs">
-                            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 shadow-2xs border border-rose-200">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                                </svg>
-                            </div>
-                            <h5 class="text-sm font-bold text-rose-900 mb-1.5">Pencatatan Perkembangan Dinonaktifkan</h5>
-                            <p class="text-xs text-rose-700 leading-relaxed max-w-sm mx-auto mb-3">
-                                Perkara pada tahap <strong>Koordinasi Awal</strong> telah melewati batas waktu SLA 3 hari (Overdue). Aksi perkembangan telah dikunci oleh sistem sesuai SOP Kejaksaan.
-                            </p>
-                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white border border-rose-200 text-xs font-medium text-rose-800 shadow-2xs">
-                                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Status: Overdue / Tindak Lanjut Form-1B & Form-1C
-                            </div>
-                        </div>
-                    @elseif(count($availableActions) > 0)
-                        <p class="text-sm text-gray-500 mb-4">Pilih aksi selanjutnya sesuai alur perkara:</p>
-                        
-                        <form action="{{ route('perkara.catatPerkembangan', $perkara->id) }}" method="POST" class="space-y-4">
-                            @csrf
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Aksi</label>
-                                <select name="action_id" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                                    <option value="" disabled selected>-- Pilih Aksi --</option>
-                                    @foreach($availableActions as $action)
-                                        <option value="{{ $action['id'] }}">{{ $action['label'] }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
-                                <textarea name="catatan" rows="2" class="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20"></textarea>
-                            </div>
-
-                            <button type="submit" class="w-full inline-flex h-10 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
-                                Simpan Perkembangan
-                            </button>
-                        </form>
-                    @else
-                        <div class="text-center p-4">
-                            <p class="text-sm text-gray-500">Tidak ada aksi lanjutan yang tersedia (Perkara Selesai atau status statis).</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
 
         </div>
     </div>
@@ -567,32 +575,32 @@
 
 <!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-900/60 transition-opacity backdrop-blur-sm" id="deleteModalBackdrop"></div>
+    <div class="fixed inset-0 bg-slate-900/60 transition-opacity" id="deleteModalBackdrop"></div>
     <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-xl bg-white/70 backdrop-blur-xl border border-white/40 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+                <div class="p-6">
                     <div class="sm:flex sm:items-start">
-                        <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10 shadow-sm border border-red-200">
-                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <div class="mx-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
                         <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                            <h3 class="text-base font-semibold leading-6 text-gray-900 drop-shadow-sm" id="modal-title">Hapus Perkara</h3>
+                            <h3 class="text-base font-semibold leading-6 text-slate-900" id="modal-title">Hapus Perkara</h3>
                             <div class="mt-2">
-                                <p class="text-sm text-gray-700">Apakah Anda yakin ingin menghapus perkara ini sepenuhnya beserta seluruh riwayat timeline dan remindernya? Tindakan ini tidak dapat dibatalkan.</p>
+                                <p class="text-sm text-slate-600">Apakah Anda yakin ingin menghapus perkara ini beserta seluruh riwayat timeline dan remindernya? Tindakan ini tidak dapat dibatalkan.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="px-4 py-4 sm:flex sm:flex-row-reverse sm:px-6 border-t border-white/50 bg-white/30">
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                    <button type="button" onclick="closeDeleteModal()" class="inline-flex justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors">Batal</button>
                     <form action="{{ route('perkara.destroy', $perkara->id) }}" method="POST" id="deleteForm">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="inline-flex w-full justify-center rounded-md bg-red-600/90 hover:bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto transition-colors">Hapus Perkara</button>
+                        <button type="submit" class="inline-flex w-full justify-center rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-2xs transition-colors">Hapus Perkara</button>
                     </form>
-                    <button type="button" onclick="closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white/60 hover:bg-white/90 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300/50 sm:mt-0 sm:w-auto transition-colors">Batal</button>
                 </div>
             </div>
         </div>

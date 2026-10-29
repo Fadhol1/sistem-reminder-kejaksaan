@@ -20,47 +20,53 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Bidang dicatat otomatis di backend sbg PIDUM -->
 
-                <div class="col-span-1 md:col-span-2">
-                    <label for="nomor_perkara" class="block text-sm font-medium text-gray-700 mb-1">Nomor Perkara / SPDP</label>
-                    <input type="text" name="nomor_perkara" id="nomor_perkara" value="{{ old('nomor_perkara') }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nomor_perkara') border-red-500 @enderror">
+                <div>
+                    <label for="nomor_perkara" class="block text-sm font-medium text-gray-700 mb-1">
+                        Nomor Perkara / SPDP <span class="text-rose-600 font-bold">*</span>
+                    </label>
+                    <input type="text" name="nomor_perkara" id="nomor_perkara" value="{{ old('nomor_perkara') }}" placeholder="Contoh: SPDP/12/X/2026/Reskrim" required class="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20 @error('nomor_perkara') border-red-500 @enderror">
                     @error('nomor_perkara')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="tanggal_spdp" class="block text-sm font-medium text-gray-700 mb-1">Tanggal SPDP</label>
-                    <input type="date" name="tanggal_spdp" id="tanggal_spdp" value="{{ old('tanggal_spdp', date('Y-m-d')) }}" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                    <label for="tanggal_spdp" class="block text-sm font-medium text-gray-700 mb-1">
+                        Tanggal SPDP <span class="text-rose-600 font-bold">*</span>
+                    </label>
+                    <input type="date" name="tanggal_spdp" id="tanggal_spdp" value="{{ old('tanggal_spdp', date('Y-m-d')) }}" required class="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
                     @error('tanggal_spdp')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Daftar Tersangka</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Daftar Tersangka <span class="text-rose-600 font-bold">*</span>
+                    </label>
 
                     <div id="tersangka-container" class="space-y-2">
                         @if(old('tersangkas'))
                             @foreach(old('tersangkas') as $index => $tersangka)
                                 <div class="tersangka-row flex gap-2 items-center">
-                                    <input type="text" name="tersangkas[{{ $index }}][nama]" value="{{ is_array($tersangka) ? ($tersangka['nama'] ?? '') : $tersangka }}" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                                    <button type="button" onclick="removeTersangkaRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                    <input type="text" name="tersangkas[{{ $index }}][nama]" value="{{ is_array($tersangka) ? ($tersangka['nama'] ?? '') : $tersangka }}" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                    <button type="button" onclick="removeTersangkaRow(this)" title="Hapus tersangka" class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 flex items-center justify-center transition-colors">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
                                     </button>
                                 </div>
                             @endforeach
                         @else
                             <div class="tersangka-row flex gap-2 items-center">
-                                <input type="text" name="tersangkas[0][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                                <button type="button" onclick="removeTersangkaRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                <input type="text" name="tersangkas[0][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                <button type="button" onclick="removeTersangkaRow(this)" title="Hapus tersangka" class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 flex items-center justify-center transition-colors">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
                                 </button>
                             </div>
                         @endif
                     </div>
 
-                    <button type="button" onclick="addTersangkaRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-900">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    <button type="button" onclick="addTersangkaRow()" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                         Tambah Tersangka
                     </button>
                     @error('tersangkas')
@@ -69,30 +75,32 @@
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Daftar Penyidik / Instansi Asal</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Daftar Penyidik / Instansi Asal <span class="text-rose-600 font-bold">*</span>
+                    </label>
 
                     <div id="penyidik-container" class="space-y-2">
                         @if(old('penyidiks'))
                             @foreach(old('penyidiks') as $pIndex => $pItem)
                                 <div class="penyidik-row flex gap-2 items-center">
-                                    <input type="text" name="penyidiks[{{ $pIndex }}][nama]" value="{{ is_array($pItem) ? ($pItem['nama'] ?? '') : $pItem }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                                    <button type="button" onclick="removePenyidikRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                    <input type="text" name="penyidiks[{{ $pIndex }}][nama]" value="{{ is_array($pItem) ? ($pItem['nama'] ?? '') : $pItem }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                    <button type="button" onclick="removePenyidikRow(this)" title="Hapus penyidik" class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 flex items-center justify-center transition-colors">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
                                     </button>
                                 </div>
                             @endforeach
                         @else
                             <div class="penyidik-row flex gap-2 items-center">
-                                <input type="text" name="penyidiks[0][nama]" value="{{ old('penyidik') }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
-                                <button type="button" onclick="removePenyidikRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                                <input type="text" name="penyidiks[0][nama]" value="{{ old('penyidik') }}" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">
+                                <button type="button" onclick="removePenyidikRow(this)" title="Hapus penyidik" class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 flex items-center justify-center transition-colors">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
                                 </button>
                             </div>
                         @endif
                     </div>
 
-                    <button type="button" onclick="addPenyidikRow()" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-900">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    <button type="button" onclick="addPenyidikRow()" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                         Tambah Penyidik
                     </button>
                     @error('penyidiks')
@@ -101,30 +109,35 @@
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jaksa Penuntut Umum (Pilih Minimal 1)</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Jaksa Penuntut Umum <span class="text-rose-600 font-bold">*</span>
+                        </label>
+                        <span class="text-xs text-slate-500">Pilih minimal 1 Jaksa</span>
+                    </div>
                     
                     <!-- Fitur Search Jaksa -->
                     <div class="relative mb-2">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg aria-hidden="true" class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg aria-hidden="true" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" id="searchJaksaInput" onkeyup="filterJaksa()" placeholder="Cari nama jaksa..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-red-600 focus:border-red-600 block w-full pl-9 p-2">
+                        <input type="text" id="searchJaksaInput" onkeyup="filterJaksa()" placeholder="Cari nama jaksa..." class="bg-slate-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full pl-9 p-2">
                     </div>
 
-                    <div id="jaksaListContainer" class="max-h-48 overflow-y-auto p-3 border border-gray-300 rounded-md bg-white space-y-3">
+                    <div id="jaksaListContainer" class="max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-white divide-y divide-gray-100">
                         @foreach($jaksas as $j)
-                            <div class="flex items-center jaksa-item">
+                            <div class="flex items-center p-2 rounded-md hover:bg-slate-50 transition-colors jaksa-item">
                                 <input id="jaksa_{{ $j->id }}" name="jaksas[]" type="checkbox" value="{{ $j->id }}" 
                                     {{ (is_array(old('jaksas')) && in_array($j->id, old('jaksas'))) ? 'checked' : '' }}
-                                    class="h-4 w-4 rounded border-gray-300 text-red-700 focus:ring-red-600">
-                                <label for="jaksa_{{ $j->id }}" class="ml-3 block text-sm font-medium text-gray-700 cursor-pointer jaksa-name">
+                                    class="h-4 w-4 rounded border-gray-300 text-red-700 focus:ring-red-600 cursor-pointer">
+                                <label for="jaksa_{{ $j->id }}" class="ml-3 block text-sm font-medium text-gray-700 cursor-pointer flex-1 jaksa-name">
                                     {{ $j->name }}
                                 </label>
                             </div>
                         @endforeach
                         
                         <!-- Pesan 'Tidak Ditemukan' -->
-                        <div id="jaksaEmptyMessage" class="hidden text-sm text-gray-500 text-center py-2">
+                        <div id="jaksaEmptyMessage" class="hidden text-sm text-gray-500 text-center py-3">
                             Jaksa tidak ditemukan.
                         </div>
                     </div>
@@ -140,10 +153,10 @@
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200 space-x-3">
-                <a href="{{ route('perkara.index') }}" class="inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                <a href="{{ route('perkara.index') }}" class="inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-2xs hover:bg-gray-50 transition-colors">
                     Batal
                 </a>
-                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
+                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-lg bg-gradient-to-r from-[#881337] via-[#991b1b] to-[#7f1d1d] hover:from-[#700d1a] hover:via-[#881337] hover:to-[#5c0b15] px-4 py-2 text-sm font-semibold text-white shadow-2xs transition">
                     Simpan Perkara
                 </button>
             </div>
@@ -157,8 +170,8 @@
     function addTersangkaRow() {
         const container = document.getElementById('tersangka-container');
         const html = '<div class="tersangka-row flex gap-2 items-center">' +
-            '<input type="text" name="tersangkas[' + tersangkaRowIndex + '][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
-            '<button type="button" onclick="removeTersangkaRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">' +
+            '<input type="text" name="tersangkas[' + tersangkaRowIndex + '][nama]" value="" placeholder="Nama tersangka" required class="flex h-10 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
+            '<button type="button" onclick="removeTersangkaRow(this)" title="Hapus tersangka" class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 flex items-center justify-center transition-colors">' +
             '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
             '</button></div>';
         container.insertAdjacentHTML('beforeend', html);
@@ -184,8 +197,8 @@
     function addPenyidikRow() {
         const container = document.getElementById('penyidik-container');
         const html = '<div class="penyidik-row flex gap-2 items-center">' +
-            '<input type="text" name="penyidiks[' + penyidikRowIndex + '][nama]" value="" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
-            '<button type="button" onclick="removePenyidikRow(this)" class="h-10 w-10 shrink-0 rounded-md border border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center">' +
+            '<input type="text" name="penyidiks[' + penyidikRowIndex + '][nama]" value="" placeholder="Contoh: IPTU Bambang Wijaya / Polres OKU" required class="flex h-10 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus:border-red-600 focus-visible:ring-2 focus-visible:ring-red-600/20">' +
+            '<button type="button" onclick="removePenyidikRow(this)" title="Hapus penyidik" class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 flex items-center justify-center transition-colors">' +
             '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
             '</button></div>';
         container.insertAdjacentHTML('beforeend', html);
