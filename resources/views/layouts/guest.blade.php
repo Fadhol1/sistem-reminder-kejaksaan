@@ -177,23 +177,19 @@
              ======================================================== -->
         <div class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-[600px] lg:min-h-0">
             
-            <!-- Header Navigasi / Switcher Tab (Masuk vs Daftar) -->
+            <!-- Header Navigasi (Akses Tertutup Khusus Aparat/Pegawai) -->
             <div class="px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between border-b border-slate-100 pb-4">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
                     <span class="text-xs font-bold text-slate-700 tracking-wider uppercase">Portal Penegakan Hukum</span>
                 </div>
 
-                <!-- Tab Switcher Navigasi Pill -->
-                <div class="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-inner">
-                    <a href="{{ route('login') }}" 
-                        class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 {{ request()->routeIs('login') ? 'bg-white text-red-700 shadow-sm border border-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
-                        Masuk
-                    </a>
-                    <a href="{{ route('register') }}" 
-                        class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 {{ request()->routeIs('register') ? 'bg-white text-red-700 shadow-sm border border-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
-                        Daftar Baru
-                    </a>
+                <!-- Badge Akses Internal Resmi -->
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-semibold text-slate-600 select-none">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                    <span>Akses Internal Pegawai</span>
                 </div>
             </div>
 

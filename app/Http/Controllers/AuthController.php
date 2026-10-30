@@ -35,32 +35,6 @@ class AuthController extends Controller
             ]);
     }
 
-    public function showRegistrationForm(): \Illuminate\Contracts\View\View
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role'     => ['required', 'in:pidum,jaksa'],
-            'password' => ['required', 'confirmed', Password::min(8)],
-        ]);
-
-        $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'role'     => $validated['role'],
-            'password' => $validated['password'],
-        ]);
-
-        Auth::login($user);
-
-        return redirect()->route('dashboard');
-    }
-
     public function logout(Request $request)
     {
         Auth::logout();

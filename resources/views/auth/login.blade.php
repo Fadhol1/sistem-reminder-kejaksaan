@@ -116,13 +116,10 @@
             </svg>
         </button>
 
-        <!-- Link Navigasi Cepat ke Registrasi -->
+        <!-- Keterangan Akses Tertutup Kedinasan -->
         <div class="pt-2 text-center">
             <p class="text-xs text-slate-500">
-                Belum memiliki akun kedinasan?
-                <a href="{{ route('register') }}" class="font-bold text-red-700 hover:text-red-800 hover:underline transition">
-                    Daftar akun di sini
-                </a>
+                Pendaftaran & pengelolaan akun kedinasan dilakukan oleh <span class="font-semibold text-slate-700">Administrator PIDUM</span>.
             </p>
         </div>
     </form>
