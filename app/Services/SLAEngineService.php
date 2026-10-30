@@ -130,7 +130,7 @@ class SLAEngineService
 
         foreach ($monitoringPerkaras as $pSPDP) {
             $spdpDate = Carbon::parse($pSPDP->tanggal_spdp);
-            if ($spdpDate->addDays(30)->isPast()) {
+            if ($spdpDate->copy()->addDays(30)->endOfDay()->isPast()) {
                 try {
                     Log::info("SLAEngineService: SPDP > 30 hari terdeteksi pada Perkara ID {$pSPDP->id}. Menjalankan auto-transition P-17.");
                     PerkaraWorkflowService::processAction($pSPDP, 'catat_p17', [], null, 'SYSTEM');

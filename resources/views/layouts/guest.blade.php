@@ -39,9 +39,9 @@
     <div class="min-h-screen w-full lg:h-screen lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 bg-white">
 
         <!-- ========================================================
-             KOLOM KIRI: SISI MERAH (IDENTITAS RESMI KEJAKSAAN & FITUR)
+             KOLOM KIRI: SISI MERAH (IDENTITAS RESMI KEJAKSAAN & FITUR - STATIS & MENYATU)
              ======================================================== -->
-        <div class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-8 lg:p-7 xl:p-10 overflow-y-auto shadow-2xl lg:shadow-none custom-auth-scroll">
+        <div class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-8 lg:p-6 xl:p-8 2xl:p-10 overflow-hidden shadow-2xl lg:shadow-none select-none">
             
             <!-- Ornamen Dekoratif Latar Belakang (Guilloche / Mesh Halus) -->
             <div class="absolute inset-0 pointer-events-none opacity-[0.06] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]"></div>
@@ -59,7 +59,7 @@
             <div class="relative z-10">
                 <div class="flex items-center gap-3.5">
                     <!-- Lambang Adhyaksa / Shield Keadilan -->
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-[1.5px] shadow-lg shadow-amber-950/40 shrink-0 flex items-center justify-center">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-[1.5px] shadow-lg shadow-amber-950/40 shrink-0 flex items-center justify-center">
                         <div class="w-full h-full bg-[#5c0b15] rounded-[10px] flex items-center justify-center">
                             <!-- SVG Timbangan Keadilan & Pedang Adhyaksa -->
                             <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -80,24 +80,24 @@
                             </span>
                             <span class="text-xs text-rose-200/70 font-medium">Bidang PIDUM</span>
                         </div>
-                        <h1 class="text-2xl font-extrabold tracking-tight text-white mt-0.5 flex items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white mt-0.5 flex items-center gap-2">
                             SIPETA
-                            <span class="text-xs font-normal text-rose-200 px-2 py-0.5 rounded-full bg-white/10 border border-white/15">v2.4</span>
+                            <span class="text-[11px] font-normal text-rose-200 px-2 py-0.5 rounded-full bg-white/10 border border-white/15">v2.4</span>
                         </h1>
                     </div>
                 </div>
 
-                <p class="text-xs sm:text-sm text-rose-100/80 mt-3 leading-relaxed max-w-md">
+                <p class="text-xs sm:text-[13px] text-rose-100/80 mt-2.5 leading-relaxed max-w-md">
                     Sistem Pengingat Tahapan Perkara — Penegakan tenggat waktu SLA pidana umum secara transparan, terukur, dan akuntabel.
                 </p>
             </div>
 
-            <!-- BAGIAN TENGAH: Pilar Integritas & Standar Tata Kelola Hukum (Aman & Profesional untuk Publik) -->
-            <div class="relative z-10 my-6 lg:my-4 xl:my-6 space-y-3">
+            <!-- BAGIAN TENGAH: Pilar Integritas & Standar Tata Kelola Hukum -->
+            <div class="relative z-10 my-auto py-3 space-y-3">
                 
                 <!-- Card Pilar Tata Kelola Kedinasan -->
-                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 shadow-2xl space-y-3.5">
-                    <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 sm:p-4.5 shadow-xl space-y-2.5">
+                    <div class="flex items-center justify-between pb-2.5 border-b border-white/10">
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                             <span class="text-xs font-bold text-white tracking-wider uppercase">Portal Kedinasan Resmi</span>
@@ -108,45 +108,45 @@
                     </div>
 
                     <!-- 3 Pilar Tata Kelola -->
-                    <div class="space-y-2.5 text-xs">
-                        <div class="flex items-start gap-3 bg-black/20 rounded-xl p-3 border border-white/10">
-                            <div class="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-start gap-2.5 bg-black/20 rounded-xl p-2.5 border border-white/10">
+                            <div class="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-white">Kepastian Waktu & SLA</p>
-                                <p class="text-rose-100/70 text-[11px] leading-relaxed mt-0.5">
-                                    Menjamin penanganan tahapan berkas perkara pidana umum berjalan tertib sesuai batas waktu KUHAP & SOP Kejaksaan RI.
+                                <p class="font-bold text-white text-xs">Kepastian Waktu & SLA</p>
+                                <p class="text-rose-100/70 text-[11px] leading-snug mt-0.5">
+                                    Penanganan tahapan berkas perkara berjalan tertib sesuai batas waktu KUHAP & SOP Kejaksaan RI.
                                 </p>
                             </div>
                         </div>
 
-                        <div class="flex items-start gap-3 bg-black/20 rounded-xl p-3 border border-white/10">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-400/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <div class="flex items-start gap-2.5 bg-black/20 rounded-xl p-2.5 border border-white/10">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-400/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-7.5 7.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 21 4.5H3a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 3 19.5Z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-white">Audit Trail Digital Permanen</p>
-                                <p class="text-rose-100/70 text-[11px] leading-relaxed mt-0.5">
-                                    Setiap riwayat perkembangan dicatat secara otomatis, transparan, dan tidak dapat diubah sepihak.
+                                <p class="font-bold text-white text-xs">Audit Trail Digital Permanen</p>
+                                <p class="text-rose-100/70 text-[11px] leading-snug mt-0.5">
+                                    Riwayat perkembangan tercatat otomatis, transparan, dan tidak dapat diubah sepihak.
                                 </p>
                             </div>
                         </div>
 
-                        <div class="flex items-start gap-3 bg-black/20 rounded-xl p-3 border border-white/10">
-                            <div class="w-7 h-7 rounded-lg bg-rose-400/20 text-rose-300 flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <div class="flex items-start gap-2.5 bg-black/20 rounded-xl p-2.5 border border-white/10">
+                            <div class="w-6 h-6 rounded-lg bg-rose-400/20 text-rose-300 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-white">Keamanan & Kerahasiaan Data</p>
-                                <p class="text-rose-100/70 text-[11px] leading-relaxed mt-0.5">
-                                    Akses terproteksi khusus bagi Penyidik Polri/PPNS, Jaksa Penuntut Umum, dan Pimpinan Kejaksaan.
+                                <p class="font-bold text-white text-xs">Keamanan & Kerahasiaan Data</p>
+                                <p class="text-rose-100/70 text-[11px] leading-snug mt-0.5">
+                                    Akses terproteksi bagi Penyidik Polri/PPNS, Jaksa Penuntut Umum, dan Pimpinan Kejaksaan.
                                 </p>
                             </div>
                         </div>
@@ -154,8 +154,8 @@
                 </div>
 
                 <!-- Tri Krama Adhyaksa Values Badge -->
-                <div class="flex items-center justify-between px-4 py-2.5 bg-black/25 rounded-xl border border-white/10 text-xs text-rose-200">
-                    <span class="font-bold text-amber-300 flex items-center gap-1.5">
+                <div class="flex items-center justify-between px-3.5 py-2 bg-black/25 rounded-xl border border-white/10 text-xs text-rose-200">
+                    <span class="font-bold text-amber-300 flex items-center gap-1.5 text-[11px]">
                         <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
@@ -166,16 +166,16 @@
             </div>
 
             <!-- BAGIAN BAWAH: Kutipan Integritas & Identitas -->
-            <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center lg:items-start xl:items-center justify-between gap-2 text-xs text-rose-200/70">
-                <p class="italic">"Keadilan yang tertunda adalah ketidakadilan."</p>
-                <span class="text-[11px] text-amber-400/90 font-medium whitespace-nowrap">Korps Adhyaksa RI &copy; {{ date('Y') }}</span>
+            <div class="relative z-10 pt-3 border-t border-white/15 flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center lg:items-start xl:items-center justify-between gap-1.5 text-xs text-rose-200/70">
+                <p class="italic text-[11px]">"Keadilan yang tertunda adalah ketidakadilan."</p>
+                <span class="text-[10px] text-amber-400/90 font-medium whitespace-nowrap">Korps Adhyaksa RI &copy; {{ date('Y') }}</span>
             </div>
         </div>
 
         <!-- ========================================================
              KOLOM KANAN: SISI PUTIH (FORMULIR AUTENTIKASI BERSIH & MEWAH)
              ======================================================== -->
-        <div class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-[600px]">
+        <div class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-[600px] lg:min-h-0">
             
             <!-- Header Navigasi / Switcher Tab (Masuk vs Daftar) -->
             <div class="px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between border-b border-slate-100 pb-4">

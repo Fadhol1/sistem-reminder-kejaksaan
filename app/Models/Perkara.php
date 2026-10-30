@@ -148,7 +148,7 @@ class Perkara extends Model
             if ($reminder->status_urgensi === 'Overdue') {
                 return true;
             }
-            if ($reminder->deadline && \Carbon\Carbon::parse($reminder->deadline)->startOfDay()->isPast()) {
+            if ($reminder->deadline && \Carbon\Carbon::parse($reminder->deadline)->endOfDay()->isPast()) {
                 return true;
             }
         }

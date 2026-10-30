@@ -320,6 +320,14 @@
                             </svg>
                             Terkunci (Overdue)
                         </span>
+                    @elseif(str_contains($perkara->status_saat_ini, 'FORM-3') || str_contains($perkara->status_saat_ini, 'P-20') || str_contains($perkara->status_saat_ini, 'FORM-7'))
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                            SPDP Dikembalikan
+                        </span>
+                    @elseif($perkara->status_saat_ini === 'Tahap II Selesai')
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Tahap II Selesai
+                        </span>
                     @endif
                 </div>
                 <div class="p-6">
@@ -371,6 +379,36 @@
                                 Simpan Perkembangan
                             </button>
                         </form>
+                    @elseif(str_contains($perkara->status_saat_ini, 'FORM-3') || str_contains($perkara->status_saat_ini, 'P-20') || str_contains($perkara->status_saat_ini, 'FORM-7'))
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-5 text-center shadow-2xs">
+                            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mx-auto mb-3 shadow-2xs border border-slate-200">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <h5 class="text-sm font-bold text-slate-900 mb-1.5">Pencatatan Perkembangan Dinonaktifkan</h5>
+                            <p class="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto mb-3">
+                                Berkas SPDP / Berkas Perkara telah dikembalikan kepada Penyidik. Administrasi penanganan perkara pada sistem telah selesai sehingga pencatatan perkembangan dinonaktifkan.
+                            </p>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white border border-slate-200 text-xs font-medium text-slate-700 shadow-2xs">
+                                Status: {{ $perkara->status_saat_ini }}
+                            </div>
+                        </div>
+                    @elseif($perkara->status_saat_ini === 'Tahap II Selesai')
+                        <div class="rounded-xl bg-emerald-50/80 border border-emerald-200 p-5 text-center shadow-2xs">
+                            <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3 shadow-2xs border border-emerald-200">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h5 class="text-sm font-bold text-emerald-900 mb-1.5">Perkara Selesai (Tahap II)</h5>
+                            <p class="text-xs text-emerald-700 leading-relaxed max-w-sm mx-auto mb-3">
+                                Pelaksanaan Tahap II telah selesai dilaksanakan. Administrasi perkara beralih ke administrasi penuntutan / persidangan.
+                            </p>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white border border-emerald-200 text-xs font-medium text-emerald-800 shadow-2xs">
+                                Status: Tahap II Selesai
+                            </div>
+                        </div>
                     @else
                         <div class="text-center p-4">
                             <p class="text-sm text-gray-500">Tidak ada aksi lanjutan yang tersedia (Perkara Selesai atau status statis).</p>

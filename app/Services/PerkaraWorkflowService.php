@@ -54,16 +54,18 @@ class PerkaraWorkflowService
                 break;
 
             case self::TAHAP_P19:
+                // Penerbitan P-20 dijalankan secara otomatis oleh sistem (SLA Engine jika melewati batas waktu 14 hari).
+                // Aksi manual yang tersedia untuk Jaksa hanya konfirmasi penerimaan berkas pemenuhan petunjuk.
                 if (!str_contains($status, 'P-20')) {
                     $actions[] = ['id' => 'terima_pemenuhan_p19', 'label' => 'Terima Pemenuhan Petunjuk'];
-                    $actions[] = ['id' => 'p20', 'label' => 'Terbitkan P-20 (Pengembalian SPDP)'];
                 }
                 break;
 
             case self::TAHAP_P21:
+                // Penerbitan SOP FORM-7 dijalankan secara otomatis oleh sistem (SLA Engine jika melewati batas waktu 14 hari).
+                // Aksi manual yang tersedia untuk Jaksa hanya konfirmasi penyerahan Tersangka & Barang Bukti (Tahap II).
                 if (!str_contains($status, 'FORM-7')) {
                     $actions[] = ['id' => 'terima_tahap2', 'label' => 'Penyerahan Tahap II'];
-                    $actions[] = ['id' => 'form7', 'label' => 'Terbitkan SOP FORM-7 (Pengembalian Berkas & SPDP)'];
                 }
                 break;
 

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Perkara;
 use App\Models\PerkaraReminder;
 use App\Models\PerkaraTimeline;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -679,6 +680,86 @@ class PerkaraApiTest extends TestCase
 
         $serializedPerkara = $perkara->toArray();
         $this->assertEquals('2026-10-29', $serializedPerkara['tanggal_spdp']);
+    }
+
+    public function test_catat_perkembangan_allowed_when_jatuh_tempo_and_disabled_only_when_overdue_or_spdp_returned(): void
+    {
+        $pidum = User::factory()->create(['role' => 'pidum']);
+
+        // 1. Kasus Jatuh Tempo Hari Ini (deadline = today, urgensi = Jatuh Tempo) -> Harus BISA catat perkembangan
+        $perkaraJatuhTempo = Perkara::create([
+            'nomor_perkara'   => 'BP/JATUH_TEMPO/01',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => 'Jaksa Peneliti',
+            'tanggal_spdp'    => now()->subDays(3)->toDateString(),
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Menunggu Koordinasi',
+        ]);
+
+        $perkaraJatuhTempo->reminders()->create([
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tanggal_mulai'  => now()->subDays(3)->toDateString(),
+            'deadline'       => now()->toDateString(), // Hari ini
+            'status_urgensi' => 'Jatuh Tempo',
+            'is_active'      => true,
+        ]);
+
+        $this->assertFalse($perkaraJatuhTempo->isKoordinasiAwalOverdue());
+        $actions = \App\Services\PerkaraWorkflowService::getAvailableActions($perkaraJatuhTempo);
+        $this->assertNotEmpty($actions);
+        $this->assertEquals('koordinasi_selesai', $actions[0]['id']);
+
+        $responseJatuhTempo = $this->actingAs($pidum)->get(route('perkara.show', $perkaraJatuhTempo->id));
+        $responseJatuhTempo->assertStatus(200);
+        $responseJatuhTempo->assertSee('Simpan Perkembangan');
+        $responseJatuhTempo->assertDontSee('Pencatatan Perkembangan Dinonaktifkan');
+
+        // 2. Kasus SPDP Dikembalikan (FORM-3) -> Catat perkembangan MATI
+        $perkaraForm3 = Perkara::create([
+            'nomor_perkara'   => 'BP/FORM3/01',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => 'Jaksa Peneliti',
+            'tanggal_spdp'    => now()->subDays(90)->toDateString(),
+            'tahap_saat_ini'  => 'Monitoring Penyidikan',
+            'status_saat_ini' => 'SOP FORM-3 (Pengembalian SPDP)',
+        ]);
+
+        $actionsForm3 = \App\Services\PerkaraWorkflowService::getAvailableActions($perkaraForm3);
+        $this->assertEmpty($actionsForm3);
+
+        $responseForm3 = $this->actingAs($pidum)->get(route('perkara.show', $perkaraForm3->id));
+        $responseForm3->assertStatus(200);
+        $responseForm3->assertSee('SPDP Dikembalikan');
+        $responseForm3->assertSee('Pencatatan Perkembangan Dinonaktifkan');
+        $responseForm3->assertDontSee('Simpan Perkembangan');
+
+        // 3. Kasus Melewati Jatuh Tempo (Overdue) -> Catat perkembangan MATI / Terkunci
+        $perkaraOverdue = Perkara::create([
+            'nomor_perkara'   => 'BP/OVERDUE/01',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => 'Jaksa Peneliti',
+            'tanggal_spdp'    => now()->subDays(5)->toDateString(),
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Menunggu Koordinasi',
+        ]);
+
+        $perkaraOverdue->reminders()->create([
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tanggal_mulai'  => now()->subDays(5)->toDateString(),
+            'deadline'       => now()->subDay()->toDateString(), // Kemarin (melewati jatuh tempo)
+            'status_urgensi' => 'Overdue',
+            'is_active'      => true,
+        ]);
+
+        $this->assertTrue($perkaraOverdue->isKoordinasiAwalOverdue());
+        $actionsOverdue = \App\Services\PerkaraWorkflowService::getAvailableActions($perkaraOverdue);
+        $this->assertEmpty($actionsOverdue);
+
+        $responseOverdue = $this->actingAs($pidum)->get(route('perkara.show', $perkaraOverdue->id));
+        $responseOverdue->assertStatus(200);
+        $responseOverdue->assertSee('Terkunci (Overdue)');
+        $responseOverdue->assertSee('Pencatatan Perkembangan Dinonaktifkan');
+        $responseOverdue->assertDontSee('Simpan Perkembangan');
     }
 }
 

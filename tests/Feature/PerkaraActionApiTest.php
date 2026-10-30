@@ -502,5 +502,107 @@ class PerkaraActionApiTest extends TestCase
                 'success' => false,
             ]);
     }
-}
+    /**
+     * 14. Tahap P-19 hanya menyediakan tombol 'terima_pemenuhan_p19' (tombol p20 dihilangkan karena otomatis).
+     * Tahap P-21 hanya menyediakan tombol 'terima_tahap2' (tombol form7 dihilangkan karena otomatis).
+     * Khusus Tahap P-24 tetap menyediakan 2 tombol perkondisian (hasil_lengkap & hasil_belum_lengkap).
+     * SLA Engine otomatis menerbitkan P-20 pada P-19 > 14 hari dan SOP FORM-7 pada P-21 > 14 hari.
+     */
+    public function test_p19_and_p21_actions_and_auto_transitions(): void
+    {
+        Sanctum::actingAs($this->jaksaAssigned);
 
+        // 1. Verifikasi Aksi Tahap P-19: Hanya terima_pemenuhan_p19 (tanpa p20)
+        $this->perkara->update([
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_P19,
+            'status_saat_ini' => 'Menunggu Pemenuhan Petunjuk',
+        ]);
+
+        $resP19 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $resP19->assertStatus(200);
+        $actionsP19 = collect($resP19->json('data'))->pluck('id')->toArray();
+        $this->assertCount(1, $actionsP19);
+        $this->assertContains('terima_pemenuhan_p19', $actionsP19);
+        $this->assertNotContains('p20', $actionsP19);
+
+        // Manual submit p20 ditolak 409
+        $resRejectP20 = $this->postJson("/api/perkara/{$this->perkara->id}/actions", [
+            'action_id' => 'p20',
+        ]);
+        $resRejectP20->assertStatus(409);
+
+        // 2. Verifikasi Aksi Tahap P-21: Hanya terima_tahap2 (tanpa form7)
+        $this->perkara->update([
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_P21,
+            'status_saat_ini' => 'Menunggu Penyerahan Tahap II',
+        ]);
+
+        $resP21 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $resP21->assertStatus(200);
+        $actionsP21 = collect($resP21->json('data'))->pluck('id')->toArray();
+        $this->assertCount(1, $actionsP21);
+        $this->assertContains('terima_tahap2', $actionsP21);
+        $this->assertNotContains('form7', $actionsP21);
+
+        // Manual submit form7 ditolak 409
+        $resRejectForm7 = $this->postJson("/api/perkara/{$this->perkara->id}/actions", [
+            'action_id' => 'form7',
+        ]);
+        $resRejectForm7->assertStatus(409);
+
+        // 3. Verifikasi Khusus Tahap P-24: Tetap 2 opsi perkondisian (hasil_lengkap & hasil_belum_lengkap)
+        $this->perkara->update([
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_P24,
+            'status_saat_ini' => 'Menunggu Penelitian Berkas',
+        ]);
+
+        $resP24 = $this->getJson("/api/perkara/{$this->perkara->id}/available-actions");
+        $resP24->assertStatus(200);
+        $actionsP24 = collect($resP24->json('data'))->pluck('id')->toArray();
+        $this->assertCount(2, $actionsP24);
+        $this->assertContains('hasil_lengkap', $actionsP24);
+        $this->assertContains('hasil_belum_lengkap', $actionsP24);
+
+        // 4. Verifikasi Auto-Transition P-19 Overdue (> 14 hari) -> Otomatis Terbit P-20
+        $this->perkara->update([
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_P19,
+            'status_saat_ini' => 'Menunggu Pemenuhan Petunjuk',
+        ]);
+        PerkaraReminder::where('perkara_id', $this->perkara->id)->delete();
+        PerkaraWorkflowService::createReminder($this->perkara, PerkaraWorkflowService::TAHAP_P19, 'SLA Pemenuhan Petunjuk', -1);
+
+        app(\App\Services\SLAEngineService::class)->executeEngine();
+        $this->perkara->refresh();
+
+        $this->assertStringContainsString('P-20', $this->perkara->status_saat_ini);
+        $this->assertDatabaseHas('perkara_timelines', [
+            'perkara_id' => $this->perkara->id,
+            'actor_type' => 'SYSTEM',
+            'tahap' => PerkaraWorkflowService::TAHAP_P19,
+        ]);
+        $this->assertFalse(
+            PerkaraReminder::where('perkara_id', $this->perkara->id)->where('is_active', true)->exists()
+        );
+
+        // 5. Verifikasi Auto-Transition P-21 Overdue (> 14 hari) -> Otomatis Terbit SOP FORM-7
+        $this->perkara->update([
+            'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_P21,
+            'status_saat_ini' => 'Menunggu Penyerahan Tahap II',
+        ]);
+        PerkaraReminder::where('perkara_id', $this->perkara->id)->delete();
+        PerkaraWorkflowService::createReminder($this->perkara, PerkaraWorkflowService::TAHAP_P21, 'SLA Penyerahan Tahap II', -1);
+
+        app(\App\Services\SLAEngineService::class)->executeEngine();
+        $this->perkara->refresh();
+
+        $this->assertStringContainsString('FORM-7', $this->perkara->status_saat_ini);
+        $this->assertDatabaseHas('perkara_timelines', [
+            'perkara_id' => $this->perkara->id,
+            'actor_type' => 'SYSTEM',
+            'tahap' => PerkaraWorkflowService::TAHAP_P21,
+        ]);
+        $this->assertFalse(
+            PerkaraReminder::where('perkara_id', $this->perkara->id)->where('is_active', true)->exists()
+        );
+    }
+}

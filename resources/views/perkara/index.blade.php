@@ -179,7 +179,7 @@
                     <div class="md:col-span-2 flex items-end gap-2">
                         <button type="submit"
                             class="flex-1 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-2xs hover:bg-slate-800 transition-colors">
-                            Saring
+                            Cari & Saring
                         </button>
                         @if(request()->hasAny(['search', 'tahap', 'status_filter']))
                             <a href="{{ route('perkara.index') }}" title="Reset Filter"
@@ -379,8 +379,8 @@
                                                 <span
                                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none"
                                                     title="Perkara Terkunci (Koordinasi Awal Overdue)">
-                                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="2" stroke="currentColor">
+                                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                                        stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                                     </svg>
@@ -389,8 +389,8 @@
                                                 <a href="{{ route('perkara.edit', $perkara->id) }}"
                                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white text-slate-700 border border-slate-200 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition-colors"
                                                     title="Ubah Data Perkara">
-                                                    <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="2" stroke="currentColor">
+                                                    <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                                        stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                                                     </svg>
