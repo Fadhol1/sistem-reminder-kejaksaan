@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -22,17 +24,30 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        // Proteksi Brute Force API: Maksimal 5x percobaan dalam 1 menit
+        $throttleKey = Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'success' => false,
+                'message' => "Terlalu banyak percobaan masuk yang gagal. Akses dibatasi sementara selama {$seconds} detik demi keamanan akun kedinasan.",
+            ], 429);
+        }
+
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($throttleKey, 60);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Email atau Kata Sandi salah.',
             ], 401);
         }
 
-        // Revoke all previous tokens for security parity on mobile login? Optional.
-        // $user->tokens()->delete();
+        // Hapus penalti jika login berhasil
+        RateLimiter::clear($throttleKey);
 
         return response()->json([
             'success' => true,

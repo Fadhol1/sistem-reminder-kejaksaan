@@ -81,7 +81,7 @@ class PerkaraApiController extends Controller
      * 2. SHOW: Mengembalikan detail lengkap satu perkara berdasarkan ID
      * beserta seluruh riwayat timeline dan reminder-nya.
      */
-    public function show(int|string $id): JsonResponse
+    public function show(Request $request, int|string $id): JsonResponse
     {
         SLAEngineService::runThrottled();
 
@@ -106,6 +106,19 @@ class PerkaraApiController extends Controller
             ], 404);
         }
 
+        // Keamanan IDOR: Jaksa hanya boleh membuka detail perkara yang ditugaskan kepadanya
+        $user = $request->user();
+        if ($user && $user->isJaksa()) {
+            $isAssigned = $perkara->jaksas->contains('id', $user->id);
+            if (!$isAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses Ditolak: Anda tidak memiliki wewenang penugasan kedinasan untuk mengakses perkara ini.',
+                    'data' => null,
+                ], 403);
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Detail perkara berhasil dimuat.',
@@ -116,9 +129,9 @@ class PerkaraApiController extends Controller
     /**
      * GET TIMELINES: Mengembalikan daftar riwayat timeline untuk perkara tertentu.
      */
-    public function getTimelines(int|string $id): JsonResponse
+    public function getTimelines(Request $request, int|string $id): JsonResponse
     {
-        $perkara = Perkara::find($id);
+        $perkara = Perkara::with('jaksas:id')->find($id);
 
         if (!$perkara) {
             return response()->json([
@@ -126,6 +139,19 @@ class PerkaraApiController extends Controller
                 'message' => "Data perkara dengan ID {$id} tidak ditemukan.",
                 'data' => null,
             ], 404);
+        }
+
+        // Keamanan IDOR: Jaksa hanya boleh melihat timeline perkara yang ditugaskan kepadanya
+        $user = $request->user();
+        if ($user && $user->isJaksa()) {
+            $isAssigned = $perkara->jaksas->contains('id', $user->id);
+            if (!$isAssigned) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses Ditolak: Anda tidak memiliki wewenang untuk melihat riwayat timeline perkara ini.',
+                    'data' => null,
+                ], 403);
+            }
         }
 
         $timelines = PerkaraTimeline::with('user:id,name,role')
@@ -192,6 +218,14 @@ class PerkaraApiController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if ($user && !$user->isPidum()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses Ditolak: Hanya Admin PIDUM yang memiliki wewenang untuk mendaftarkan perkara baru.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'nomor_perkara' => 'required|string|max:255|unique:perkaras,nomor_perkara',
             'nama_tersangka' => 'required|string|max:255',
@@ -279,8 +313,16 @@ class PerkaraApiController extends Controller
         });
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        $user = $request->user();
+        if (!$user || !$user->isPidum()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses Ditolak: Hanya Admin PIDUM yang memiliki wewenang untuk menghapus berkas perkara.',
+            ], 403);
+        }
+
         $perkara = Perkara::find($id);
 
         if (!$perkara) {
@@ -305,6 +347,13 @@ class PerkaraApiController extends Controller
      */
     public function storeTimeline(Request $request, int|string|null $id = null): JsonResponse
     {
+        $user = $request->user();
+        if ($user && !$user->isPidum()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses Ditolak: Hanya Admin PIDUM yang memiliki wewenang untuk mencatat perkembangan perkara manual.',
+            ], 403);
+        }
         // Mendukung ID dari URL parameter (/perkara/{id}/timeline) atau body parameter ({ perkara_id: 1 })
         $perkaraId = $id ?? $request->input('perkara_id');
         $request->merge(['perkara_id' => $perkaraId]);

@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\AuthController;
 */
 
 // Public Endpoints
-Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('api.login');
 
 // Protected Endpoints
 Route::middleware('auth:sanctum')->group(function () {
@@ -53,9 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/timeline', [PerkaraApiController::class, 'getTimelines'])->name('api.perkara.timeline.index');
         Route::get('/{id}/timelines', [PerkaraApiController::class, 'getTimelines']);
         Route::post('/{id}/timeline', [PerkaraApiController::class, 'storeTimeline'])->name('api.perkara.timeline.store_with_id');
-        Route::delete('/{id}', [PerkaraApiController::class, 'destroy']);
         
-        // Future Android Action Hooks
+        // Android Workflow Action Hooks
         Route::get('/{id}/available-actions', [PerkaraApiController::class, 'getAvailableActions'])->name('api.perkara.available_actions');
         Route::post('/{id}/actions', [PerkaraApiController::class, 'processAction'])->name('api.perkara.process_action');
     });

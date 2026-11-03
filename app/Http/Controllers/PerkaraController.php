@@ -323,11 +323,20 @@ class PerkaraController extends Controller
     /**
      * Display the specified perkara.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         SLAEngineService::runThrottled();
 
         $perkara = Perkara::with(['timelines.user', 'activeReminders', 'tersangkas', 'penyidiks', 'jaksas'])->findOrFail($id);
+
+        // Keamanan IDOR: Jaksa hanya diizinkan melihat berkas perkara yang ditugaskan kepadanya
+        $user = $request->user();
+        if ($user && $user->isJaksa()) {
+            $isAssigned = $perkara->jaksas->contains('id', $user->id);
+            if (!$isAssigned) {
+                abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang penugasan kedinasan untuk mengakses berkas perkara ini.');
+            }
+        }
 
         $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
 
