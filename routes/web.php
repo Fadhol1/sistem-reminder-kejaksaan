@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     // Modul Manajemen User
     Route::resource('users', \App\Http\Controllers\UserController::class);
     
+    // Modul Publikasi / Berita
+    Route::resource('berita', \App\Http\Controllers\BeritaController::class)->parameters(['berita' => 'id']);
+    
     // Modul Perkara
     Route::get('/perkara', [PerkaraController::class, 'index'])->name('perkara.index');
     Route::get('/perkara/create', [PerkaraController::class, 'create'])->name('perkara.create');

@@ -138,7 +138,7 @@
                         
                         <!-- Pesan 'Tidak Ditemukan' -->
                         <div id="jaksaEmptyMessage" class="hidden text-sm text-gray-500 text-center py-3">
-                            Jaksa tidak ditemukan.
+                            Jaksa tidak ditemukan, Harap menambah jaksa pada halaman <a href="{{ route('users.create') }}" class="text-rose-600 hover:text-rose-900 hover:underline"><strong>Manajemen Pengguna</strong></a>.
                         </div>
                     </div>
                     @error('jaksas')

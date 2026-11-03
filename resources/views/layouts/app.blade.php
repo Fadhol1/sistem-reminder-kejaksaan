@@ -8,7 +8,9 @@
     <title>@yield('title', 'SIPETA') - Sistem Pengingat Tahapan Perkara</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800|instrument-sans:400,500,600,700" rel="stylesheet">
+    <link
+        href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800|instrument-sans:400,500,600,700"
+        rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -90,12 +92,13 @@
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                 <div
                     class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] flex items-center justify-center shadow-md shadow-red-950/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200 border border-amber-400/30">
-                    <svg class="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
-                        <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
-                        <path d="M7 21h10"/>
-                        <path d="M12 3v18"/>
-                        <path d="M3 7h18"/>
+                    <svg class="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                        <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                        <path d="M7 21h10" />
+                        <path d="M12 3v18" />
+                        <path d="M3 7h18" />
                     </svg>
                 </div>
                 <div class="min-w-0">
@@ -104,7 +107,7 @@
                         <span
                             class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">PIDUM</span>
                     </div>
-                    <p class="text-[11px] text-gray-500 font-medium truncate mt-0.5">Kejaksaan Negeri RI</p>
+                    <p class="text-[11px] text-gray-500 font-medium truncate mt-0.5">Kejaksaan Negeri OKU</p>
                 </div>
             </a>
 
@@ -161,6 +164,19 @@
                                     d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                             </svg>
                             <span class="truncate">Jadwal Reminder</span>
+                        </div>
+                    </a>
+
+                    <!-- Berita & Informasi Publik -->
+                    <a href="{{ route('berita.index') }}"
+                        class="flex items-center px-3 py-2.5 rounded-lg text-sm transition-all duration-150 {{ request()->routeIs('berita.*') ? 'bg-red-50 text-red-900 font-semibold border-l-4 border-[#881337]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium' }}">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <svg class="w-5 h-5 {{ request()->routeIs('berita.*') ? 'text-[#881337]' : 'text-slate-400' }} shrink-0"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
+                            </svg>
+                            <span class="truncate">Berita & Publikasi</span>
                         </div>
                     </a>
                 </div>
@@ -232,14 +248,16 @@
                 @csrf
                 <button type="submit"
                     class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition-all duration-150 cursor-pointer">
-                    <svg class="w-4 h-4 text-slate-400 group-hover:text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-rose-600" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>
                     <span>Keluar dari Sistem</span>
                 </button>
             </form>
-            <p class="text-[10px] text-slate-400 text-center mt-2.5 font-medium">SIPETA &bull; Kejaksaan Negeri RI &copy; {{ date('Y') }}</p>
+            <p class="text-[10px] text-slate-400 text-center mt-2.5 font-medium">SIPETA &bull; Kejaksaan Negeri OKU
+                &copy; {{ date('Y') }}</p>
         </div>
     </aside>
 
