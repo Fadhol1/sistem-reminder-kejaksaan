@@ -79,6 +79,54 @@ class PerkaraWorkflowService
         return $actions;
     }
 
+    /**
+     * Mendapatkan opsi aksi khusus untuk formulir 'Catat Perkembangan' di Website Admin.
+     * Mengikuti alur bertahap:
+     * - Menunggu Berkas Tahap I -> [Konfirmasi Penerimaan Berkas, Penerbitan P-17]
+     * - P-17 -> [Konfirmasi Penerimaan Berkas, Penerbitan SOP FORM-2 / P-17 Kedua]
+     * - SOP FORM-2 -> [Konfirmasi Penerimaan Berkas, SOP FORM-3 / Pengembalian SPDP]
+     * - SOP FORM-3 -> Selesai / Arsip (tidak ada aksi lanjutan)
+     */
+    public static function getWebAvailableActions(Perkara $perkara): array
+    {
+        if ($perkara->isKoordinasiAwalOverdue()) {
+            return [];
+        }
+
+        $tahap = $perkara->tahap_saat_ini;
+        $status = $perkara->status_saat_ini;
+
+        if ($tahap === self::TAHAP_MONITORING) {
+            // Jika sudah FORM-3 / SPDP dikembalikan, berkas sudah selesai & diarsipkan
+            if (str_contains($status, 'FORM-3')) {
+                return [];
+            }
+
+            $actions = [];
+
+            // Konfirmasi Penerimaan Berkas selalu ada selama berkas belum FORM-3
+            $actions[] = ['id' => 'terima_berkas', 'label' => 'Konfirmasi Penerimaan Berkas'];
+
+            // 1. Baru masuk / Menunggu Berkas Tahap I -> Hanya P-17 dan Konfirmasi Penerimaan Berkas
+            if ($status === 'Menunggu Berkas Tahap I' || (!str_contains($status, 'P-17') && !str_contains($status, 'FORM-2'))) {
+                $actions[] = ['id' => 'catat_p17', 'label' => 'Penerbitan P-17 (Permintaan Perkembangan Penyidikan)'];
+            }
+            // 2. Sudah P-17 -> Hanya SOP FORM-2 (P-17 Kedua) dan Konfirmasi Penerimaan Berkas
+            elseif (str_contains($status, 'P-17') && !str_contains($status, 'Kedua') && !str_contains($status, 'FORM-2')) {
+                $actions[] = ['id' => 'catat_p17_2', 'label' => 'Penerbitan SOP FORM-2 (P-17 Kedua)'];
+            }
+            // 3. Sudah SOP FORM-2 / P-17 Kedua -> Hanya SOP FORM-3 (Pengembalian SPDP) dan Konfirmasi Penerimaan Berkas
+            elseif (str_contains($status, 'FORM-2') || str_contains($status, 'Kedua')) {
+                $actions[] = ['id' => 'catat_form3', 'label' => 'Pengembalian SPDP & Simpan Arsip (SOP FORM-3)'];
+            }
+
+            return $actions;
+        }
+
+        // Untuk tahapan selain monitoring, gunakan aksi baku yang sudah ada
+        return self::getAvailableActions($perkara);
+    }
+
     public static function processAction(Perkara $perkara, string $actionId, array $data, ?int $userId = null, string $actorType = 'USER'): void
     {
         if ($perkara->isKoordinasiAwalOverdue() && $actionId !== 'tindak_lanjut_koordinasi_overdue') {

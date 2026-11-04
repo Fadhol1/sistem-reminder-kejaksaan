@@ -88,7 +88,7 @@
                             <span
                                 class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase">
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                                Kejaksaan RI
+                                Kejaksaan Negeri OKU
                             </span>
                             <span class="text-xs text-rose-200/70 font-medium">Bidang PIDUM</span>
                         </div>

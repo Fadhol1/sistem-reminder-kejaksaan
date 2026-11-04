@@ -338,7 +338,7 @@ class PerkaraController extends Controller
             }
         }
 
-        $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
+        $availableActions = PerkaraWorkflowService::getWebAvailableActions($perkara);
 
         return view('perkara.show', compact('perkara', 'availableActions'));
     }
@@ -365,7 +365,7 @@ class PerkaraController extends Controller
         ]);
 
         // Validate if action is valid
-        $availableActions = PerkaraWorkflowService::getAvailableActions($perkara);
+        $availableActions = PerkaraWorkflowService::getWebAvailableActions($perkara);
         $actionExists = collect($availableActions)->contains('id', $validated['action_id']);
 
         if (!$actionExists) {
