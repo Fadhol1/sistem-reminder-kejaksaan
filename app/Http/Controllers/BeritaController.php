@@ -20,7 +20,7 @@ class BeritaController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('judul', 'like', "%{$search}%")
-                  ->orWhere('penulis', 'like', "%{$search}%");
+                    ->orWhere('penulis', 'like', "%{$search}%");
             });
         }
 
@@ -39,6 +39,7 @@ class BeritaController extends Controller
      */
     public function create()
     {
+        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat menambah berita.');
         return view('berita.create');
     }
 
@@ -47,28 +48,30 @@ class BeritaController extends Controller
      */
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat menambah berita.');
+
         $validated = $request->validate([
-            'judul'        => ['required', 'string', 'max:255'],
-            'tanggal'      => ['required', 'date'],
-            'gambar'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-            'ringkasan'    => ['nullable', 'string', 'max:1000'],
-            'konten'       => ['nullable', 'string'],
-            'penulis'      => ['nullable', 'string', 'max:150'],
+            'judul' => ['required', 'string', 'max:255'],
+            'tanggal' => ['required', 'date'],
+            'gambar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+            'ringkasan' => ['nullable', 'string', 'max:1000'],
+            'konten' => ['nullable', 'string'],
+            'penulis' => ['nullable', 'string', 'max:150'],
             'is_published' => ['nullable', 'boolean'],
         ], [
-            'judul.required'   => 'Judul berita wajib diisi.',
+            'judul.required' => 'Judul berita wajib diisi.',
             'tanggal.required' => 'Tanggal berita wajib ditentukan.',
-            'gambar.image'     => 'Berkas gambar harus berupa format gambar (jpg, png, webp).',
-            'gambar.max'       => 'Ukuran gambar maksimal 5 MB.',
+            'gambar.image' => 'Berkas gambar harus berupa format gambar (jpg, png, webp).',
+            'gambar.max' => 'Ukuran gambar maksimal 5 MB.',
         ]);
 
         $data = [
-            'judul'        => $validated['judul'],
-            'tanggal'      => $validated['tanggal'],
-            'ringkasan'    => $validated['ringkasan'] ?? (isset($validated['konten']) ? Str::limit(strip_tags($validated['konten']), 160) : null),
-            'konten'       => $validated['konten'] ?? null,
-            'penulis'      => $validated['penulis'] ?? auth()->user()->name,
-            'user_id'      => auth()->id(),
+            'judul' => $validated['judul'],
+            'tanggal' => $validated['tanggal'],
+            'ringkasan' => $validated['ringkasan'] ?? (isset($validated['konten']) ? Str::limit(strip_tags($validated['konten']), 160) : null),
+            'konten' => $validated['konten'] ?? null,
+            'penulis' => $validated['penulis'] ?? auth()->user()->name,
+            'user_id' => auth()->id(),
             'is_published' => $request->boolean('is_published', true),
         ];
 
@@ -95,6 +98,7 @@ class BeritaController extends Controller
      */
     public function edit($id)
     {
+        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit berita.');
         $berita = Berita::findOrFail($id);
         return view('berita.edit', compact('berita'));
     }
@@ -104,28 +108,29 @@ class BeritaController extends Controller
      */
     public function update(Request $request, $id)
     {
+        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit berita.');
         $berita = Berita::findOrFail($id);
 
         $validated = $request->validate([
-            'judul'        => ['required', 'string', 'max:255'],
-            'tanggal'      => ['required', 'date'],
-            'gambar'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-            'ringkasan'    => ['nullable', 'string', 'max:1000'],
-            'konten'       => ['nullable', 'string'],
-            'penulis'      => ['nullable', 'string', 'max:150'],
+            'judul' => ['required', 'string', 'max:255'],
+            'tanggal' => ['required', 'date'],
+            'gambar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+            'ringkasan' => ['nullable', 'string', 'max:1000'],
+            'konten' => ['nullable', 'string'],
+            'penulis' => ['nullable', 'string', 'max:150'],
             'is_published' => ['nullable', 'boolean'],
         ], [
-            'judul.required'   => 'Judul berita wajib diisi.',
+            'judul.required' => 'Judul berita wajib diisi.',
             'tanggal.required' => 'Tanggal berita wajib ditentukan.',
-            'gambar.image'     => 'Berkas gambar harus berupa format gambar (jpg, png, webp).',
-            'gambar.max'       => 'Ukuran gambar maksimal 5 MB.',
+            'gambar.image' => 'Berkas gambar harus berupa format gambar (jpg, png, webp).',
+            'gambar.max' => 'Ukuran gambar maksimal 5 MB.',
         ]);
 
-        $berita->judul        = $validated['judul'];
-        $berita->tanggal      = $validated['tanggal'];
-        $berita->ringkasan    = $validated['ringkasan'] ?? (isset($validated['konten']) ? Str::limit(strip_tags($validated['konten']), 160) : null);
-        $berita->konten       = $validated['konten'] ?? null;
-        $berita->penulis      = $validated['penulis'] ?? $berita->penulis;
+        $berita->judul = $validated['judul'];
+        $berita->tanggal = $validated['tanggal'];
+        $berita->ringkasan = $validated['ringkasan'] ?? (isset($validated['konten']) ? Str::limit(strip_tags($validated['konten']), 160) : null);
+        $berita->konten = $validated['konten'] ?? null;
+        $berita->penulis = $validated['penulis'] ?? $berita->penulis;
         $berita->is_published = $request->boolean('is_published', true);
 
         if ($request->hasFile('gambar')) {
@@ -146,6 +151,7 @@ class BeritaController extends Controller
      */
     public function destroy($id)
     {
+        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak Hanya Admin PIDUM yang dapat menghapus berita.');
         $berita = Berita::findOrFail($id);
 
         if ($berita->gambar && Storage::disk('public')->exists($berita->gambar)) {
