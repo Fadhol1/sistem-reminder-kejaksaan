@@ -28,29 +28,34 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $rules = [
-            'name'             => ['required', 'string', 'max:255'],
-            'email'            => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'nip'              => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
-            'nrp'              => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
-            'nomor_hp'         => ['nullable', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'nip' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'nrp' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'nomor_hp' => ['nullable', 'string', 'max:20'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
-            'jabatan'          => ['nullable', 'string', 'max:255'],
-            'foto_profil'      => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'jabatan' => ['nullable', 'string', 'max:255'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ];
 
         if ($request->filled('password')) {
+            $rules['current_password'] = ['required', 'current_password'];
             $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'current_password.required' => 'Kata sandi saat ini wajib diisi untuk mengganti kata sandi.',
+            'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
+            'password.different' => 'Kata sandi baru tidak boleh sama dengan kata sandi saat ini.'
+        ]);
 
-        $user->name             = $validated['name'];
-        $user->email            = $validated['email'];
-        $user->nip              = $validated['nip'] ?? null;
-        $user->nrp              = $validated['nrp'] ?? null;
-        $user->nomor_hp         = $validated['nomor_hp'] ?? null;
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->nip = $validated['nip'] ?? null;
+        $user->nrp = $validated['nrp'] ?? null;
+        $user->nomor_hp = $validated['nomor_hp'] ?? null;
         $user->pangkat_golongan = $validated['pangkat_golongan'] ?? null;
-        $user->jabatan          = $validated['jabatan'] ?? null;
+        $user->jabatan = $validated['jabatan'] ?? null;
 
         if ($request->hasFile('foto_profil')) {
             if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
