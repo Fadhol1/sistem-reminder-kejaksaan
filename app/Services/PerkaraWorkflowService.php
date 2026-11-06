@@ -199,7 +199,7 @@ class PerkaraWorkflowService
                         ->where('tahap', self::TAHAP_MONITORING)
                         ->where(function ($q) {
                             $q->where('jenis_reminder', 'Batas Penyerahan Tahap I')
-                              ->orWhere('jenis_reminder', 'like', '%Tahap I%');
+                                ->orWhere('jenis_reminder', 'like', '%Tahap I%');
                         })
                         ->where('is_active', true)
                         ->exists();
@@ -237,7 +237,7 @@ class PerkaraWorkflowService
                         ->where('tahap', self::TAHAP_MONITORING)
                         ->where(function ($q) {
                             $q->where('jenis_reminder', 'like', '%P-17%')
-                              ->orWhere('jenis_reminder', 'like', '%Batas Waktu P-17%');
+                                ->orWhere('jenis_reminder', 'like', '%Batas Waktu P-17%');
                         })
                         ->where('is_active', true)
                         ->exists();
@@ -273,7 +273,7 @@ class PerkaraWorkflowService
                         ->where('tahap', self::TAHAP_MONITORING)
                         ->where(function ($q) {
                             $q->where('jenis_reminder', 'like', '%FORM-2%')
-                              ->orWhere('jenis_reminder', 'like', '%Penataan setelah FORM-2%');
+                                ->orWhere('jenis_reminder', 'like', '%Penataan setelah FORM-2%');
                         })
                         ->where('is_active', true)
                         ->exists();
@@ -318,10 +318,10 @@ class PerkaraWorkflowService
                     break;
                 case 'terima_berkas':
                     $newTahap = self::TAHAP_P24;
-                    // Note for SLA Engine: P-24 has manual branch (lengkap/belum lengkap). System will NOT automate this.
                     $newStatus = 'Menunggu Penelitian Berkas';
                     $eventName = 'Penyerahan Berkas Tahap I Diterima';
                     self::resolveActiveReminders($perkara, self::TAHAP_MONITORING);
+                    self::createReminder($perkara, self::TAHAP_P24, 'SLA Penelitian Berkas (P-24)', 7);
                     break;
 
                 // Tahap P-24 (HASIL)
@@ -329,12 +329,14 @@ class PerkaraWorkflowService
                     $newTahap = self::TAHAP_P21;
                     $newStatus = 'Menunggu Penyerahan Tahap II';
                     $eventName = 'Berkas Dinyatakan Lengkap (P-21)';
+                    self::resolveActiveReminders($perkara, self::TAHAP_P24);
                     self::createReminder($perkara, self::TAHAP_P21, 'SLA Penyerahan Tahap II', 14);
                     break;
                 case 'hasil_belum_lengkap':
                     $newTahap = self::TAHAP_P19;
                     $newStatus = 'Menunggu Pemenuhan Petunjuk';
                     $eventName = 'Berkas Belum Lengkap, Terbit P-18/P-19';
+                    self::resolveActiveReminders($perkara, self::TAHAP_P24);
                     self::createReminder($perkara, self::TAHAP_P19, 'SLA Pemenuhan Petunjuk', 14);
                     break;
 
@@ -344,6 +346,7 @@ class PerkaraWorkflowService
                     $newStatus = 'Menunggu Penelitian Berkas';
                     $eventName = 'Pemenuhan Petunjuk (P-19) Diterima';
                     self::resolveActiveReminders($perkara, self::TAHAP_P19);
+                    self::createReminder($perkara, self::TAHAP_P24, 'SLA Penelitian Berkas (P-24)', 7);
                     break;
                 case 'p20':
                     $newStatus = 'P-20 (Waktu Penyidikan Tambahan Habis / Pengembalian SPDP)';
