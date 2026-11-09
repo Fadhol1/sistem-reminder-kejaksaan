@@ -87,10 +87,20 @@ class AuthController extends Controller
             'pangkat_golongan'=> ['nullable', 'string', 'max:255'],
             'jabatan'         => ['nullable', 'string', 'max:255'],
             'foto_profil'     => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
-            'password'        => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
 
-        $validated = $request->validate($rules);
+        if ($request->filled('password')) {
+            $rules['current_password'] = ['required', 'current_password'];
+            $rules['password'] = ['required', 'string', 'min:8', 'confirmed', 'different:current_password'];
+        }
+
+        $validated = $request->validate($rules, [
+            'current_password.required' => 'Kata sandi saat ini wajib diisi untuk memperbarui kata sandi.',
+            'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
+            'password.confirmed' => 'Konfirmasi kata sandi baru tidak sesuai.',
+            'password.different' => 'Kata sandi baru tidak boleh sama dengan kata sandi saat ini.',
+            'password.min' => 'Kata sandi baru minimal 8 karakter.',
+        ]);
 
         if ($request->has('name'))             $user->name = $validated['name'];
         if ($request->has('email'))            $user->email = $validated['email'];

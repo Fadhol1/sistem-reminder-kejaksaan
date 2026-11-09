@@ -46,5 +46,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/perkara/{id}', [PerkaraController::class, 'update'])->name('perkara.update');
     Route::delete('/perkara/{id}', [PerkaraController::class, 'destroy'])->name('perkara.destroy');
     Route::post('/perkara/{id}/perkembangan', [PerkaraController::class, 'catatPerkembangan'])->name('perkara.catatPerkembangan');
+    Route::post('/perkara/{id}/undo-perkembangan', [PerkaraController::class, 'undoPerkembangan'])->name('perkara.undoPerkembangan');
     Route::post('/perkara/{id}/dev-simulate', [PerkaraController::class, 'devSimulateTime'])->name('perkara.devSimulate');
 });

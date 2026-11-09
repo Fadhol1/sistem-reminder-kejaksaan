@@ -137,6 +137,9 @@ class PerkaraWorkflowService
             $catatan = $data['catatan'] ?? null;
             $tanggal = isset($data['tanggal']) ? Carbon::parse($data['tanggal']) : now();
 
+            $prevTahap = $perkara->tahap_saat_ini;
+            $prevStatus = $perkara->status_saat_ini;
+
             $newTahap = $perkara->tahap_saat_ini;
             $newStatus = $perkara->status_saat_ini;
             $eventName = '';
@@ -424,6 +427,8 @@ class PerkaraWorkflowService
                     'user_id' => $userId,
                     'actor_type' => $actorType,
                     'tahap' => $newTahap,
+                    'tahap_sebelumnya' => $prevTahap,
+                    'status_sebelumnya' => $prevStatus,
                     'status_kegiatan' => $eventName,
                     'tanggal_kejadian' => $tanggal,
                     'catatan' => $catatan,
@@ -436,6 +441,176 @@ class PerkaraWorkflowService
                 }
             }
         });
+    }
+
+    /**
+     * Mendapatkan timeline aksi perkembangan terakhir yang dapat dibatalkan (undo).
+     * Syarat:
+     * 1. Merupakan aksi perkembangan (bukan Pendaftaran Perkara awal).
+     * 2. Belum pernah dibatalkan (is_reverted == false).
+     * 3. Bukan merupakan baris catatan audit koreksi itu sendiri.
+     */
+    public static function canUndoLastAction(Perkara $perkara): ?PerkaraTimeline
+    {
+        return PerkaraTimeline::where('perkara_id', $perkara->id)
+            ->where('is_reverted', false)
+            ->where('status_kegiatan', 'not like', '%Pendaftaran Perkara%')
+            ->where('status_kegiatan', 'not like', '%[KOREKSI%')
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Membatalkan (undo) aksi perkembangan terakhir dengan pencatatan audit trail lengkap.
+     */
+    public static function undoLastAction(Perkara $perkara, string $reason, int $userId): PerkaraTimeline
+    {
+        return DB::transaction(function () use ($perkara, $reason, $userId) {
+            $lastTimeline = self::canUndoLastAction($perkara);
+
+            if (!$lastTimeline) {
+                throw new \DomainException('Tidak ada langkah perkembangan perkara yang dapat dibatalkan.');
+            }
+
+            // Tentukan tahap & status target pengembalian
+            if (!empty($lastTimeline->tahap_sebelumnya) && !empty($lastTimeline->status_sebelumnya)) {
+                $targetTahap = $lastTimeline->tahap_sebelumnya;
+                $targetStatus = $lastTimeline->status_sebelumnya;
+            } else {
+                [$targetTahap, $targetStatus] = self::deducePreviousState($lastTimeline);
+            }
+
+            // 1. Tandai timeline yang dibatalkan
+            $lastTimeline->update([
+                'is_reverted' => true,
+                'reverted_at' => now(),
+                'reverted_by' => $userId,
+                'revert_reason' => $reason,
+            ]);
+
+            // 2. Nonaktifkan reminder aktif yang dihasilkan dari aksi keliru tersebut
+            PerkaraReminder::where('perkara_id', $perkara->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+
+            // 3. Pulihkan status reminder tahap sebelumnya
+            $previousReminder = PerkaraReminder::where('perkara_id', $perkara->id)
+                ->where('tahap', $targetTahap)
+                ->latest('id')
+                ->first();
+
+            if ($previousReminder && Carbon::parse($previousReminder->deadline)->isFuture()) {
+                $previousReminder->update([
+                    'is_active' => true,
+                    'status_urgensi' => PerkaraReminder::determineUrgensi($previousReminder->deadline),
+                ]);
+            } else {
+                self::restoreDefaultReminderForStage($perkara, $targetTahap, $targetStatus);
+            }
+
+            // 4. Perbarui status perkara kembali ke posisi sebelumnya
+            $perkara->update([
+                'tahap_saat_ini' => $targetTahap,
+                'status_saat_ini' => $targetStatus,
+            ]);
+
+            // 5. Buat rekam jejak audit resmi di Timeline
+            $correctionTimeline = PerkaraTimeline::create([
+                'perkara_id' => $perkara->id,
+                'user_id' => $userId,
+                'actor_type' => 'USER',
+                'tahap' => $targetTahap,
+                'status_kegiatan' => '[KOREKSI ADMINISTRASI] Pembatalan Aksi: ' . $lastTimeline->status_kegiatan,
+                'tanggal_kejadian' => now(),
+                'catatan' => 'Alasan Koreksi: ' . $reason,
+            ]);
+
+            return $correctionTimeline;
+        });
+    }
+
+    /**
+     * Deduksi status sebelumnya untuk data lama yang belum memiliki kolom tahap_sebelumnya.
+     */
+    public static function deducePreviousState(PerkaraTimeline $timeline): array
+    {
+        $kegiatan = $timeline->status_kegiatan;
+
+        if (str_contains($kegiatan, 'P-21') || str_contains($kegiatan, 'Lengkap')) {
+            return [self::TAHAP_P24, 'Menunggu Penelitian Berkas'];
+        }
+        if (str_contains($kegiatan, 'P-18') || str_contains($kegiatan, 'P-19') || str_contains($kegiatan, 'Belum Lengkap')) {
+            return [self::TAHAP_P24, 'Menunggu Penelitian Berkas'];
+        }
+        if (str_contains($kegiatan, 'Pemenuhan Petunjuk')) {
+            return [self::TAHAP_P19, 'Menunggu Pemenuhan Petunjuk'];
+        }
+        if (str_contains($kegiatan, 'Penyerahan Berkas Tahap I')) {
+            return [self::TAHAP_MONITORING, 'Menunggu Berkas Tahap I'];
+        }
+        if (str_contains($kegiatan, 'FORM-3')) {
+            return [self::TAHAP_MONITORING, 'P-17 Kedua / FORM-2'];
+        }
+        if (str_contains($kegiatan, 'FORM-2') || str_contains($kegiatan, 'Kedua')) {
+            return [self::TAHAP_MONITORING, 'P-17'];
+        }
+        if (str_contains($kegiatan, 'P-17')) {
+            return [self::TAHAP_MONITORING, 'Menunggu Berkas Tahap I'];
+        }
+        if (str_contains($kegiatan, 'FORM-7')) {
+            return [self::TAHAP_P21, 'Menunggu Penyerahan Tahap II'];
+        }
+        if (str_contains($kegiatan, 'Tahap II Selesai')) {
+            return [self::TAHAP_II, 'Menunggu Pelaksanaan Tahap II'];
+        }
+        if (str_contains($kegiatan, 'Tahap II')) {
+            return [self::TAHAP_P21, 'Menunggu Penyerahan Tahap II'];
+        }
+        if (str_contains($kegiatan, 'Koordinasi Selesai')) {
+            return [self::TAHAP_KOORDINASI, 'Menunggu Koordinasi'];
+        }
+
+        return [self::TAHAP_KOORDINASI, 'Menunggu Koordinasi'];
+    }
+
+    /**
+     * Memulihkan atau membuat ulang reminder baku sesuai tahapan yang dipulihkan.
+     */
+    public static function restoreDefaultReminderForStage(Perkara $perkara, string $tahap, string $status): void
+    {
+        switch ($tahap) {
+            case self::TAHAP_KOORDINASI:
+                self::createReminder($perkara, self::TAHAP_KOORDINASI, 'SLA Koordinasi Awal', 3);
+                break;
+            case self::TAHAP_MONITORING:
+                if (str_contains($status, 'FORM-2') || str_contains($status, 'Kedua')) {
+                    self::createReminder($perkara, self::TAHAP_MONITORING, 'Batas Waktu SOP FORM-2 (30 Hari)', 30);
+                } elseif (str_contains($status, 'P-17')) {
+                    self::createReminder($perkara, self::TAHAP_MONITORING, 'Batas Waktu P-17 (30 Hari)', 30);
+                } elseif (!str_contains($status, 'FORM-3')) {
+                    $spdpDate = $perkara->tanggal_spdp ? Carbon::parse($perkara->tanggal_spdp) : ($perkara->created_at ?? now());
+                    $deadline = $spdpDate->copy()->addDays(30);
+                    PerkaraReminder::create([
+                        'perkara_id' => $perkara->id,
+                        'tahap' => self::TAHAP_MONITORING,
+                        'jenis_reminder' => 'Batas Penyerahan Tahap I',
+                        'tanggal_mulai' => now(),
+                        'deadline' => $deadline,
+                        'status_urgensi' => PerkaraReminder::determineUrgensi($deadline),
+                        'is_active' => true,
+                    ]);
+                }
+                break;
+            case self::TAHAP_P24:
+                self::createReminder($perkara, self::TAHAP_P24, 'SLA Penelitian Berkas (P-24)', 7);
+                break;
+            case self::TAHAP_P19:
+                self::createReminder($perkara, self::TAHAP_P19, 'SLA Pemenuhan Petunjuk', 14);
+                break;
+            case self::TAHAP_P21:
+                self::createReminder($perkara, self::TAHAP_P21, 'SLA Penyerahan Tahap II', 14);
+                break;
+        }
     }
 
     public static function createReminder(Perkara $perkara, string $tahap, string $jenis, int $daysValid): void

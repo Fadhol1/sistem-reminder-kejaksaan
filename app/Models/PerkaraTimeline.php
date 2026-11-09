@@ -27,9 +27,15 @@ class PerkaraTimeline extends Model
         'user_id',
         'actor_type',
         'tahap',
+        'tahap_sebelumnya',
+        'status_sebelumnya',
         'status_kegiatan',
         'tanggal_kejadian',
         'catatan',
+        'is_reverted',
+        'reverted_at',
+        'reverted_by',
+        'revert_reason',
     ];
 
     /**
@@ -41,6 +47,8 @@ class PerkaraTimeline extends Model
     {
         return [
             'tanggal_kejadian' => 'date:Y-m-d',
+            'is_reverted' => 'boolean',
+            'reverted_at' => 'datetime',
         ];
     }
 
@@ -58,5 +66,13 @@ class PerkaraTimeline extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Relasi ke User yang membatalkan kejadian (Admin PIDUM).
+     */
+    public function reverter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reverted_by');
     }
 }

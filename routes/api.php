@@ -15,11 +15,13 @@ use App\Http\Controllers\Api\AuthController;
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('api.login');
 
 // Fitur Berita / Publikasi (Dapat diakses oleh Android / Client App)
-Route::get('/berita', [\App\Http\Controllers\Api\BeritaApiController::class, 'index'])->name('api.berita.index');
-Route::get('/berita/{id}', [\App\Http\Controllers\Api\BeritaApiController::class, 'show'])->name('api.berita.show');
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/berita', [\App\Http\Controllers\Api\BeritaApiController::class, 'index'])->name('api.berita.index');
+    Route::get('/berita/{id}', [\App\Http\Controllers\Api\BeritaApiController::class, 'show'])->name('api.berita.show');
+});
 
-// Protected Endpoints
-Route::middleware('auth:sanctum')->group(function () {
+// Protected Endpoints (Terproteksi Autentikasi Sanctum & Rate Limiting 60 req/menit)
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     
     // Auth & Profile
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');

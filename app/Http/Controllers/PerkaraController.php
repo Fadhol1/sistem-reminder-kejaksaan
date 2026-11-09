@@ -327,7 +327,7 @@ class PerkaraController extends Controller
     {
         SLAEngineService::runThrottled();
 
-        $perkara = Perkara::with(['timelines.user', 'activeReminders', 'tersangkas', 'penyidiks', 'jaksas'])->findOrFail($id);
+        $perkara = Perkara::with(['timelines.user', 'timelines.reverter', 'activeReminders', 'tersangkas', 'penyidiks', 'jaksas'])->findOrFail($id);
 
         // Keamanan IDOR: Jaksa hanya diizinkan melihat berkas perkara yang ditugaskan kepadanya
         $user = $request->user();
@@ -339,8 +339,9 @@ class PerkaraController extends Controller
         }
 
         $availableActions = PerkaraWorkflowService::getWebAvailableActions($perkara);
+        $lastUndoableAction = PerkaraWorkflowService::canUndoLastAction($perkara);
 
-        return view('perkara.show', compact('perkara', 'availableActions'));
+        return view('perkara.show', compact('perkara', 'availableActions', 'lastUndoableAction'));
     }
 
     /**
@@ -386,6 +387,38 @@ class PerkaraController extends Controller
     }
 
     /**
+     * Membatalkan langkah perkembangan perkara terakhir (Koreksi Administrasi).
+     * Mutlak hanya dapat diakses oleh Admin PIDUM.
+     */
+    public function undoPerkembangan(Request $request, string $id)
+    {
+        abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang berwenang membatalkan perkembangan perkara.');
+
+        $perkara = Perkara::findOrFail($id);
+
+        $validated = $request->validate([
+            'alasan_pembatalan' => ['required', 'string', 'min:5', 'max:500'],
+        ], [
+            'alasan_pembatalan.required' => 'Alasan pembatalan wajib diisi demi keperluan audit trail kedinasan.',
+            'alasan_pembatalan.min' => 'Alasan pembatalan minimal 5 karakter.',
+            'alasan_pembatalan.max' => 'Alasan pembatalan maksimal 500 karakter.',
+        ]);
+
+        try {
+            PerkaraWorkflowService::undoLastAction(
+                $perkara,
+                $validated['alasan_pembatalan'],
+                $request->user()->id
+            );
+
+            return redirect()->route('perkara.show', $perkara->id)
+                ->with('success', 'Aksi perkembangan berhasil dibatalkan. Status perkara dikembalikan ke "' . $perkara->tahap_saat_ini . ' - ' . $perkara->status_saat_ini . '".');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membatalkan aksi: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Remove the specified perkara from storage.
      */
     public function destroy(Request $request, string $id)
@@ -414,13 +447,15 @@ class PerkaraController extends Controller
 
     /**
      * [DEV TOOLS] Simulasi manipulasi waktu & pengujian alur SLA lokal.
-     * Hanya aktif jika environment adalah local atau config('app.debug') true.
+     * Mutlak hanya aktif di environment local dan hanya untuk role PIDUM (Admin).
      */
     public function devSimulateTime(Request $request, string $id)
     {
-        if (!app()->environment('local') && !config('app.debug')) {
-            abort(403, 'Fitur simulasi waktu hanya dapat diakses pada environment lokal / development.');
+        if (!app()->environment('local')) {
+            abort(403, 'Akses Ditolak: Fitur simulasi waktu hanya dapat diakses pada environment lokal development.');
         }
+
+        abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang berwenang menggunakan fitur simulasi.');
 
         $perkara = Perkara::findOrFail($id);
         $mode = $request->input('mode'); // set_h3, set_h0, set_overdue, custom_days, trigger_engine

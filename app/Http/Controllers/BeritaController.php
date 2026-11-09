@@ -151,7 +151,7 @@ class BeritaController extends Controller
      */
     public function destroy($id)
     {
-        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak Hanya Admin PIDUM yang dapat menghapus berita.');
+        abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat menghapus berita.');
         $berita = Berita::findOrFail($id);
 
         if ($berita->gambar && Storage::disk('public')->exists($berita->gambar)) {
