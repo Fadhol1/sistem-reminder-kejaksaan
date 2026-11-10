@@ -390,15 +390,15 @@
                                 <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Reminder Aktif (Deadline)</p>
                                 @foreach($perkara->activeReminders as $reminder)
                                     <div class="bg-gray-50 rounded p-3 mb-2 border-l-4 
-                                                            @if($reminder->status_urgensi === 'Aman') border-green-400 
-                                                            @elseif($reminder->status_urgensi === 'H-3') border-amber-400
-                                                            @else border-red-500 @endif">
+                                                                        @if($reminder->status_urgensi === 'Aman') border-green-400 
+                                                                        @elseif($reminder->status_urgensi === 'H-3') border-amber-400
+                                                                        @else border-red-500 @endif">
                                         <p class="text-xs font-semibold text-gray-900">{{ $reminder->jenis_reminder }}</p>
                                         <p class="text-xs text-gray-600 mt-1">Due: {{ $reminder->deadline->format('d M Y') }}</p>
                                         <p class="text-[10px] uppercase font-bold mt-1 
-                                                                @if($reminder->status_urgensi === 'Aman') text-green-600 
-                                                                @elseif($reminder->status_urgensi === 'H-3') text-amber-600
-                                                                @else text-red-600 @endif">
+                                                                            @if($reminder->status_urgensi === 'Aman') text-green-600 
+                                                                            @elseif($reminder->status_urgensi === 'H-3') text-amber-600
+                                                                            @else text-red-600 @endif">
                                             {{ $reminder->status_urgensi }}
                                         </p>
                                     </div>
