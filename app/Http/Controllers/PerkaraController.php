@@ -71,7 +71,17 @@ class PerkaraController extends Controller
             }
         }
 
-        // 5. Ringkasan Statistik Perkara (scoped sesuai role user)
+        // 5. Filter Khusus Admin PIDUM: Perkara Belum Ditunjuk Jaksa (P-16 Belum Terbit)
+        if ($request->boolean('tanpa_jaksa') || $request->input('filter_jaksa') === 'unassigned') {
+            $query->where(function ($q) {
+                $q->whereDoesntHave('jaksas')
+                  ->where(function ($sub) {
+                      $sub->whereNull('jaksa')->orWhere('jaksa', '');
+                  });
+            });
+        }
+
+        // 6. Ringkasan Statistik Perkara (scoped sesuai role user)
         $summaryQuery = Perkara::query();
         if ($user && $user->isJaksa()) {
             $summaryQuery->whereHas('jaksas', function ($sub) use ($user) {
@@ -97,6 +107,15 @@ class PerkaraController extends Controller
                   ->orWhere('status_saat_ini', 'like', '%FORM-7%');
             })->count(),
         ];
+
+        if ($user && $user->isPidum()) {
+            $stats['tanpa_jaksa'] = (clone $summaryQuery)
+                ->whereDoesntHave('jaksas')
+                ->where(function ($sub) {
+                    $sub->whereNull('jaksa')->orWhere('jaksa', '');
+                })
+                ->count();
+        }
 
         // Daftar tahapan baku untuk dropdown filter
         $tahapList = [
@@ -153,7 +172,7 @@ class PerkaraController extends Controller
             'penyidiks' => 'required|array|min:1',
             'penyidiks.*.nama' => 'required|string|max:255',
             'penyidik' => 'nullable|string|max:255',
-            'jaksas' => 'required|array|min:1',
+            'jaksas' => 'nullable|array',
             'jaksas.*' => 'exists:users,id',
         ], [
             'nomor_perkara.required' => 'Nomor perkara / SPDP wajib diisi.',
@@ -164,12 +183,14 @@ class PerkaraController extends Controller
             'tersangkas.required' => 'Daftar tersangka wajib diisi.',
             'tersangkas.min' => 'Minimal harus ada satu tersangka.',
             'tersangkas.*.nama.required' => 'Nama tersangka wajib diisi.',
-            'jaksas.required' => 'Pilih minimal satu Jaksa Penuntut Umum.',
-            'jaksas.min' => 'Pilih minimal satu Jaksa Penuntut Umum.',
         ]);
 
         DB::transaction(function () use ($validated) {
-            $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? 'Multiple Jaksa';
+            $hasJaksas = !empty($validated['jaksas']);
+            $firstJaksa = null;
+            if ($hasJaksas) {
+                $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? null;
+            }
 
             $penyidikNames = collect($validated['penyidiks'])->pluck('nama')->filter()->values();
             $summaryPenyidik = $penyidikNames->implode(', ');
@@ -178,14 +199,14 @@ class PerkaraController extends Controller
                 'nomor_perkara' => $validated['nomor_perkara'],
                 'tanggal_spdp' => $validated['tanggal_spdp'],
                 'penyidik' => $summaryPenyidik,
-                'jaksa' => $firstJaksa, // Field lama tetap diisi sebatas fallback
+                'jaksa' => $firstJaksa, // Field fallback string lama
                 'bidang' => 'PIDUM', // Hardcode for now as per requirement
                 'tahap_saat_ini' => PerkaraWorkflowService::TAHAP_KOORDINASI,
                 'status_saat_ini' => 'Menunggu Koordinasi',
             ]);
 
             // Sync Multiple Jaksas to Pivot
-            $perkara->jaksas()->sync($validated['jaksas']);
+            $perkara->jaksas()->sync($validated['jaksas'] ?? []);
 
             // Simpan semua tersangka
             foreach ($validated['tersangkas'] as $tersangkaData) {
@@ -268,7 +289,7 @@ class PerkaraController extends Controller
             'penyidiks' => 'required|array|min:1',
             'penyidiks.*.nama' => 'required|string|max:255',
             'penyidik' => 'nullable|string|max:255',
-            'jaksas' => 'required|array|min:1',
+            'jaksas' => 'nullable|array',
             'jaksas.*' => 'exists:users,id',
             'tersangkas' => 'required|array|min:1',
             'tersangkas.*.nama' => 'required|string|max:255',
@@ -278,15 +299,17 @@ class PerkaraController extends Controller
             'penyidiks.required' => 'Daftar penyidik wajib diisi.',
             'penyidiks.min' => 'Minimal harus ada satu penyidik.',
             'penyidiks.*.nama.required' => 'Nama / Instansi penyidik wajib diisi.',
-            'jaksas.required' => 'Pilih minimal satu Jaksa Penuntut Umum.',
-            'jaksas.min' => 'Pilih minimal satu Jaksa Penuntut Umum.',
             'tersangkas.required' => 'Daftar tersangka wajib diisi.',
             'tersangkas.min' => 'Minimal harus ada satu tersangka.',
             'tersangkas.*.nama.required' => 'Nama tersangka wajib diisi.',
         ]);
 
         DB::transaction(function () use ($validated, $perkara) {
-            $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? 'Multiple Jaksa';
+            $hasJaksas = !empty($validated['jaksas']);
+            $firstJaksa = null;
+            if ($hasJaksas) {
+                $firstJaksa = \App\Models\User::find($validated['jaksas'][0])->name ?? null;
+            }
 
             $penyidikNames = collect($validated['penyidiks'])->pluck('nama')->filter()->values();
             $summaryPenyidik = $penyidikNames->implode(', ');
@@ -298,7 +321,7 @@ class PerkaraController extends Controller
             ]);
 
             // Sync Jaksas di tabel pivot perkara_jaksa
-            $perkara->jaksas()->sync($validated['jaksas']);
+            $perkara->jaksas()->sync($validated['jaksas'] ?? []);
 
             // Sync Tersangka (Delete old ones and replace with new ones to simplify editing)
             $perkara->tersangkas()->delete();

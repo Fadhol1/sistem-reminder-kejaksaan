@@ -109,12 +109,18 @@
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center justify-between mb-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
                         <label class="block text-sm font-medium text-gray-700">
-                            Jaksa Penuntut Umum <span class="text-rose-600 font-bold">*</span>
+                            Jaksa Penuntut Umum <span class="text-xs font-normal text-slate-500">(Opsional / P-16)</span>
                         </label>
-                        <span class="text-xs text-slate-500">Pilih minimal 1 Jaksa</span>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Bisa dikosongkan jika Surat P-16 belum terbit
+                        </span>
                     </div>
+                    <p class="text-xs text-slate-500 mb-2">
+                        Pilih satu atau lebih Jaksa Peneliti jika sudah ditunjuk. Jika Surat P-16 belum turun dari pimpinan, Anda dapat melewatinya dan menugaskannya nanti melalui menu <strong>Edit Perkara</strong>.
+                    </p>
                     
                     <!-- Fitur Search Jaksa -->
                     <div class="relative mb-2">

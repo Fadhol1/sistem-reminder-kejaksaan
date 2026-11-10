@@ -144,13 +144,27 @@
                         </div>
                         <div>
                             <span class="block text-gray-500 mb-1">Jaksa Penuntut Umum</span>
-                            <ul class="font-medium text-gray-900 space-y-1">
-                                @forelse($perkara->jaksas as $jaksaTerkait)
-                                    <li>{{ $jaksaTerkait->name }}</li>
-                                @empty
-                                    <li>{{ $perkara->jaksa }}</li>
-                                @endforelse
-                            </ul>
+                            @if(($perkara->jaksas && $perkara->jaksas->count() > 0) || (!empty($perkara->jaksa) && $perkara->jaksa !== '-'))
+                                <ul class="font-medium text-gray-900 space-y-1">
+                                    @forelse($perkara->jaksas as $jaksaTerkait)
+                                        <li>{{ $jaksaTerkait->name }}</li>
+                                    @empty
+                                        <li>{{ $perkara->jaksa }}</li>
+                                    @endforelse
+                                </ul>
+                            @else
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                        Belum Ditunjuk (P-16)
+                                    </span>
+                                    @if(auth()->user()->isPidum())
+                                        <a href="{{ route('perkara.edit', $perkara->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-amber-900 hover:text-amber-700 bg-amber-100/70 hover:bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md transition shadow-2xs">
+                                            + Tugaskan Jaksa
+                                        </a>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

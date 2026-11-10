@@ -93,11 +93,11 @@
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center justify-between mb-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
                         <label class="block text-sm font-medium text-gray-700">
-                            Jaksa Penuntut Umum <span class="text-rose-600 font-bold">*</span>
+                            Jaksa Penuntut Umum <span class="text-xs font-normal text-slate-500">(Opsional / P-16)</span>
                         </label>
-                        <span class="text-xs text-slate-500">Pilih minimal 1 Jaksa</span>
+                        <span class="text-xs text-slate-500">Pilih satu atau lebih Jaksa yang ditugaskan</span>
                     </div>
                     
                     <!-- Fitur Search Jaksa -->

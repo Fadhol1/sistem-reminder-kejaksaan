@@ -29,6 +29,34 @@
         </div>
     </div>
 
+    @if(auth()->user()->isPidum() && ($perkaraTanpaJaksa ?? 0) > 0)
+        <!-- Atensi Penunjukan Jaksa (P-16) -->
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-300 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-start sm:items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 border border-amber-200 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-amber-950 flex items-center gap-2">
+                        Atensi Penugasan: Ada {{ $perkaraTanpaJaksa }} Perkara Belum Ditunjuk Jaksa (P-16)
+                    </h4>
+                    <p class="text-xs text-amber-800 mt-0.5">
+                        Berkas SPDP sudah masuk ke sistem namun Jaksa Penuntut Umum belum ditugaskan oleh pimpinan.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('perkara.index', ['tanpa_jaksa' => 1]) }}"
+                class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-amber-700 hover:bg-amber-800 shadow-2xs transition-colors shrink-0">
+                <span>Tugaskan Jaksa Sekarang</span>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+            </a>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <a href="{{ route('perkara.index') }}" class="block bg-white border border-gray-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-2xs transition shadow-2xs">
             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Perkara</p>

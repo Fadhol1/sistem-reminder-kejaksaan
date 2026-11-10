@@ -76,7 +76,7 @@ class PerkaraActionApiTest extends TestCase
      */
     public function test_registration_rejects_deleted_penyidik_role(): void
     {
-        $response = $this->post('/register', [
+        $response = $this->actingAs($this->pidum)->post('/users', [
             'name' => 'Calon Penyidik',
             'email' => 'calon_penyidik@polri.go.id',
             'role' => 'penyidik',
@@ -604,5 +604,57 @@ class PerkaraActionApiTest extends TestCase
         $this->assertFalse(
             PerkaraReminder::where('perkara_id', $this->perkara->id)->where('is_active', true)->exists()
         );
+    }
+
+    /**
+     * 15. Pembuatan perkara baru tanpa Jaksa (P-16 belum terbit) dan penugasan susulan.
+     */
+    public function test_create_perkara_without_jaksa_and_assign_subsequently(): void
+    {
+        $nomor = 'SPDP/TEST/NULL-JAKSA/' . uniqid();
+
+        // 1. Simpan perkara tanpa Jaksa
+        $response = $this->actingAs($this->pidum)->post('/perkara', [
+            'nomor_perkara' => $nomor,
+            'tanggal_spdp' => now()->toDateString(),
+            'penyidiks' => [['nama' => 'Penyidik Polres']],
+            'tersangkas' => [['nama' => 'Tersangka Fulan']],
+        ]);
+
+        $response->assertRedirect(route('perkara.index'));
+
+        $perkara = Perkara::where('nomor_perkara', $nomor)->first();
+        $this->assertNotNull($perkara);
+        $this->assertNull($perkara->jaksa);
+        $this->assertEquals(0, $perkara->jaksas()->count());
+
+        // 2. Akun Jaksa biasa tidak boleh mengakses perkara ini (IDOR check)
+        $responseJaksa = $this->actingAs($this->jaksaAssigned)->get('/perkara/' . $perkara->id);
+        $responseJaksa->assertStatus(403);
+
+        // 3. Admin PIDUM dapat melihat dan memfilter perkara tanpa Jaksa
+        $responsePidumFilter = $this->actingAs($this->pidum)->get('/perkara?tanpa_jaksa=1');
+        $responsePidumFilter->assertStatus(200);
+        $responsePidumFilter->assertSee($nomor);
+
+        // 4. Admin PIDUM menugaskan Jaksa secara susulan via update
+        $responseUpdate = $this->actingAs($this->pidum)->put('/perkara/' . $perkara->id, [
+            'nomor_perkara' => $nomor,
+            'penyidiks' => [['nama' => 'Penyidik Polres']],
+            'tersangkas' => [['nama' => 'Tersangka Fulan']],
+            'jaksas' => [$this->jaksaAssigned->id],
+        ]);
+        $responseUpdate->assertRedirect(route('perkara.show', $perkara->id));
+
+        $perkara->refresh();
+        $this->assertEquals(1, $perkara->jaksas()->count());
+        $this->assertEquals($this->jaksaAssigned->name, $perkara->jaksa);
+
+        // 5. Sekarang Jaksa yang ditugaskan dapat membuka perkara
+        $responseJaksaAfter = $this->actingAs($this->jaksaAssigned)->get('/perkara/' . $perkara->id);
+        $responseJaksaAfter->assertStatus(200);
+
+        // Bersihkan data
+        $perkara->delete();
     }
 }
