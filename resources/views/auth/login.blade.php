@@ -4,6 +4,43 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Logo & Identitas Resmi Kejaksaan RI -->
+    <div class="flex items-center gap-3.5 pb-2">
+        <!-- Lambang Resmi Adhyaksa Kejaksaan RI -->
+        <div class="relative w-13 h-13 rounded-2xl bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] p-0.5 shadow-md shadow-red-950/20 shrink-0 border border-amber-400/30 flex items-center justify-center group">
+            <div class="w-full h-full bg-gradient-to-br from-[#5c0b15] to-[#3a060d] rounded-[14px] flex items-center justify-center p-2 text-amber-300">
+                <!-- Lambang Bintang & Timbangan Keadilan Kejaksaan -->
+                <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7 text-amber-400 drop-shadow" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3v18" />
+                    <path d="M4 7h16" />
+                    <path d="m5 7 3 7 3-7" />
+                    <path d="m13 7 3 7 3-7" />
+                    <path d="M8 14a3 3 0 0 1-6 0" />
+                    <path d="M22 14a3 3 0 0 1-6 0" />
+                    <path d="M8 21h8" />
+                </svg>
+            </div>
+            <!-- Bintang Emas Puncak Adhyaksa -->
+            <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-xs border border-white">
+                <svg class="w-2.5 h-2.5 text-amber-950" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+            </div>
+        </div>
+
+        <div>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#881337] block">
+                Kejaksaan Republik Indonesia
+            </span>
+            <p class="text-sm font-bold text-slate-800 leading-tight">
+                Kejaksaan Negeri Ogan Komering Ulu
+            </p>
+            <p class="text-[11px] text-slate-500 font-medium">
+                Seksi Tindak Pidana Umum (PIDUM)
+            </p>
+        </div>
+    </div>
+
     <!-- Header Formulir -->
     <div>
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200/60 mb-3">

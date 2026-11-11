@@ -127,21 +127,38 @@ class PerkaraWorkflowService
         return self::getAvailableActions($perkara);
     }
 
-    public static function processAction(Perkara $perkara, string $actionId, array $data, ?int $userId = null, string $actorType = 'USER'): void
+    public static function processAction(Perkara $perkara, string $actionId, array $data, ?int $userId = null, string $actorType = 'USER'): bool
     {
         if ($perkara->isKoordinasiAwalOverdue() && $actionId !== 'tindak_lanjut_koordinasi_overdue') {
             throw new \DomainException('Perkara pada tahap Koordinasi Awal telah overdue dan terkunci dari pencatatan perkembangan.');
         }
 
-        DB::transaction(function () use ($perkara, $actionId, $data, $userId, $actorType) {
+        return DB::transaction(function () use ($perkara, $actionId, $data, $userId, $actorType): bool {
+            // 1. Lock record Perkara untuk mencegah race condition & stale update
+            $lockedPerkara = Perkara::lockForUpdate()->find($perkara->id);
+            if (!$lockedPerkara) {
+                throw new \DomainException("Perkara dengan ID {$perkara->id} tidak ditemukan.");
+            }
+
+            // 2. Proteksi Stale-State untuk transisi otomatis SYSTEM:
+            // Jika state telah berubah dari ekspektasi awal (misalnya jaksa baru saja mencatat aksi manual),
+            // batalkan auto-transition SYSTEM secara aman agar tidak menimpa kerja jaksa (lost update protection).
+            if ($actorType === 'SYSTEM') {
+                if ($lockedPerkara->tahap_saat_ini !== $perkara->tahap_saat_ini || 
+                    $lockedPerkara->status_saat_ini !== $perkara->status_saat_ini) {
+                    \Illuminate\Support\Facades\Log::info("PerkaraWorkflowService: Auto-transition '{$actionId}' dibatalkan untuk Perkara ID {$perkara->id} karena state telah diperbarui oleh pengguna menjadi tahap '{$lockedPerkara->tahap_saat_ini}'.");
+                    return false;
+                }
+            }
+
             $catatan = $data['catatan'] ?? null;
             $tanggal = isset($data['tanggal']) ? Carbon::parse($data['tanggal']) : now();
 
-            $prevTahap = $perkara->tahap_saat_ini;
-            $prevStatus = $perkara->status_saat_ini;
+            $prevTahap = $lockedPerkara->tahap_saat_ini;
+            $prevStatus = $lockedPerkara->status_saat_ini;
 
-            $newTahap = $perkara->tahap_saat_ini;
-            $newStatus = $perkara->status_saat_ini;
+            $newTahap = $lockedPerkara->tahap_saat_ini;
+            $newStatus = $lockedPerkara->status_saat_ini;
             $eventName = '';
 
             switch ($actionId) {
@@ -414,11 +431,13 @@ class PerkaraWorkflowService
                     break;
             }
 
-            // Update Perkara
-            $perkara->update([
+            // Update Perkara (Gunakan lockedPerkara dan sinkronkan instance $perkara)
+            $lockedPerkara->update([
                 'tahap_saat_ini' => $newTahap,
                 'status_saat_ini' => $newStatus,
             ]);
+            $perkara->tahap_saat_ini = $newTahap;
+            $perkara->status_saat_ini = $newStatus;
 
             // Save Timeline Record
             if (!empty($eventName)) {
@@ -440,6 +459,8 @@ class PerkaraWorkflowService
                     \Illuminate\Support\Facades\Log::warning('Gagal notif transisi: ' . $e->getMessage());
                 }
             }
+
+            return true;
         });
     }
 
@@ -466,7 +487,12 @@ class PerkaraWorkflowService
     public static function undoLastAction(Perkara $perkara, string $reason, int $userId): PerkaraTimeline
     {
         return DB::transaction(function () use ($perkara, $reason, $userId) {
-            $lastTimeline = self::canUndoLastAction($perkara);
+            $lockedPerkara = Perkara::lockForUpdate()->find($perkara->id);
+            if (!$lockedPerkara) {
+                throw new \DomainException("Perkara dengan ID {$perkara->id} tidak ditemukan.");
+            }
+
+            $lastTimeline = self::canUndoLastAction($lockedPerkara);
 
             if (!$lastTimeline) {
                 throw new \DomainException('Tidak ada langkah perkembangan perkara yang dapat dibatalkan.');
@@ -489,12 +515,12 @@ class PerkaraWorkflowService
             ]);
 
             // 2. Nonaktifkan reminder aktif yang dihasilkan dari aksi keliru tersebut
-            PerkaraReminder::where('perkara_id', $perkara->id)
+            PerkaraReminder::where('perkara_id', $lockedPerkara->id)
                 ->where('is_active', true)
                 ->update(['is_active' => false]);
 
             // 3. Pulihkan status reminder tahap sebelumnya
-            $previousReminder = PerkaraReminder::where('perkara_id', $perkara->id)
+            $previousReminder = PerkaraReminder::where('perkara_id', $lockedPerkara->id)
                 ->where('tahap', $targetTahap)
                 ->latest('id')
                 ->first();
@@ -505,18 +531,20 @@ class PerkaraWorkflowService
                     'status_urgensi' => PerkaraReminder::determineUrgensi($previousReminder->deadline),
                 ]);
             } else {
-                self::restoreDefaultReminderForStage($perkara, $targetTahap, $targetStatus);
+                self::restoreDefaultReminderForStage($lockedPerkara, $targetTahap, $targetStatus);
             }
 
             // 4. Perbarui status perkara kembali ke posisi sebelumnya
-            $perkara->update([
+            $lockedPerkara->update([
                 'tahap_saat_ini' => $targetTahap,
                 'status_saat_ini' => $targetStatus,
             ]);
+            $perkara->tahap_saat_ini = $targetTahap;
+            $perkara->status_saat_ini = $targetStatus;
 
             // 5. Buat rekam jejak audit resmi di Timeline
             $correctionTimeline = PerkaraTimeline::create([
-                'perkara_id' => $perkara->id,
+                'perkara_id' => $lockedPerkara->id,
                 'user_id' => $userId,
                 'actor_type' => 'USER',
                 'tahap' => $targetTahap,

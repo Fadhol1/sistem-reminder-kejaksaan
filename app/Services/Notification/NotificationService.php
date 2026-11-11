@@ -213,11 +213,12 @@ class NotificationService
             }
         }
 
-        $nowMicro = (int) (microtime(true) * 1000);
+        $dateKey = now()->format('Y-m-d');
+        $stageSlug = \Illuminate\Support\Str::slug($perkara->tahap_saat_ini . '_' . $stageOrEventName);
         $results = [];
 
         foreach ($recipients as $recipient) {
-            $idempotencyKey = 'stage_p' . $perkara->id . '_' . $nowMicro . '_u' . $recipient->id;
+            $idempotencyKey = "stage_p{$perkara->id}_{$stageSlug}_{$dateKey}_u{$recipient->id}";
 
             $result = $this->dispatchNotification(
                 user: $recipient,
@@ -247,17 +248,7 @@ class NotificationService
         string $title,
         string $body
     ): array {
-        // 1. Idempotency Check: Jika sudah pernah dicatat/dikirim, hindari pengiriman duplikat
-        if (PushNotificationLog::hasIdempotencyKey($idempotencyKey)) {
-            Log::info("NotificationService: Idempotency hit untuk key '{$idempotencyKey}'. Melewati pengiriman duplikat.");
-            return [
-                'status' => 'SKIPPED_DUPLICATE',
-                'user_id' => $user->id,
-                'idempotency_key' => $idempotencyKey,
-            ];
-        }
-
-        // 2. Data payload minimal (non-sensitif) agar aplikasi Android mengambil detail via authenticated API
+        // 1. Data payload minimal (non-sensitif) agar aplikasi Android mengambil detail via authenticated API
         $dataPayload = [
             'perkara_id' => (string)$perkara->id,
             'nomor_perkara' => (string)$perkara->nomor_perkara,
@@ -267,20 +258,101 @@ class NotificationService
             'click_action' => 'OPEN_PERKARA_DETAIL',
         ];
 
+        // 2. Atomic Pre-Locking Idempotensi (Mencegah pengiriman duplikat di tingkat database)
+        $existingLog = PushNotificationLog::where('idempotency_key', $idempotencyKey)->first();
+
+        if ($existingLog) {
+            if ($existingLog->status === PushNotificationLog::STATUS_FAILED) {
+                // Atomic Compare-and-Swap: Hanya 1 proses yang berhasil mengubah status FAILED -> PENDING
+                $affected = PushNotificationLog::where('id', $existingLog->id)
+                    ->where('status', PushNotificationLog::STATUS_FAILED)
+                    ->update(['status' => PushNotificationLog::STATUS_PENDING, 'error_message' => null]);
+
+                if ($affected === 0) {
+                    Log::info("NotificationService: Retry race hit untuk key '{$idempotencyKey}'. Melewati pengiriman duplikat.");
+                    return [
+                        'status' => 'SKIPPED_DUPLICATE',
+                        'user_id' => $user->id,
+                        'idempotency_key' => $idempotencyKey,
+                    ];
+                }
+
+                $log = $existingLog->fresh();
+            } elseif ($existingLog->status === PushNotificationLog::STATUS_NO_TOKEN) {
+                // Jika sebelumnya NO_TOKEN, periksa apakah pengguna sekarang sudah mendaftarkan token aktif
+                if ($user->activeDeviceTokens()->exists()) {
+                    // Atomic Compare-and-Swap: Hanya 1 proses yang berhasil mengubah status NO_TOKEN -> PENDING
+                    $affected = PushNotificationLog::where('id', $existingLog->id)
+                        ->where('status', PushNotificationLog::STATUS_NO_TOKEN)
+                        ->update(['status' => PushNotificationLog::STATUS_PENDING, 'error_message' => null]);
+
+                    if ($affected === 0) {
+                        Log::info("NotificationService: Retry race hit (NO_TOKEN) untuk key '{$idempotencyKey}'. Melewati pengiriman duplikat.");
+                        return [
+                            'status' => 'SKIPPED_DUPLICATE',
+                            'user_id' => $user->id,
+                            'idempotency_key' => $idempotencyKey,
+                        ];
+                    }
+
+                    $log = $existingLog->fresh();
+                } else {
+                    // Pengguna masih belum memiliki token aktif -> Tolak duplikasi/skip
+                    Log::info("NotificationService: Pengguna {$user->id} masih belum memiliki token untuk key '{$idempotencyKey}'. Melewati pengiriman.");
+                    return [
+                        'status' => PushNotificationLog::STATUS_NO_TOKEN,
+                        'log_id' => $existingLog->id,
+                        'user_id' => $user->id,
+                    ];
+                }
+            } else {
+                // Sudah SENT atau PENDING -> Tolak duplikasi
+                Log::info("NotificationService: Idempotency hit untuk key '{$idempotencyKey}'. Melewati pengiriman duplikat.");
+                return [
+                    'status' => 'SKIPPED_DUPLICATE',
+                    'user_id' => $user->id,
+                    'idempotency_key' => $idempotencyKey,
+                ];
+            }
+        } else {
+            try {
+                $log = PushNotificationLog::create([
+                    'user_id' => $user->id,
+                    'perkara_id' => $perkara->id,
+                    'perkara_reminder_id' => $reminder?->id,
+                    'event_type' => $eventType,
+                    'idempotency_key' => $idempotencyKey,
+                    'title' => $title,
+                    'body' => $body,
+                    'data_payload' => $dataPayload,
+                    'status' => PushNotificationLog::STATUS_PENDING,
+                ]);
+            } catch (\Throwable $e) {
+                $isUniqueViolation = $e instanceof \Illuminate\Database\UniqueConstraintViolationException
+                    || ($e instanceof \Illuminate\Database\QueryException && (
+                        $e->getCode() === '23000' ||
+                        (isset($e->errorInfo[1]) && in_array($e->errorInfo[1], [1062, 19], true))
+                    ));
+
+                if ($isUniqueViolation) {
+                    // Tertangkap race condition jika proses paralel lain baru saja meng-insert key yang sama
+                    Log::info("NotificationService: Idempotency race hit untuk key '{$idempotencyKey}'. Melewati pengiriman duplikat.");
+                    return [
+                        'status' => 'SKIPPED_DUPLICATE',
+                        'user_id' => $user->id,
+                        'idempotency_key' => $idempotencyKey,
+                    ];
+                }
+
+                throw $e;
+            }
+        }
+
         // 3. Ambil seluruh token aktif milik pengguna
         $activeTokens = $user->activeDeviceTokens()->get();
 
         if ($activeTokens->isEmpty()) {
-            // Catat log dengan status NO_TOKEN agar audit trail riwayat notifikasi tetap lengkap
-            $log = PushNotificationLog::create([
-                'user_id' => $user->id,
-                'perkara_id' => $perkara->id,
-                'perkara_reminder_id' => $reminder?->id,
-                'event_type' => $eventType,
-                'idempotency_key' => $idempotencyKey,
-                'title' => $title,
-                'body' => $body,
-                'data_payload' => $dataPayload,
+            $log->update([
                 'status' => PushNotificationLog::STATUS_NO_TOKEN,
                 'error_message' => 'Pengguna belum mendaftarkan perangkat aktif.',
             ]);
@@ -322,7 +394,7 @@ class NotificationService
             }
         }
 
-        // Tentukan status log akhir
+        // 5. Tentukan status log akhir dan perbarui baris yang telah di-lock PENDING
         $finalStatus = PushNotificationLog::STATUS_FAILED;
         if ($sentCount > 0) {
             $finalStatus = PushNotificationLog::STATUS_SENT;
@@ -330,15 +402,7 @@ class NotificationService
             $finalStatus = PushNotificationLog::STATUS_INVALID_TOKEN;
         }
 
-        $log = PushNotificationLog::create([
-            'user_id' => $user->id,
-            'perkara_id' => $perkara->id,
-            'perkara_reminder_id' => $reminder?->id,
-            'event_type' => $eventType,
-            'idempotency_key' => $idempotencyKey,
-            'title' => $title,
-            'body' => $body,
-            'data_payload' => $dataPayload,
+        $log->update([
             'fcm_message_id' => $lastMessageId,
             'status' => $finalStatus,
             'error_message' => $lastErrorMessage,

@@ -48,4 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/perkara/{id}/perkembangan', [PerkaraController::class, 'catatPerkembangan'])->name('perkara.catatPerkembangan');
     Route::post('/perkara/{id}/undo-perkembangan', [PerkaraController::class, 'undoPerkembangan'])->name('perkara.undoPerkembangan');
     Route::post('/perkara/{id}/dev-simulate', [PerkaraController::class, 'devSimulateTime'])->name('perkara.devSimulate');
+    // Modul Tentang Aplikasi & Developer
+    Route::get('/tentang', function () {
+        return view('tentang');
+    })->name('tentang');
 });

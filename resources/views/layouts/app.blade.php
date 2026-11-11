@@ -221,7 +221,7 @@
                 </div>
             @endif
 
-            <!-- Group: Pengaturan Akun -->
+            <!-- Group: Pengaturan & Informasi -->
             <div>
                 <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Pengaturan</p>
                 <div class="space-y-1">
@@ -234,6 +234,19 @@
                                     d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             <span class="truncate">Pengaturan Profil</span>
+                        </div>
+                    </a>
+
+                    <!-- Tentang Aplikasi & Developer -->
+                    <a href="{{ route('tentang') }}"
+                        class="flex items-center px-3 py-2.5 rounded-lg text-sm transition-all duration-150 {{ request()->routeIs('tentang') ? 'bg-red-50 text-red-900 font-semibold border-l-4 border-[#881337]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium' }}">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <svg class="w-5 h-5 {{ request()->routeIs('tentang') ? 'text-[#881337]' : 'text-slate-400' }} shrink-0"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                            <span class="truncate">Tentang &amp; Pengembang</span>
                         </div>
                     </a>
                 </div>
@@ -256,8 +269,11 @@
                     <span>Keluar dari Sistem</span>
                 </button>
             </form>
-            <p class="text-[10px] text-slate-400 text-center mt-2.5 font-medium">SIPETA &bull; Kejaksaan Negeri OKU
-                &copy; {{ date('Y') }}</p>
+            <p class="text-[10px] text-slate-400 text-center mt-2.5 font-medium">
+                <a href="{{ route('tentang') }}" class="hover:text-[#881337] transition-colors">
+                    SIPETA &bull; Kejaksaan Negeri OKU &copy; {{ date('Y') }}
+                </a>
+            </p>
         </div>
     </aside>
 

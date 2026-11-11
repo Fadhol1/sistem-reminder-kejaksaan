@@ -57,10 +57,14 @@ class PushNotificationLog extends Model
     }
 
     /**
-     * Check if a notification has already been successfully sent or recorded for an idempotency key.
+     * Memeriksa apakah notifikasi untuk key idempotensi ini sudah berhasil diproses (SENT/NO_TOKEN)
+     * atau sedang dalam proses (PENDING) sehingga tidak dikirim ganda.
+     * Jika log sebelumnya berstatus FAILED, mengembalikan false agar sistem dapat melakukan retry pengiriman.
      */
     public static function hasIdempotencyKey(string $key): bool
     {
-        return self::where('idempotency_key', $key)->exists();
+        return self::where('idempotency_key', $key)
+            ->whereIn('status', [self::STATUS_SENT, self::STATUS_PENDING, self::STATUS_NO_TOKEN])
+            ->exists();
     }
 }

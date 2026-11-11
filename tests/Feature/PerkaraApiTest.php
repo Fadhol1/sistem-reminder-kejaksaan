@@ -655,6 +655,8 @@ class PerkaraApiTest extends TestCase
 
     public function test_reminder_and_perkara_dates_are_serialized_as_ymd_without_timezone_day_shift(): void
     {
+        \Carbon\Carbon::setTestNow('2026-10-29 10:00:00');
+
         $perkara = Perkara::create([
             'nomor_perkara'   => 'BP/TZ/TEST/01',
             'penyidik'        => 'Penyidik Polres',

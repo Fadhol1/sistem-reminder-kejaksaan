@@ -1,0 +1,111 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sipeta_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_ROLE=app
+    volumes:
+      - ./.env:/var/www/.env
+      - sipeta_storage:/var/www/storage
+      - ./firebase:/var/www/firebase:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sipeta_net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: sipeta_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./public:/var/www/public:ro
+      - sipeta_storage:/var/www/storage:ro
+    depends_on:
+      - app
+    networks:
+      - sipeta_net
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  db:
+    image: mariadb:10.11
+    container_name: sipeta_db
+    restart: unless-stopped
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --innodb-log-buffer-size=16M
+      --max-connections=50
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-sipeta}
+      MYSQL_USER: ${DB_USERNAME:-sipeta_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sipeta_password_aman}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-sipeta_root_password_aman}
+    volumes:
+      - sipeta_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-sipeta_root_password_aman}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - sipeta_net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sipeta_scheduler
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work"]
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_ROLE=scheduler
+    volumes:
+      - ./.env:/var/www/.env
+      - sipeta_storage:/var/www/storage
+      - ./firebase:/var/www/firebase:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - sipeta_net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+volumes:
+  sipeta_db_data:
+    driver: local
+  sipeta_storage:
+    driver: local
+
+networks:
+  sipeta_net:
+    driver: bridge
+

@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Log;
 class SLAEngineService
 {
     /**
-     * Memeriksa dan mengeksekusi SLA secara On-Demand dengan throttling
-     * agar data otomatis terupdate saat diakses via Web maupun Mobile App tanpa harus menunggu cron.
+     * Memeriksa dan mengeksekusi SLA secara On-Demand dengan throttling atomik (Distributed Lock)
+     * agar data otomatis terupdate saat diakses via Web maupun Mobile App tanpa race condition.
      */
     public static function runThrottled(int $seconds = 15): void
     {
-        $cacheKey = 'sla_engine_last_throttled_run';
-        if (Cache::has($cacheKey)) {
+        // Gunakan atomic distributed lock berbasis TTL untuk mencegah race condition TOCTOU
+        $throttleLock = Cache::lock('sla_engine_last_throttled_run', $seconds);
+        if (!$throttleLock->get()) {
             return;
         }
-        Cache::put($cacheKey, now()->timestamp, $seconds);
 
         app(self::class)->executeEngine();
     }
@@ -115,8 +115,28 @@ class SLAEngineService
 
     /**
      * Mengevaluasi kondisi SLA: SPDP > 30 hari pada Monitoring, dan semua reminder aktif yang Overdue.
+     * Dilindungi dengan Distributed Mutex Lock agar proses Scheduler dan Web Controller tidak tumpang-tindih.
      */
     public function executeEngine(): void
+    {
+        $engineLock = Cache::lock('sla_engine_running_mutex', 120);
+
+        if (!$engineLock->get()) {
+            Log::info('SLAEngineService: Mesin SLA sedang berjalan pada proses lain. Melewati eksekusi bersamaan.');
+            return;
+        }
+
+        try {
+            $this->runEngineCore();
+        } finally {
+            $engineLock->release();
+        }
+    }
+
+    /**
+     * Inti eksekusi mesin SLA setelah mendapatkan mutex lock.
+     */
+    protected function runEngineCore(): void
     {
         Log::info('SLAEngineService: Memulai pemeriksaan SLA berkala.');
 
@@ -129,17 +149,28 @@ class SLAEngineService
             ->get();
 
         foreach ($monitoringPerkaras as $pSPDP) {
+            // Segarkan instance model dari database untuk memastikan state mutakhir
+            $pSPDP->refresh();
+            if ($pSPDP->tahap_saat_ini !== PerkaraWorkflowService::TAHAP_MONITORING || $pSPDP->status_saat_ini !== 'Menunggu Berkas Tahap I') {
+                continue;
+            }
+
             $spdpDate = Carbon::parse($pSPDP->tanggal_spdp);
             if ($spdpDate->copy()->addDays(30)->endOfDay()->isPast()) {
                 try {
                     Log::info("SLAEngineService: SPDP > 30 hari terdeteksi pada Perkara ID {$pSPDP->id}. Menjalankan auto-transition P-17.");
-                    PerkaraWorkflowService::processAction($pSPDP, 'catat_p17', [], null, 'SYSTEM');
-                    $processedCount++;
+                    $transitionSuccess = PerkaraWorkflowService::processAction($pSPDP, 'catat_p17', [], null, 'SYSTEM');
 
-                    try {
-                        app(\App\Services\Notification\NotificationService::class)->notifyAutoTransition($pSPDP, 'catat_p17');
-                    } catch (\Throwable $ne) {
-                        Log::error("SLAEngineService: Gagal kirim notifikasi auto-transition P-17: " . $ne->getMessage());
+                    if ($transitionSuccess) {
+                        $processedCount++;
+
+                        try {
+                            app(\App\Services\Notification\NotificationService::class)->notifyAutoTransition($pSPDP, 'catat_p17');
+                        } catch (\Throwable $ne) {
+                            Log::error("SLAEngineService: Gagal kirim notifikasi auto-transition P-17: " . $ne->getMessage());
+                        }
+                    } else {
+                        Log::info("SLAEngineService: Auto-transition P-17 dibatalkan (stale state) pada Perkara ID {$pSPDP->id}. Melewati pengiriman notifikasi.");
                     }
                 } catch (\Exception $e) {
                     Log::error("SLAEngineService: Gagal memproses auto-transition catat_p17 Perkara ID {$pSPDP->id}: " . $e->getMessage());
@@ -170,7 +201,7 @@ class SLAEngineService
                 continue;
             }
 
-            $perkara = $reminder->perkara;
+            $perkara = $reminder->perkara?->fresh();
             if (!$perkara) {
                 continue;
             }
@@ -201,13 +232,18 @@ class SLAEngineService
             if ($transitionAction) {
                 try {
                     Log::info("SLAEngineService: Transisi '{$transitionAction}' dijalankan untuk Perkara ID: {$perkara->id}");
-                    PerkaraWorkflowService::processAction($perkara, $transitionAction, [], null, 'SYSTEM');
-                    $processedCount++;
+                    $transitionSuccess = PerkaraWorkflowService::processAction($perkara, $transitionAction, [], null, 'SYSTEM');
 
-                    try {
-                        app(\App\Services\Notification\NotificationService::class)->notifyAutoTransition($perkara, $transitionAction);
-                    } catch (\Throwable $ne) {
-                        Log::error("SLAEngineService: Gagal kirim notifikasi auto-transition '{$transitionAction}': " . $ne->getMessage());
+                    if ($transitionSuccess) {
+                        $processedCount++;
+
+                        try {
+                            app(\App\Services\Notification\NotificationService::class)->notifyAutoTransition($perkara, $transitionAction);
+                        } catch (\Throwable $ne) {
+                            Log::error("SLAEngineService: Gagal kirim notifikasi auto-transition '{$transitionAction}': " . $ne->getMessage());
+                        }
+                    } else {
+                        Log::info("SLAEngineService: Auto-transition '{$transitionAction}' dibatalkan (stale state) pada Perkara ID {$perkara->id}. Melewati pengiriman notifikasi.");
                     }
                 } catch (\Exception $e) {
                     Log::error("SLAEngineService: Gagal memproses auto-transition '{$transitionAction}' Perkara ID {$perkara->id}: " . $e->getMessage());
