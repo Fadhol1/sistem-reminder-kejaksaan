@@ -16,6 +16,10 @@ class BeritaController extends Controller
     {
         $query = Berita::query()->latest('tanggal')->latest('id');
 
+        if (!auth()->user()->isPidum()) {
+            $query->published();
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -90,6 +94,11 @@ class BeritaController extends Controller
     public function show($id)
     {
         $berita = Berita::findOrFail($id);
+        abort_if(
+            !$berita->is_published && !auth()->user()->isPidum(),
+            403,
+            'Akses Ditolak: Berita berstatus draf hanya dapat diakses oleh Admin PIDUM.'
+        );
         return view('berita.show', compact('berita'));
     }
 

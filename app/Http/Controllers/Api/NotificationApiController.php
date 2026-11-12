@@ -33,13 +33,13 @@ class NotificationApiController extends Controller
         if ($request->boolean('today') || $request->input('filter') === 'today') {
             $query->whereDate('created_at', now()->toDateString());
         } elseif ($request->filled('days')) {
-            $days = (int) $request->input('days', 7);
+            $days = max(1, min((int) $request->input('days', 7), 365));
             $query->where('created_at', '>=', now()->subDays($days)->startOfDay());
         } elseif ($request->filled('date')) {
             $query->whereDate('created_at', $request->input('date'));
         }
 
-        $perPage = (int) $request->input('per_page', 30);
+        $perPage = max(1, min((int) $request->input('per_page', 30), 50));
         $logs = $query->paginate($perPage);
 
         $todayCount = PushNotificationLog::where('user_id', $user->id)

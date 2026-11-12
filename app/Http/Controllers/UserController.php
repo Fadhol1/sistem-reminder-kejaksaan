@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Perkara;
+use App\Models\UserDeviceToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
@@ -140,11 +142,25 @@ class UserController extends Controller
             $user->role = $validated['role'];
         }
 
-        if ($request->filled('password')) {
+        $passwordChanged = $request->filled('password');
+        if ($passwordChanged) {
             $user->password = Hash::make($validated['password']);
         }
 
         $user->save();
+
+        if ($passwordChanged) {
+            // Cabut seluruh token API Sanctum dan nonaktifkan token FCM perangkat user
+            $user->tokens()->delete();
+            UserDeviceToken::where('user_id', $user->id)->update(['is_active' => false]);
+
+            // Hapus sesi web aktif milik user tersebut agar akses langsung terputus
+            if (config('session.driver') === 'database' && $user->id !== $request->user()->id) {
+                DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->id)
+                    ->delete();
+            }
+        }
 
         return redirect()->route('users.index')->with('success', 'Profil pengguna berhasil diperbarui.');
     }

@@ -9,6 +9,7 @@ use App\Services\SLAEngineService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PerkaraController extends Controller
 {
@@ -404,8 +405,11 @@ class PerkaraController extends Controller
                 Auth::id()
             );
             return redirect()->route('perkara.show', $perkara->id)->with('success', 'Perkembangan perkara berhasil dicatat.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("Gagal mencatat perkembangan perkara {$id}: " . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat mencatat perkembangan perkara.');
         }
     }
 
@@ -436,8 +440,11 @@ class PerkaraController extends Controller
 
             return redirect()->route('perkara.show', $perkara->id)
                 ->with('success', 'Aksi perkembangan berhasil dibatalkan. Status perkara dikembalikan ke "' . $perkara->tahap_saat_ini . ' - ' . $perkara->status_saat_ini . '".');
-        } catch (\Exception $e) {
+        } catch (\DomainException $e) {
             return redirect()->back()->with('error', 'Gagal membatalkan aksi: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("Gagal membatalkan aksi perkara {$id}: " . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat membatalkan aksi.');
         }
     }
 

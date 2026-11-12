@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserDeviceToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -64,11 +66,27 @@ class ProfileController extends Controller
             $user->foto_profil = $request->file('foto_profil')->store('profiles', 'public');
         }
 
-        if ($request->filled('password')) {
+        $passwordChanged = $request->filled('password');
+        if ($passwordChanged) {
             $user->password = Hash::make($validated['password']);
         }
 
         $user->save();
+
+        if ($passwordChanged) {
+            // Cabut seluruh token API Sanctum, nonaktifkan token FCM lama, dan akhiri sesi web perangkat lain
+            $user->tokens()->delete();
+            UserDeviceToken::where('user_id', $user->id)->update(['is_active' => false]);
+
+            if (config('session.driver') === 'database') {
+                DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->id)
+                    ->where('id', '!=', $request->session()->getId())
+                    ->delete();
+            }
+
+            $request->session()->regenerate();
+        }
 
         return redirect()->route('profile.edit')->with('success', 'Profil Anda berhasil diperbarui.');
     }

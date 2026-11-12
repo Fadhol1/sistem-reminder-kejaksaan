@@ -28,9 +28,9 @@ class PerkaraApiController extends Controller
 
         $query = Perkara::with(['tersangkas', 'activeReminders', 'latestTimeline'])->orderBy('created_at', 'desc');
 
-        // Filter berdasarkan role user (jaksa/penyidik)
+        // Filter berdasarkan role user (selain Admin PIDUM, dibatasi hanya perkara yang ditugaskan kepadanya)
         $user = $request->user();
-        if ($user && $user->role === 'jaksa') {
+        if ($user && !$user->isPidum()) {
             $query->whereHas('jaksas', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
@@ -67,8 +67,8 @@ class PerkaraApiController extends Controller
             $query->where('penyidik', 'like', "%{$request->input('penyidik')}%");
         }
 
-        // Selalu gunakan pagination (default 15 per halaman)
-        $perPage = (int) $request->input('per_page', 15);
+        // Selalu gunakan pagination (default 15, maksimal 50 per halaman)
+        $perPage = max(1, min((int) $request->input('per_page', 15), 50));
         $perkaras = $query->paginate($perPage);
 
         return response()->json([
@@ -106,9 +106,9 @@ class PerkaraApiController extends Controller
             ], 404);
         }
 
-        // Keamanan IDOR: Jaksa hanya boleh membuka detail perkara yang ditugaskan kepadanya
+        // Keamanan IDOR: selain Admin PIDUM, hanya boleh membuka detail perkara yang ditugaskan kepadanya
         $user = $request->user();
-        if ($user && $user->isJaksa()) {
+        if ($user && !$user->isPidum()) {
             $isAssigned = $perkara->jaksas->contains('id', $user->id);
             if (!$isAssigned) {
                 return response()->json([
@@ -141,9 +141,9 @@ class PerkaraApiController extends Controller
             ], 404);
         }
 
-        // Keamanan IDOR: Jaksa hanya boleh melihat timeline perkara yang ditugaskan kepadanya
+        // Keamanan IDOR: selain Admin PIDUM, hanya boleh melihat timeline perkara yang ditugaskan kepadanya
         $user = $request->user();
-        if ($user && $user->isJaksa()) {
+        if ($user && !$user->isPidum()) {
             $isAssigned = $perkara->jaksas->contains('id', $user->id);
             if (!$isAssigned) {
                 return response()->json([
@@ -185,7 +185,7 @@ class PerkaraApiController extends Controller
             'user:id,name,role'
         ])->orderBy('tanggal_kejadian', 'desc')->orderBy('id', 'desc');
 
-        if ($user && $user->isJaksa()) {
+        if ($user && !$user->isPidum()) {
             $query->whereHas('perkara.jaksas', function ($sub) use ($user) {
                 $sub->where('users.id', $user->id);
             });
@@ -202,7 +202,7 @@ class PerkaraApiController extends Controller
             });
         }
 
-        $perPage = (int) $request->input('per_page', 20);
+        $perPage = max(1, min((int) $request->input('per_page', 20), 50));
         $timelines = $query->paginate($perPage);
 
         return response()->json([
@@ -239,7 +239,7 @@ class PerkaraApiController extends Controller
             'catatan' => 'nullable|string',
             'buat_reminder' => 'nullable|boolean',
             'jenis_reminder' => 'nullable|string|max:255',
-            'deadline_days' => 'nullable|integer|min:1',
+            'deadline_days' => 'nullable|integer|min:1|max:3650',
             'deadline' => 'nullable|date|after_or_equal:tanggal_spdp',
         ], [
             'nomor_perkara.required' => 'Nomor perkara wajib diisi.',
@@ -478,15 +478,17 @@ class PerkaraApiController extends Controller
             },
         ]);
 
-        // 2. Filter data hanya milik user yang sedang login (Jaksa/Penyidik) jika login
-        if ($user && $user->role === 'jaksa') {
-            $query->whereHas('perkara.jaksas', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            });
-        } elseif ($user && $user->role === 'penyidik') {
-            $query->whereHas('perkara', function ($q) use ($user) {
-                $q->where('penyidik', $user->name);
-            });
+        // 2. Filter data hanya milik user yang sedang login (selain Admin PIDUM)
+        if ($user && !$user->isPidum()) {
+            if ($user->role === 'penyidik') {
+                $query->whereHas('perkara', function ($q) use ($user) {
+                    $q->where('penyidik', $user->name);
+                });
+            } else {
+                $query->whereHas('perkara.jaksas', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            }
         }
 
         // 3. Filter aktif (default true, kecuali jika meminta 'all')
@@ -527,16 +529,22 @@ class PerkaraApiController extends Controller
             END ASC
         ")->orderBy('deadline', 'asc');
 
-        // 7. Pagination (default 15 per halaman)
-        $perPage = (int) $request->input('per_page', 15);
+        // 7. Pagination (default 15, maksimal 50 per halaman)
+        $perPage = max(1, min((int) $request->input('per_page', 15), 50));
         $reminders = $query->paginate($perPage);
 
         // 8. Rekapitulasi ringkas statistik dashboard Android
         $summaryQuery = PerkaraReminder::where('is_active', true);
-        if ($user && $user->role === 'jaksa') {
-            $summaryQuery->whereHas('perkara.jaksas', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            });
+        if ($user && !$user->isPidum()) {
+            if ($user->role === 'penyidik') {
+                $summaryQuery->whereHas('perkara', function ($q) use ($user) {
+                    $q->where('penyidik', $user->name);
+                });
+            } else {
+                $summaryQuery->whereHas('perkara.jaksas', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            }
         }
 
         $summary = [
@@ -573,8 +581,8 @@ class PerkaraApiController extends Controller
             },
         ]);
 
-        // 1. Role-based scoping (Jaksa hanya melihat perkara miliknya, PIDUM semua)
-        if ($user && $user->role === 'jaksa') {
+        // 1. Role-based scoping (selain Admin PIDUM hanya melihat perkara miliknya)
+        if ($user && !$user->isPidum()) {
             $query->whereHas('perkara.jaksas', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
@@ -615,13 +623,13 @@ class PerkaraApiController extends Controller
         // 5. Urutan audit log: dari yang paling baru diupdate/dibuat ke yang terlama
         $query->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
 
-        // 6. Pagination (default 20 per halaman)
-        $perPage = (int) $request->input('per_page', 20);
+        // 6. Pagination (default 20, maksimal 50 per halaman)
+        $perPage = max(1, min((int) $request->input('per_page', 20), 50));
         $logs = $query->paginate($perPage);
 
         // 7. Ringkasan statistik untuk header kartu log di aplikasi mobile
         $summaryQuery = PerkaraReminder::query();
-        if ($user && $user->role === 'jaksa') {
+        if ($user && !$user->isPidum()) {
             $summaryQuery->whereHas('perkara.jaksas', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
@@ -787,11 +795,18 @@ class PerkaraApiController extends Controller
                     $user->id,
                     'USER'
                 );
-            } catch (\Throwable $e) {
-                Log::error("Gagal memproses aksi perkara {$id}: " . $e->getMessage());
+            } catch (\DomainException $e) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Terjadi kesalahan saat memproses aksi perkara: ' . $e->getMessage(),
+                    'message' => $e->getMessage(),
+                ], 422);
+            } catch (\Throwable $e) {
+                Log::error("Gagal memproses aksi perkara {$id}: " . $e->getMessage(), [
+                    'exception' => $e,
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan internal saat memproses aksi perkara.',
                 ], 500);
             }
 
