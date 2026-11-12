@@ -27,3 +27,6 @@ Thumbs.db
 # Third-party integrations
 /firebase
 app/Console/Commands/TestEngine.php
+
+# Deployment archives
+*.tar.gz
