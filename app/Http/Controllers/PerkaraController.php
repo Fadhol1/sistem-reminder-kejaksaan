@@ -463,10 +463,11 @@ class PerkaraController extends Controller
             // Detach jaksas (Many-to-Many pivot)
             $perkara->jaksas()->detach();
 
-            // Delete related records (assuming cascade isn't fully enforced or to be safe)
+            // Bersihkan relasi terkait secara menyeluruh untuk mencegah orphan record
             $perkara->tersangkas()->delete();
+            $perkara->penyidiks()->delete();
             $perkara->timelines()->delete();
-            $perkara->activeReminders()->delete();
+            $perkara->reminders()->delete();
 
             // Delete the main record
             $perkara->delete();

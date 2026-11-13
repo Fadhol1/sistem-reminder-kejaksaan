@@ -22,7 +22,7 @@ Route::middleware('throttle:60,1')->group(function () {
 
 // Protected Endpoints (Terproteksi Autentikasi Sanctum & Rate Limiting 60 req/menit)
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
-    
+
     // Auth & Profile
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     // Profile & User Endpoints (supports GET, PUT, PATCH, POST)
@@ -31,6 +31,18 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
 
     Route::get('/profile', [AuthController::class, 'getProfile'])->name('api.profile.get');
     Route::match(['put', 'patch', 'post'], '/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update');
+
+    // Dedicated Upload / Update Foto Profil Endpoints (supports POST, PUT, PATCH)
+    Route::match(['post', 'put', 'patch'], '/user/foto', [AuthController::class, 'uploadFotoProfil'])->name('api.user.foto.update');
+    Route::match(['post', 'put', 'patch'], '/user/photo', [AuthController::class, 'uploadFotoProfil']);
+    Route::match(['post', 'put', 'patch'], '/user/avatar', [AuthController::class, 'uploadFotoProfil']);
+    Route::match(['post', 'put', 'patch'], '/user/foto-profil', [AuthController::class, 'uploadFotoProfil']);
+    Route::match(['post', 'put', 'patch'], '/profile/foto', [AuthController::class, 'uploadFotoProfil'])->name('api.profile.foto.update');
+    Route::match(['post', 'put', 'patch'], '/profile/photo', [AuthController::class, 'uploadFotoProfil']);
+    Route::match(['post', 'put', 'patch'], '/profile/avatar', [AuthController::class, 'uploadFotoProfil']);
+    Route::match(['post', 'put', 'patch'], '/profile/foto-profil', [AuthController::class, 'uploadFotoProfil']);
+    Route::match(['post', 'put', 'patch'], '/foto-profil', [AuthController::class, 'uploadFotoProfil'])->name('api.foto_profil.update');
+    Route::match(['post', 'put', 'patch'], '/photo', [AuthController::class, 'uploadFotoProfil']);
 
     // Dedicated Update Nomor HP / Phone Endpoints (supports PUT, PATCH, POST)
     Route::match(['put', 'patch', 'post'], '/user/nomor-hp', [AuthController::class, 'updateNomorHp'])->name('api.user.nomor_hp.update');
@@ -59,7 +71,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::get('/{id}/timeline', [PerkaraApiController::class, 'getTimelines'])->name('api.perkara.timeline.index');
         Route::get('/{id}/timelines', [PerkaraApiController::class, 'getTimelines']);
         Route::post('/{id}/timeline', [PerkaraApiController::class, 'storeTimeline'])->name('api.perkara.timeline.store_with_id');
-        
+
         // Android Workflow Action Hooks
         Route::get('/{id}/available-actions', [PerkaraApiController::class, 'getAvailableActions'])->name('api.perkara.available_actions');
         Route::post('/{id}/actions', [PerkaraApiController::class, 'processAction'])->name('api.perkara.process_action');

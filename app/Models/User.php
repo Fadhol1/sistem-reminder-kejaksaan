@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -123,5 +124,30 @@ class User extends Authenticatable
     public function notificationLogs(): HasMany
     {
         return $this->hasMany(PushNotificationLog::class, 'user_id');
+    }
+
+    protected $appends = [
+        'foto_profil_url',
+        'foto_profile_url',
+    ];
+
+    /**
+     * Menghasilkan URL lengkap foto profil (HTTP/HTTPS)
+     */
+    public function getFotoProfilUrlAttribute(): ?string
+    {
+        if (!$this->foto_profil) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->foto_profil);
+    }
+
+    /**
+     * Alias bahasa Inggris untuk kompatibilitas aplikasi mobile
+     */
+    public function getFotoProfileUrlAttribute(): ?string
+    {
+        return $this->foto_profil_url;
     }
 }

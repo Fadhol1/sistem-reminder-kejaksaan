@@ -228,9 +228,15 @@ class PerkaraApiController extends Controller
 
         $validated = $request->validate([
             'nomor_perkara' => 'required|string|max:255|unique:perkaras,nomor_perkara',
-            'nama_tersangka' => 'required|string|max:255',
-            'penyidik' => 'required|string|max:255',
-            'jaksa' => 'required|string|max:255',
+            'nama_tersangka' => 'nullable|string|max:255',
+            'tersangkas' => 'nullable|array|min:1',
+            'tersangkas.*.nama' => 'required|string|max:255',
+            'penyidik' => 'nullable|string|max:255',
+            'penyidiks' => 'nullable|array|min:1',
+            'penyidiks.*.nama' => 'required|string|max:255',
+            'jaksa' => 'nullable|string|max:255',
+            'jaksas' => 'nullable|array',
+            'jaksas.*' => 'exists:users,id',
             'tanggal_spdp' => 'required|date',
             'tahap_saat_ini' => 'required|string|max:255',
             'status_saat_ini' => 'required|string|max:255',
@@ -244,36 +250,90 @@ class PerkaraApiController extends Controller
         ], [
             'nomor_perkara.required' => 'Nomor perkara wajib diisi.',
             'nomor_perkara.unique' => 'Nomor perkara sudah terdaftar di sistem.',
-            'nama_tersangka.required' => 'Nama tersangka wajib diisi.',
-            'penyidik.required' => 'Nama penyidik wajib diisi.',
-            'jaksa.required' => 'Nama jaksa wajib diisi.',
             'tanggal_spdp.required' => 'Tanggal SPDP wajib diisi.',
             'tahap_saat_ini.required' => 'Tahap saat ini wajib diisi.',
             'status_saat_ini.required' => 'Status saat ini wajib diisi.',
         ]);
 
+        if (empty($validated['nama_tersangka']) && empty($validated['tersangkas'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tersangka wajib diisi (melalui nama_tersangka atau tersangkas).',
+            ], 422);
+        }
+
+        if (empty($validated['penyidik']) && empty($validated['penyidiks'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data penyidik wajib diisi (melalui penyidik atau penyidiks).',
+            ], 422);
+        }
+
         return DB::transaction(function () use ($validated, $request) {
+            // Kumpulkan daftar nama penyidik
+            $penyidikList = [];
+            if (!empty($validated['penyidiks'])) {
+                $penyidikList = collect($validated['penyidiks'])->pluck('nama')->filter()->values()->all();
+            } elseif (!empty($validated['penyidik'])) {
+                $penyidikList = [$validated['penyidik']];
+            }
+            $summaryPenyidik = implode(', ', $penyidikList);
+
+            // Kumpulkan daftar nama tersangka
+            $tersangkaList = [];
+            if (!empty($validated['tersangkas'])) {
+                $tersangkaList = collect($validated['tersangkas'])->pluck('nama')->filter()->values()->all();
+            } elseif (!empty($validated['nama_tersangka'])) {
+                $tersangkaList = [$validated['nama_tersangka']];
+            }
+
+            // Kumpulkan dan sinkronkan ID Jaksa ke tabel pivot perkara_jaksa
+            $jaksaIds = $validated['jaksas'] ?? [];
+            if (empty($jaksaIds) && !empty($validated['jaksa'])) {
+                $matchedJaksa = \App\Models\User::where('role', 'jaksa')
+                    ->where(function ($q) use ($validated) {
+                        $q->where('name', $validated['jaksa'])
+                            ->orWhere('id', $validated['jaksa']);
+                    })
+                    ->first();
+                if ($matchedJaksa) {
+                    $jaksaIds = [$matchedJaksa->id];
+                }
+            }
+
+            $firstJaksaName = null;
+            if (!empty($jaksaIds)) {
+                $firstJaksaName = \App\Models\User::find($jaksaIds[0])?->name;
+            } elseif (!empty($validated['jaksa'])) {
+                $firstJaksaName = $validated['jaksa'];
+            }
+
             // 1. Simpan perkara utama
             $perkara = Perkara::create([
                 'nomor_perkara' => $validated['nomor_perkara'],
-                'penyidik' => $validated['penyidik'],
-                'jaksa' => $validated['jaksa'],
+                'penyidik' => $summaryPenyidik,
+                'jaksa' => $firstJaksaName,
                 'tanggal_spdp' => $validated['tanggal_spdp'],
                 'tahap_saat_ini' => $validated['tahap_saat_ini'],
                 'status_saat_ini' => $validated['status_saat_ini'],
             ]);
 
+            // Sinkronkan ke tabel pivot perkara_jaksa agar Jaksa langsung memiliki hak akses
+            if (!empty($jaksaIds)) {
+                $perkara->jaksas()->sync($jaksaIds);
+            }
+
             // Simpan data tersangka ke tabel tersangkas
-            if (!empty($validated['nama_tersangka'])) {
+            foreach ($tersangkaList as $namaTersangka) {
                 $perkara->tersangkas()->create([
-                    'nama' => $validated['nama_tersangka'],
+                    'nama' => $namaTersangka,
                 ]);
             }
 
             // Simpan data penyidik ke tabel penyidiks
-            if (!empty($validated['penyidik'])) {
+            foreach ($penyidikList as $namaPenyidik) {
                 $perkara->penyidiks()->create([
-                    'nama' => $validated['penyidik'],
+                    'nama' => $namaPenyidik,
                 ]);
             }
 
@@ -303,7 +363,7 @@ class PerkaraApiController extends Controller
             }
 
             // Muat relasi lengkap untuk response
-            $perkara->load(['latestTimeline', 'activeReminders']);
+            $perkara->load(['latestTimeline', 'activeReminders', 'jaksas:id,name,role', 'tersangkas', 'penyidiks']);
 
             return response()->json([
                 'success' => true,
@@ -332,13 +392,21 @@ class PerkaraApiController extends Controller
             ], 404);
         }
 
-        // Hapus data perkara (relasi timeline & reminder akan ikut terhapus jika di-set cascade, atau hapus manual)
-        $perkara->delete();
+        return DB::transaction(function () use ($perkara) {
+            // Bersihkan pivot dan relasi secara eksplisit untuk mencegah orphan record
+            $perkara->jaksas()->detach();
+            $perkara->tersangkas()->delete();
+            $perkara->penyidiks()->delete();
+            $perkara->timelines()->delete();
+            $perkara->reminders()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data perkara berhasil dihapus.'
-        ], 200);
+            $perkara->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data perkara berhasil dihapus.'
+            ], 200);
+        });
     }
 
     /**
