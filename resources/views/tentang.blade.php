@@ -31,8 +31,8 @@
         </div>
 
         <!-- ========================================================
-             SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
-             ======================================================== -->
+                 SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
+                 ======================================================== -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -67,7 +67,7 @@
                             </div>
                             <span
                                 class="relative z-10 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-amber-300 border border-amber-400/30 backdrop-blur-xs">
-                                Lead Developer
+                                Devapp
                             </span>
                         </div>
 
@@ -84,8 +84,8 @@
                                 </div>
                             </div>
 
-                            <h3 class="text-base font-bold text-gray-900 leading-tight">Dheny Kurniawand</h3>
-                            <p class="text-xs font-semibold text-[#881337] mt-0.5">Lead Software &amp; Backend Engineer</p>
+                            <h3 class="text-base font-bold text-gray-900 leading-tight">Dheny Kurniawan</h3>
+                            <p class="text-xs font-semibold text-[#881337] mt-0.5">Devapp (Application Developer)</p>
 
                             <div class="mt-3 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-600">
                                 <p class="text-gray-500 flex items-center gap-1.5">
@@ -102,7 +102,7 @@
                                     <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="currentColor"
                                         viewBox="0 0 20 20">
                                         <path
-                                            d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a10.978 10.978 0 00-.25 2.378 8.002 8.002 0 007.414 7.973 1.002 1.002 0 00.586-.184 10.974 10.974 0 003.75-5.26 1.001 1.001 0 00-.75-1.42 1 1 0 00-.85.34 8.975 8.975 0 01-3.15 4.385A6.002 6.002 0 017 10.429c0-.77.108-1.516.31-2.227l2.69 1.153a1 1 0 00.788 0l7-3a1 1 0 000-1.84l-7-3z" />
+                                             d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a10.978 10.978 0 00-.25 2.378 8.002 8.002 0 007.414 7.973 1.002 1.002 0 00.586-.184 10.974 10.974 0 003.75-5.26 1.001 1.001 0 00-.75-1.42 1 1 0 00-.85.34 8.975 8.975 0 01-3.15 4.385A6.002 6.002 0 017 10.429c0-.77.108-1.516.31-2.227l2.69 1.153a1 1 0 00.788 0l7-3a1 1 0 000-1.84l-7-3z" />
                                     </svg>
                                     <span>Universitas Mahakarya Asia</span>
                                 </p>
@@ -111,7 +111,7 @@
                     </div>
 
                     <div class="px-5 py-3 bg-slate-50/70 border-t border-gray-100 text-[11px] text-gray-500">
-                        Rekayasa SLA Engine, Mutex Concurrency, &amp; Cloudflare Tunnel
+                        Pengembangan Aplikasi (Devapp) &amp; Integrasi API Kedinasan
                     </div>
                 </div>
 
@@ -127,7 +127,7 @@
                             </div>
                             <span
                                 class="relative z-10 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-blue-300 border border-blue-400/30 backdrop-blur-xs">
-                                Co-Developer
+                                Frontend &amp; Security
                             </span>
                         </div>
 
@@ -145,7 +145,7 @@
                             </div>
 
                             <h3 class="text-base font-bold text-gray-900 leading-tight">Dendi Ananda Putra</h3>
-                            <p class="text-xs font-semibold text-blue-700 mt-0.5">Fullstack &amp; Database Engineer</p>
+                            <p class="text-xs font-semibold text-blue-700 mt-0.5">Frontend, Keamanan &amp; Logika SLA</p>
 
                             <div class="mt-3 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-600">
                                 <p class="text-gray-500 flex items-center gap-1.5">
@@ -171,11 +171,11 @@
                     </div>
 
                     <div class="px-5 py-3 bg-slate-50/70 border-t border-gray-100 text-[11px] text-gray-500">
-                        Modul Perkara, Manajemen User, &amp; Relasi Database MariaDB
+                        Antarmuka Web, Hardening Keamanan Sistem, &amp; Logika SLA Engine
                     </div>
                 </div>
 
-                <!-- PENGEMBANG 3: Naufal Fadil Wibadi -->
+                <!-- PENGEMBANG 3: Naufal Fadhil Wibadi -->
                 <div
                     class="bg-white rounded-2xl border border-gray-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between">
                     <div>
@@ -187,7 +187,7 @@
                             </div>
                             <span
                                 class="relative z-10 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-emerald-300 border border-emerald-400/30 backdrop-blur-xs">
-                                Co-Developer
+                                Database &amp; Assets
                             </span>
                         </div>
 
@@ -205,7 +205,7 @@
                             </div>
 
                             <h3 class="text-base font-bold text-gray-900 leading-tight">Naufal Fadhil Wibadi</h3>
-                            <p class="text-xs font-semibold text-emerald-700 mt-0.5">Frontend &amp; UI/UX Specialist</p>
+                            <p class="text-xs font-semibold text-emerald-700 mt-0.5">Perancang Database &amp; Asset Creator</p>
 
                             <div class="mt-3 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-600">
                                 <p class="text-gray-500 flex items-center gap-1.5">
@@ -231,7 +231,7 @@
                     </div>
 
                     <div class="px-5 py-3 bg-slate-50/70 border-t border-gray-100 text-[11px] text-gray-500">
-                        Desain Antarmuka Tailwind CSS, Responsivitas Mobile, &amp; Modul Berita
+                        Perancangan Skema Database MariaDB &amp; Pembuatan Aset Aplikasi
                     </div>
                 </div>
 
@@ -239,8 +239,8 @@
         </div>
 
         <!-- ========================================================
-             SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
-             ======================================================== -->
+                 SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
+                 ======================================================== -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
 
             <!-- Detail Aplikasi SIPETA -->
@@ -328,7 +328,8 @@
         <div class="p-4 rounded-xl bg-slate-100/70 border border-slate-200 text-center text-xs text-gray-500">
             <p class="font-semibold text-gray-700">SIPETA (Sistem Pengingat Tahapan Berkas Perkara) &bull; Versi 1.0.0</p>
             <p class="text-[11px] text-gray-400 mt-1">
-                Karya Mahasiswa Program Studi Manajemen Informatika Universitas Mahakarya Asia &bull; Kejaksaan Negeri Ogan
+                Karya Mahasiswa Program Studi Manajemen Informatika Universitas Mahakarya Asia Baturaja &bull; Kejaksaan
+                Negeri Ogan
                 Komering Ulu &copy; {{ date('Y') }}.
             </p>
         </div>
