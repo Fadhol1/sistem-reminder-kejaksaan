@@ -88,7 +88,7 @@ class AuthController extends Controller
             'nomor_hp' => ['nullable', 'string', 'max:20'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
         ];
 
         $passwordChanged = $request->filled('password');
@@ -272,18 +272,18 @@ class AuthController extends Controller
         $newPath = null;
 
         if ($file) {
-            // Validasi file upload (maks 5MB, format gambar standar termasuk jpg & png)
+            // Validasi file upload (maks 10MB, format gambar standar termasuk jpg, png, webp)
             $request->validate([
-                'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-                'foto'        => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-                'photo'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-                'avatar'      => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-                'image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
-                'file'        => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+                'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+                'foto'        => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+                'photo'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+                'avatar'      => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+                'image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+                'file'        => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
             ], [
-                'max'   => 'Ukuran foto profil maksimal 5 MB.',
+                'max'   => 'Ukuran foto profil maksimal 10 MB.',
                 'image' => 'Berkas yang diunggah harus berupa file gambar.',
-                'mimes' => 'Format gambar harus berupa jpeg, png, jpg, webp, atau gif.',
+                'mimes' => 'Format foto harus berupa JPEG, PNG, JPG, WEBP, atau GIF.',
             ]);
 
             // Hapus foto profil lama jika ada

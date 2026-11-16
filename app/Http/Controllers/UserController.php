@@ -63,7 +63,7 @@ class UserController extends Controller
             'nip' => ['nullable', 'string', 'max:50', 'unique:users'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -114,7 +114,7 @@ class UserController extends Controller
             'nip' => ['nullable', 'string', 'max:50', 'unique:users,nip,'.$user->id],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
         ];
 
         // Validasi password opsional (hanya diisi jika admin ingin mengubah password user)

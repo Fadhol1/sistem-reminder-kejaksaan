@@ -63,9 +63,9 @@
                         <div class="flex-1">
                             <label for="foto_profil" class="block text-sm font-medium text-gray-700 mb-1">Unggah Foto Baru
                                 (Opsional)</label>
-                            <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg"
+                            <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 border border-gray-300 rounded-lg cursor-pointer">
-                            <p class="mt-1 text-xs text-gray-500">Maksimal 2MB. Format: JPG, PNG.</p>
+                            <p class="mt-1 text-xs text-gray-500">Maksimal 10MB. Format: JPG, PNG, WEBP, GIF.</p>
                             @error('foto_profil')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror

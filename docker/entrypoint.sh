@@ -28,7 +28,9 @@ if [ "$1" = "php-fpm" ]; then
     echo "Menjalankan inisialisasi aplikasi Laravel SIPETA..."
 
     # Pastikan direktori storage dan cache berizin www-data
+    mkdir -p /var/www/storage/app/public/profiles
     chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
     # Pastikan storage link tersedia
     php artisan storage:link || true

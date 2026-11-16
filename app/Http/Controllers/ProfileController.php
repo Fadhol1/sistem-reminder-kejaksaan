@@ -37,7 +37,7 @@ class ProfileController extends Controller
             'nomor_hp' => ['nullable', 'string', 'max:20'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
         ];
 
         if ($request->filled('password')) {
@@ -48,7 +48,10 @@ class ProfileController extends Controller
         $validated = $request->validate($rules, [
             'current_password.required' => 'Kata sandi saat ini wajib diisi untuk mengganti kata sandi.',
             'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
-            'password.different' => 'Kata sandi baru tidak boleh sama dengan kata sandi saat ini.'
+            'password.different' => 'Kata sandi baru tidak boleh sama dengan kata sandi saat ini.',
+            'foto_profil.image' => 'Berkas yang diunggah harus berupa gambar.',
+            'foto_profil.mimes' => 'Format foto profil harus berupa JPEG, PNG, JPG, WEBP, atau GIF.',
+            'foto_profil.max' => 'Ukuran foto profil tidak boleh lebih dari 10 MB.',
         ]);
 
         $user->name = $validated['name'];

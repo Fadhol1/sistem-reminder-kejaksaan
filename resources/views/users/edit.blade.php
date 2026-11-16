@@ -118,9 +118,9 @@
                         </div>
                     @endif
 
-                    <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg"
+                    <input type="file" name="foto_profil" id="foto_profil" accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 border border-gray-300 rounded-md">
-                    <p class="mt-1 text-xs text-gray-500">Unggah foto baru jika ingin mengganti foto saat ini. Maks 2MB.</p>
+                    <p class="mt-1 text-xs text-gray-500">Unggah foto baru jika ingin mengganti foto saat ini. Maks 10MB.</p>
                     @error('foto_profil')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
