@@ -73,13 +73,15 @@ class PerkaraController extends Controller
         }
 
         // 5. Filter Khusus Admin PIDUM: Perkara Belum Ditunjuk Jaksa (P-16 Belum Terbit)
-        if ($request->boolean('tanpa_jaksa') || $request->input('filter_jaksa') === 'unassigned') {
-            $query->where(function ($q) {
-                $q->whereDoesntHave('jaksas')
-                  ->where(function ($sub) {
-                      $sub->whereNull('jaksa')->orWhere('jaksa', '');
-                  });
-            });
+        if ($request->boolean('tanpa_jaksa') || $request->input('filter_jaksa') === 'unassigned' || $request->input('status_filter') === 'tanpa_jaksa') {
+            if ($request->input('status_filter') === 'selesai') {
+                $query->whereDoesntHave('jaksas')
+                      ->where(function ($sub) {
+                          $sub->whereNull('jaksa')->orWhere('jaksa', '')->orWhere('jaksa', '-');
+                      });
+            } else {
+                $query->butuhPenugasanJaksa();
+            }
         }
 
         // 6. Ringkasan Statistik Perkara (scoped sesuai role user)
@@ -110,12 +112,7 @@ class PerkaraController extends Controller
         ];
 
         if ($user && $user->isPidum()) {
-            $stats['tanpa_jaksa'] = (clone $summaryQuery)
-                ->whereDoesntHave('jaksas')
-                ->where(function ($sub) {
-                    $sub->whereNull('jaksa')->orWhere('jaksa', '');
-                })
-                ->count();
+            $stats['tanpa_jaksa'] = (clone $summaryQuery)->butuhPenugasanJaksa()->count();
         }
 
         // Daftar tahapan baku untuk dropdown filter
@@ -251,6 +248,10 @@ class PerkaraController extends Controller
 
         $perkara = Perkara::with(['tersangkas', 'penyidiks', 'jaksas', 'activeReminders', 'reminders'])->findOrFail($id);
 
+        if ($perkara->isSelesai()) {
+            abort(403, 'Akses Ditolak: Perkara telah selesai / SPDP telah dikembalikan dan berkas diarsipkan.');
+        }
+
         if ($perkara->isKoordinasiAwalOverdue()) {
             abort(403, 'Akses Ditolak: Perkara pada tahap Koordinasi Awal telah overdue / melewati batas waktu SLA dan terkunci dari pengubahan.');
         }
@@ -271,6 +272,10 @@ class PerkaraController extends Controller
         }
 
         $perkara = Perkara::with(['activeReminders', 'reminders'])->findOrFail($id);
+
+        if ($perkara->isSelesai()) {
+            abort(403, 'Akses Ditolak: Perkara telah selesai / SPDP telah dikembalikan dan berkas diarsipkan.');
+        }
 
         if ($perkara->isKoordinasiAwalOverdue()) {
             abort(403, 'Akses Ditolak: Perkara pada tahap Koordinasi Awal telah overdue / melewati batas waktu SLA dan terkunci dari pembaruan data.');

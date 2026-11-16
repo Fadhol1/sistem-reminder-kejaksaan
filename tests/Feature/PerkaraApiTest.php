@@ -763,5 +763,149 @@ class PerkaraApiTest extends TestCase
         $responseOverdue->assertSee('Pencatatan Perkembangan Dinonaktifkan');
         $responseOverdue->assertDontSee('Simpan Perkembangan');
     }
+
+    public function test_perkara_tanpa_jaksa_best_practice_when_overdue_and_selesai(): void
+    {
+        $pidum = User::factory()->create([
+            'role' => 'pidum',
+        ]);
+
+        $jaksa = User::factory()->create([
+            'role' => 'jaksa',
+        ]);
+
+        // 1. Perkara tanpa jaksa yang sudah SELESAI / SPDP DIKEMBALIKAN (SOP FORM-3)
+        $perkaraForm3 = Perkara::create([
+            'nomor_perkara'   => 'BP/SEL/FORM3/01',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => null,
+            'tanggal_spdp'    => now()->subDays(40)->toDateString(),
+            'tahap_saat_ini'  => 'Monitoring Penyidikan',
+            'status_saat_ini' => 'SOP FORM-3 (Pengembalian SPDP)',
+        ]);
+        $perkaraForm3->tersangkas()->create(['nama' => 'Tersangka FORM3']);
+
+        $this->assertTrue($perkaraForm3->isSelesai());
+        $this->assertTrue($perkaraForm3->isTanpaJaksa());
+        $this->assertFalse(Perkara::butuhPenugasanJaksa()->where('id', $perkaraForm3->id)->exists());
+
+        // 2. Perkara tanpa jaksa yang OVERDUE di tahap Koordinasi Awal
+        $perkaraOverdue = Perkara::create([
+            'nomor_perkara'   => 'BP/OVD/KOORD/01',
+            'penyidik'        => 'Penyidik Polsek',
+            'jaksa'           => null,
+            'tanggal_spdp'    => now()->subDays(6)->toDateString(),
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Overdue / Tindak Lanjut SOP Form-1B & Form-1C',
+        ]);
+        $perkaraOverdue->tersangkas()->create(['nama' => 'Tersangka Overdue']);
+        $perkaraOverdue->reminders()->create([
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tahap'          => 'Koordinasi Awal',
+            'tanggal_mulai'  => now()->subDays(6)->toDateString(),
+            'deadline'       => now()->subDays(3)->toDateString(),
+            'status_urgensi' => 'Overdue',
+            'is_active'      => true,
+        ]);
+
+        $this->assertTrue($perkaraOverdue->isKoordinasiAwalOverdue());
+        $this->assertTrue($perkaraOverdue->isTanpaJaksa());
+        $this->assertFalse(Perkara::butuhPenugasanJaksa()->where('id', $perkaraOverdue->id)->exists());
+
+        // 3. Perkara tanpa jaksa yang MASIH AKTIF & BELUM OVERDUE (Harus memicu Atensi)
+        $perkaraAktif = Perkara::create([
+            'nomor_perkara'   => 'BP/AKTIF/NOJAKSA/01',
+            'penyidik'        => 'Penyidik Polres',
+            'jaksa'           => null,
+            'tanggal_spdp'    => now()->toDateString(),
+            'tahap_saat_ini'  => 'Koordinasi Awal',
+            'status_saat_ini' => 'Menunggu Koordinasi Awal',
+        ]);
+        $perkaraAktif->tersangkas()->create(['nama' => 'Tersangka Aktif']);
+        $perkaraAktif->reminders()->create([
+            'jenis_reminder' => 'SLA Koordinasi Awal',
+            'tahap'          => 'Koordinasi Awal',
+            'tanggal_mulai'  => now()->toDateString(),
+            'deadline'       => now()->addDays(3)->toDateString(),
+            'status_urgensi' => 'Aman',
+            'is_active'      => true,
+        ]);
+
+        $this->assertFalse($perkaraAktif->isSelesai());
+        $this->assertFalse($perkaraAktif->isKoordinasiAwalOverdue());
+        $this->assertTrue($perkaraAktif->isTanpaJaksa());
+        $this->assertTrue(Perkara::butuhPenugasanJaksa()->where('id', $perkaraAktif->id)->exists());
+
+        // A. Cek Dashboard: Hanya 1 perkara aktif yang dihitung
+        $responseDashboard = $this->actingAs($pidum)->get(route('dashboard'));
+        $responseDashboard->assertStatus(200);
+        $responseDashboard->assertSee('Atensi Penugasan: Ada 1 Perkara Belum Ditunjuk Jaksa (P-16)');
+
+        // B. Cek Perkara Index: Banner hanya menghitung 1 perkara aktif
+        $responseIndex = $this->actingAs($pidum)->get(route('perkara.index'));
+        $responseIndex->assertStatus(200);
+        $responseIndex->assertSee('Atensi Penugasan: Ada 1 Perkara Belum Ditunjuk Jaksa (P-16)');
+
+        // Periksa tampilan baris di tabel:
+        // - Perkara FORM-3: badge netral, tanpa link + Tugaskan
+        $responseIndex->assertSee('Tidak Ditunjuk (SPDP Dikembalikan)');
+        // - Perkara Overdue: badge rose terkunci, tanpa link + Tugaskan
+        $responseIndex->assertSee('Belum Ditunjuk (Terkunci - Overdue)');
+        // - Perkara Aktif: badge kuning P-16 dan tombol + Tugaskan
+        $responseIndex->assertSee('Belum Ditunjuk (P-16)');
+
+        // C. Cek Perkara Show untuk FORM-3 (Selesai/Arsip):
+        $responseShowForm3 = $this->actingAs($pidum)->get(route('perkara.show', $perkaraForm3->id));
+        $responseShowForm3->assertStatus(200);
+        $responseShowForm3->assertSee('Tidak Ditunjuk (SPDP Dikembalikan / Selesai)');
+        $responseShowForm3->assertSee('Selesai (Arsip)');
+        $responseShowForm3->assertDontSee('+ Tugaskan Jaksa');
+
+        // D. Cek Proteksi Edit untuk FORM-3:
+        $responseEditForm3 = $this->actingAs($pidum)->get(route('perkara.edit', $perkaraForm3->id));
+        $responseEditForm3->assertStatus(403);
+
+        $responseUpdateForm3 = $this->actingAs($pidum)->put(route('perkara.update', $perkaraForm3->id), [
+            'nomor_perkara' => $perkaraForm3->nomor_perkara,
+            'penyidiks'     => [['nama' => 'Penyidik Polres']],
+            'tersangkas'    => [['nama' => 'Tersangka FORM3']],
+            'jaksas'        => [$jaksa->id],
+        ]);
+        $responseUpdateForm3->assertStatus(403);
+
+        // E. Cek Perkara Show untuk Overdue:
+        $responseShowOverdue = $this->actingAs($pidum)->get(route('perkara.show', $perkaraOverdue->id));
+        $responseShowOverdue->assertStatus(200);
+        $responseShowOverdue->assertSee('Belum Ditunjuk (Terkunci - Koordinasi Overdue)');
+        $responseShowOverdue->assertSee('Terkunci (Overdue)');
+        $responseShowOverdue->assertDontSee('+ Tugaskan Jaksa');
+
+        // F. Cek Proteksi Edit untuk Overdue:
+        $responseEditOverdue = $this->actingAs($pidum)->get(route('perkara.edit', $perkaraOverdue->id));
+        $responseEditOverdue->assertStatus(403);
+
+        // G. Cek Perkara Show untuk Aktif:
+        $responseShowAktif = $this->actingAs($pidum)->get(route('perkara.show', $perkaraAktif->id));
+        $responseShowAktif->assertStatus(200);
+        $responseShowAktif->assertSee('Belum Ditunjuk (P-16)');
+        $responseShowAktif->assertSee('+ Tugaskan Jaksa');
+        $responseShowAktif->assertSee('Edit Perkara');
+
+        // H. Admin PIDUM dapat mengedit perkara aktif untuk menugaskan jaksa:
+        $responseEditAktif = $this->actingAs($pidum)->get(route('perkara.edit', $perkaraAktif->id));
+        $responseEditAktif->assertStatus(200);
+
+        $responseUpdateAktif = $this->actingAs($pidum)->put(route('perkara.update', $perkaraAktif->id), [
+            'nomor_perkara' => $perkaraAktif->nomor_perkara,
+            'penyidiks'     => [['nama' => 'Penyidik Polres']],
+            'tersangkas'    => [['nama' => 'Tersangka Aktif']],
+            'jaksas'        => [$jaksa->id],
+        ]);
+        $responseUpdateAktif->assertRedirect(route('perkara.show', $perkaraAktif->id));
+
+        $perkaraAktif->refresh();
+        $this->assertFalse($perkaraAktif->isTanpaJaksa());
+        $this->assertEquals(0, Perkara::butuhPenugasanJaksa()->count());
+    }
 }
 

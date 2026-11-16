@@ -17,7 +17,16 @@
             </div>
             @if(auth()->user()->isPidum())
                 <div class="flex items-center space-x-2">
-                    @if($perkara->isKoordinasiAwalOverdue())
+                    @if($perkara->isSelesai())
+                        <span
+                            class="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-gray-100 border border-gray-200 text-gray-400 h-9 px-3.5 py-2 cursor-not-allowed select-none"
+                            title="Perkara telah selesai / SPDP dikembalikan (Arsip)">
+                            <svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Selesai (Arsip)
+                        </span>
+                    @elseif($perkara->isKoordinasiAwalOverdue())
                         <span
                             class="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-gray-100 border border-gray-200 text-gray-400 h-9 px-3.5 py-2 cursor-not-allowed select-none"
                             title="Perkara pada tahap Koordinasi Awal yang overdue terkunci dan tidak dapat diubah">
@@ -154,14 +163,24 @@
                                 </ul>
                             @else
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                        Belum Ditunjuk (P-16)
-                                    </span>
-                                    @if(auth()->user()->isPidum())
-                                        <a href="{{ route('perkara.edit', $perkara->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-amber-900 hover:text-amber-700 bg-amber-100/70 hover:bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md transition shadow-2xs">
-                                            + Tugaskan Jaksa
-                                        </a>
+                                    @if($perkara->isSelesai())
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-300">
+                                            Tidak Ditunjuk (SPDP Dikembalikan / Selesai)
+                                        </span>
+                                    @elseif($perkara->isKoordinasiAwalOverdue())
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-300">
+                                            Belum Ditunjuk (Terkunci - Koordinasi Overdue)
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                            Belum Ditunjuk (P-16)
+                                        </span>
+                                        @if(auth()->user()->isPidum())
+                                            <a href="{{ route('perkara.edit', $perkara->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-amber-900 hover:text-amber-700 bg-amber-100/70 hover:bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md transition shadow-2xs">
+                                                + Tugaskan Jaksa
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                             @endif

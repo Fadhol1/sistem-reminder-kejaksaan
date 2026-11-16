@@ -49,14 +49,10 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Hitung perkara yang belum ditugaskan Jaksa (khusus atensi Admin PIDUM)
+        // Hitung perkara aktif yang membutuhkan penugasan Jaksa (khusus atensi Admin PIDUM)
         $perkaraTanpaJaksa = 0;
         if ($user->isPidum()) {
-            $perkaraTanpaJaksa = Perkara::whereDoesntHave('jaksas')
-                ->where(function ($sub) {
-                    $sub->whereNull('jaksa')->orWhere('jaksa', '');
-                })
-                ->count();
+            $perkaraTanpaJaksa = Perkara::butuhPenugasanJaksa()->count();
         }
 
         return view('dashboard', compact(

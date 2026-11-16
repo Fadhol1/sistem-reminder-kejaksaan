@@ -155,4 +155,71 @@ class Perkara extends Model
 
         return false;
     }
+
+    /**
+     * Mengecek apakah perkara sudah selesai / berkas SPDP dikembalikan ke penyidik.
+     */
+    public function isSelesai(): bool
+    {
+        $status = $this->status_saat_ini ?? '';
+        return $status === 'Tahap II Selesai'
+            || str_contains($status, 'FORM-3')
+            || str_contains($status, 'P-20')
+            || str_contains($status, 'FORM-7');
+    }
+
+    /**
+     * Mengecek apakah data perkara terkunci dari pengubahan data.
+     */
+    public function isTerkunci(): bool
+    {
+        return $this->isSelesai() || $this->isKoordinasiAwalOverdue();
+    }
+
+    /**
+     * Mengecek apakah perkara belum memiliki penugasan Jaksa (P-16).
+     */
+    public function isTanpaJaksa(): bool
+    {
+        $hasJaksas = $this->relationLoaded('jaksas')
+            ? $this->jaksas->isNotEmpty()
+            : $this->jaksas()->exists();
+
+        if ($hasJaksas) {
+            return false;
+        }
+
+        return empty($this->jaksa) || $this->jaksa === '-';
+    }
+
+    /**
+     * Query scope untuk perkara aktif yang belum ditugaskan Jaksa dan masih dapat ditugaskan (belum terkunci/overdue).
+     */
+    public function scopeButuhPenugasanJaksa($query)
+    {
+        return $query->whereDoesntHave('jaksas')
+            ->where(function ($sub) {
+                $sub->whereNull('jaksa')
+                    ->orWhere('jaksa', '')
+                    ->orWhere('jaksa', '-');
+            })
+            ->where('status_saat_ini', '!=', 'Tahap II Selesai')
+            ->where('status_saat_ini', 'not like', '%FORM-3%')
+            ->where('status_saat_ini', 'not like', '%P-20%')
+            ->where('status_saat_ini', 'not like', '%FORM-7%')
+            ->where('status_saat_ini', 'not like', '%Overdue%')
+            ->whereDoesntHave('activeReminders', function ($rQ) {
+                $rQ->where('status_urgensi', 'Overdue');
+            })
+            ->whereDoesntHave('reminders', function ($rQ) {
+                $rQ->where('tahap', \App\Services\PerkaraWorkflowService::TAHAP_KOORDINASI)
+                    ->where(function ($sub) {
+                        $sub->where('status_urgensi', 'Overdue')
+                            ->orWhere(function ($d) {
+                                $d->whereNotNull('deadline')
+                                  ->where('deadline', '<', now()->startOfDay());
+                            });
+                    });
+            });
+    }
 }

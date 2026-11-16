@@ -326,14 +326,24 @@
                                                 </button>
                                             @endif
                                         @else
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                                Belum Ditunjuk (P-16)
-                                            </span>
-                                            @if(auth()->user()->isPidum())
-                                                <a href="{{ route('perkara.edit', $perkara->id) }}" class="text-[11px] font-bold text-amber-900 hover:text-amber-700 underline" title="Tugaskan Jaksa Sekarang">
-                                                    + Tugaskan
-                                                </a>
+                                            @if($perkara->isSelesai())
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-300" title="SPDP dikembalikan / perkara selesai diarsipkan">
+                                                    Tidak Ditunjuk (SPDP Dikembalikan)
+                                                </span>
+                                            @elseif($perkara->isKoordinasiAwalOverdue())
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-300" title="Perkara terkunci karena koordinasi awal overdue">
+                                                    Belum Ditunjuk (Terkunci - Overdue)
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                    Belum Ditunjuk (P-16)
+                                                </span>
+                                                @if(auth()->user()->isPidum())
+                                                    <a href="{{ route('perkara.edit', $perkara->id) }}" class="text-[11px] font-bold text-amber-900 hover:text-amber-700 underline" title="Tugaskan Jaksa Sekarang">
+                                                        + Tugaskan
+                                                    </a>
+                                                @endif
                                             @endif
                                         @endif
                                     </div>
@@ -422,7 +432,15 @@
                                             <span>Detail</span>
                                         </a>
                                         @if(auth()->user()->isPidum())
-                                            @if($perkara->isKoordinasiAwalOverdue())
+                                            @if($perkara->isSelesai())
+                                                <span
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none"
+                                                    title="Perkara telah selesai / SPDP dikembalikan (Arsip)">
+                                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </span>
+                                            @elseif($perkara->isKoordinasiAwalOverdue())
                                                 <span
                                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none"
                                                     title="Perkara Terkunci (Koordinasi Awal Overdue)">

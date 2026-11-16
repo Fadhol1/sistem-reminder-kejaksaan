@@ -18,11 +18,7 @@
                     Ogan Komering Ulu.</p>
             </div>
             <div class="flex items-center gap-2 self-start sm:self-auto">
-                <span
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Production Live
-                </span>
+
                 <span
                     class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
                     v1.0.0
@@ -31,8 +27,8 @@
         </div>
 
         <!-- ========================================================
-                 SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
-                 ======================================================== -->
+                     SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
+                     ======================================================== -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -102,7 +98,7 @@
                                     <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="currentColor"
                                         viewBox="0 0 20 20">
                                         <path
-                                             d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a10.978 10.978 0 00-.25 2.378 8.002 8.002 0 007.414 7.973 1.002 1.002 0 00.586-.184 10.974 10.974 0 003.75-5.26 1.001 1.001 0 00-.75-1.42 1 1 0 00-.85.34 8.975 8.975 0 01-3.15 4.385A6.002 6.002 0 017 10.429c0-.77.108-1.516.31-2.227l2.69 1.153a1 1 0 00.788 0l7-3a1 1 0 000-1.84l-7-3z" />
+                                            d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a10.978 10.978 0 00-.25 2.378 8.002 8.002 0 007.414 7.973 1.002 1.002 0 00.586-.184 10.974 10.974 0 003.75-5.26 1.001 1.001 0 00-.75-1.42 1 1 0 00-.85.34 8.975 8.975 0 01-3.15 4.385A6.002 6.002 0 017 10.429c0-.77.108-1.516.31-2.227l2.69 1.153a1 1 0 00.788 0l7-3a1 1 0 000-1.84l-7-3z" />
                                     </svg>
                                     <span>Universitas Mahakarya Asia</span>
                                 </p>
@@ -205,7 +201,8 @@
                             </div>
 
                             <h3 class="text-base font-bold text-gray-900 leading-tight">Naufal Fadhil Wibadi</h3>
-                            <p class="text-xs font-semibold text-emerald-700 mt-0.5">Perancang Database &amp; Asset Creator</p>
+                            <p class="text-xs font-semibold text-emerald-700 mt-0.5">Perancang Database &amp; Asset Creator
+                            </p>
 
                             <div class="mt-3 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-600">
                                 <p class="text-gray-500 flex items-center gap-1.5">
@@ -239,8 +236,8 @@
         </div>
 
         <!-- ========================================================
-                 SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
-                 ======================================================== -->
+                     SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
+                     ======================================================== -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
 
             <!-- Detail Aplikasi SIPETA -->
