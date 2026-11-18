@@ -105,4 +105,58 @@ class UpdateFotoProfilApiTest extends TestCase
         Storage::disk('public')->assertExists($newPath);
         Storage::disk('public')->assertMissing($oldPath);
     }
+
+    public function test_base64_upload_rejects_malicious_html_svg_php_and_spoofed_png(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create(['role' => 'jaksa']);
+
+        $maliciousPayloads = [
+            'data:image/html;base64,' . base64_encode('<script>alert("xss")</script>'),
+            'data:image/svg;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>'),
+            'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>'),
+            'data:image/php;base64,' . base64_encode('<?php system("id"); ?>'),
+            // Disguised HTML pretending to be PNG
+            'data:image/png;base64,' . base64_encode('<script>alert("spoofed")</script>'),
+            // Raw non-image base64 without prefix
+            base64_encode('<html><body>not an image</body></html>'),
+        ];
+
+        foreach ($maliciousPayloads as $payload) {
+            $response = $this->actingAs($user, 'sanctum')->postJson('/api/foto-profil', [
+                'foto_profil' => $payload,
+            ]);
+
+            $response->assertStatus(422);
+        }
+
+        $user->refresh();
+        $this->assertNull($user->foto_profil);
+        $this->assertEmpty(Storage::disk('public')->allFiles('profiles'));
+    }
+
+    public function test_update_profile_rejects_non_image_uploaded_via_file_alias(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create(['role' => 'jaksa']);
+        $maliciousFile = UploadedFile::fake()->createWithContent(
+            'exploit.html',
+            '<script>alert("xss")</script>',
+            'text/html'
+        );
+
+        foreach (['avatar', 'file', 'foto', 'photo', 'image'] as $alias) {
+            $response = $this->actingAs($user, 'sanctum')->postJson('/api/profile', [
+                $alias => $maliciousFile,
+            ]);
+
+            $response->assertStatus(422);
+        }
+
+        $user->refresh();
+        $this->assertNull($user->foto_profil);
+        $this->assertEmpty(Storage::disk('public')->allFiles('profiles'));
+    }
 }

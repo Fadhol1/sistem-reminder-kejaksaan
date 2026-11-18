@@ -12,6 +12,7 @@ services:
     volumes:
       - ./.env:/var/www/.env
       - sipeta_storage:/var/www/storage
+      - sipeta_public_build:/var/www/public/build
       - ./firebase:/var/www/firebase:ro
     depends_on:
       db:
@@ -32,6 +33,7 @@ services:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./public:/var/www/public:ro
+      - sipeta_public_build:/var/www/public_build:ro
       - sipeta_storage:/var/www/storage:ro
     depends_on:
       - app
@@ -103,6 +105,8 @@ volumes:
   sipeta_db_data:
     driver: local
   sipeta_storage:
+    driver: local
+  sipeta_public_build:
     driver: local
 
 networks:

@@ -27,6 +27,13 @@ fi
 if [ "$1" = "php-fpm" ]; then
     echo "Menjalankan inisialisasi aplikasi Laravel SIPETA..."
 
+    # Sinkronisasi asset Vite terbaru dari image ke shared volume agar Nginx selalu melayani hash CSS/JS mutakhir
+    if [ -d /usr/local/share/sipeta-build ]; then
+        mkdir -p /var/www/public/build
+        rm -rf /var/www/public/build/*
+        cp -a /usr/local/share/sipeta-build/. /var/www/public/build/
+    fi
+
     # Pastikan direktori storage dan cache berizin www-data
     mkdir -p /var/www/storage/app/public/profiles
     chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache

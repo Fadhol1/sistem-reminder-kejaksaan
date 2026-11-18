@@ -59,8 +59,9 @@ RUN composer install --no-dev --no-interaction --no-scripts --no-progress --pref
 # Salin kode aplikasi (dikecualikan oleh .dockerignore)
 COPY . .
 
-# Salin hasil kompilasi frontend Vite dari Stage 1
+# Salin hasil kompilasi frontend Vite dari Stage 1 (serta cadangan untuk sinkronisasi shared volume Nginx)
 COPY --from=frontend_builder /app/public/build ./public/build
+COPY --from=frontend_builder /app/public/build /usr/local/share/sipeta-build
 
 # Finalisasi autoloader Composer
 RUN composer dump-autoload --optimize --no-dev

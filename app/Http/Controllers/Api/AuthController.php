@@ -89,6 +89,11 @@ class AuthController extends Controller
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+            'foto' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+            'file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
         ];
 
         $passwordChanged = $request->filled('password');
@@ -293,24 +298,71 @@ class AuthController extends Controller
 
             $newPath = $file->store('profiles', 'public');
         } elseif (!empty($base64Input) && is_string($base64Input)) {
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64Input, $type)) {
-                $base64Data = substr($base64Input, strpos($base64Input, ',') + 1);
-                $ext = strtolower($type[1]);
-            } else {
-                $base64Data = $base64Input;
-                $ext = 'jpg';
-            }
+            $trimmedInput = trim($base64Input);
 
-            $decoded = base64_decode($base64Data);
-            if ($decoded !== false) {
-                if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
-                    Storage::disk('public')->delete($user->foto_profil);
+            // Jika menyertakan data URI prefix, wajib berasal dari tipe gambar yang diizinkan
+            if (str_starts_with(strtolower($trimmedInput), 'data:')) {
+                if (!preg_match('/^data:image\/(jpeg|jpg|png|webp|gif);base64,/i', $trimmedInput)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Format gambar base64 tidak didukung. Hanya JPEG, PNG, JPG, WEBP, atau GIF yang diizinkan.',
+                    ], 422);
                 }
-
-                $filename = 'profiles/' . Str::random(40) . '.' . ($ext === 'jpeg' ? 'jpg' : $ext);
-                Storage::disk('public')->put($filename, $decoded);
-                $newPath = $filename;
+                $base64Data = substr($trimmedInput, strpos($trimmedInput, ',') + 1);
+            } else {
+                $base64Data = $trimmedInput;
             }
+
+            // Hapus whitespace dan batasi panjang string sebelum decode (mencegah DoS memori)
+            $base64Data = preg_replace('/\s+/', '', $base64Data);
+            $maxBytes = 10 * 1024 * 1024; // 10 MB
+            if (strlen($base64Data) > (int) ceil($maxBytes * 4 / 3) + 16) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ukuran foto profil maksimal 10 MB.',
+                ], 422);
+            }
+
+            $decoded = base64_decode($base64Data, true);
+            if ($decoded === false || $decoded === '' || strlen($decoded) > $maxBytes) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data gambar base64 tidak valid atau melebihi batas ukuran 10 MB.',
+                ], 422);
+            }
+
+            // Validasi konten biner asli menggunakan finfo + getimagesizefromstring (mencegah XSS/HTML/SVG/PHP palsu)
+            $allowedMimes = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/webp' => 'webp',
+                'image/gif'  => 'gif',
+            ];
+
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $detectedMime = $finfo->buffer($decoded);
+            $imageInfo = @getimagesizefromstring($decoded);
+
+            if (
+                !isset($allowedMimes[$detectedMime]) ||
+                $imageInfo === false ||
+                !isset($allowedMimes[$imageInfo['mime'] ?? ''])
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Konten berkas bukan gambar valid (hanya JPEG, PNG, JPG, WEBP, atau GIF yang diizinkan).',
+                ], 422);
+            }
+
+            $safeExt = $allowedMimes[$detectedMime];
+
+            if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+                Storage::disk('public')->delete($user->foto_profil);
+            }
+
+            $filename = 'profiles/' . Str::random(40) . '.' . $safeExt;
+            Storage::disk('public')->put($filename, $decoded);
+            $newPath = $filename;
         }
 
         if (!$newPath) {
