@@ -27,8 +27,8 @@
         </div>
 
         <!-- ========================================================
-                         SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
-                         ======================================================== -->
+             SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
+            ======================================================== -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -57,9 +57,9 @@
                     <div>
                         <!-- Header Cover Card -->
                         <div
-                            class="h-20 bg-gradient-to-r from-[#700d1a] via-[#881337] to-[#5c0b15] relative p-3 flex items-start justify-between">
+                            class="h-20 bg-linear-to-r from-[#700d1a] via-[#881337] to-[#5c0b15] relative p-3 flex items-start justify-between">
                             <div
-                                class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]">
+                                class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[12px_12px]">
                             </div>
                             <span
                                 class="relative z-10 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-amber-300 border border-amber-400/30 backdrop-blur-xs">
@@ -72,7 +72,7 @@
                             <!-- Avatar Inisial -->
                             <div class="-mt-9 mb-3">
                                 <div
-                                    class="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-0.5 shadow-md shadow-black/20">
+                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 p-0.5 shadow-md shadow-black/20">
                                     <div
                                         class="w-full h-full bg-[#5c0b15] rounded-[10px] flex items-center justify-center text-white font-extrabold text-xl tracking-wider">
                                         DK
@@ -117,9 +117,9 @@
                     <div>
                         <!-- Header Cover Card -->
                         <div
-                            class="h-20 bg-gradient-to-r from-slate-800 via-slate-900 to-slate-950 relative p-3 flex items-start justify-between">
+                            class="h-20 bg-linear-to-r from-slate-800 via-slate-900 to-slate-950 relative p-3 flex items-start justify-between">
                             <div
-                                class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]">
+                                class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[12px_12px]">
                             </div>
                             <span
                                 class="relative z-10 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-blue-300 border border-blue-400/30 backdrop-blur-xs">
@@ -132,7 +132,7 @@
                             <!-- Avatar Inisial -->
                             <div class="-mt-9 mb-3">
                                 <div
-                                    class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 p-0.5 shadow-md shadow-black/20">
+                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 via-blue-500 to-indigo-600 p-0.5 shadow-md shadow-black/20">
                                     <div
                                         class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-white font-extrabold text-xl tracking-wider">
                                         DA
@@ -177,9 +177,9 @@
                     <div>
                         <!-- Header Cover Card -->
                         <div
-                            class="h-20 bg-gradient-to-r from-emerald-800 via-emerald-900 to-teal-950 relative p-3 flex items-start justify-between">
+                            class="h-20 bg-linear-to-r from-emerald-800 via-emerald-900 to-teal-950 relative p-3 flex items-start justify-between">
                             <div
-                                class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]">
+                                class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[12px_12px]">
                             </div>
                             <span
                                 class="relative z-10 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-emerald-300 border border-emerald-400/30 backdrop-blur-xs">
@@ -192,7 +192,7 @@
                             <!-- Avatar Inisial -->
                             <div class="-mt-9 mb-3">
                                 <div
-                                    class="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 p-0.5 shadow-md shadow-black/20">
+                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-0.5 shadow-md shadow-black/20">
                                     <div
                                         class="w-full h-full bg-emerald-950 rounded-[10px] flex items-center justify-center text-white font-extrabold text-xl tracking-wider">
                                         NF
@@ -236,15 +236,15 @@
         </div>
 
         <!-- ========================================================
-                         SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
-                         ======================================================== -->
+                                                                         SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
+                                                                         ======================================================== -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
 
             <!-- Detail Aplikasi SIPETA -->
             <div class="lg:col-span-7 bg-white rounded-2xl border border-gray-200 shadow-xs p-6 sm:p-7 space-y-4">
                 <div class="flex items-center gap-3.5 pb-4 border-b border-gray-100">
                     <div
-                        class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#700d1a] to-[#881337] flex items-center justify-center text-white shrink-0 shadow-md">
+                        class="w-12 h-12 rounded-xl bg-linear-to-br from-[#700d1a] to-[#881337] flex items-center justify-center text-white shrink-0 shadow-md">
                         <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
@@ -271,7 +271,7 @@
                 </p>
 
                 <div
-                    class="bg-gradient-to-r from-red-50 to-amber-50/60 rounded-xl p-3.5 border border-red-200/70 flex items-center justify-between">
+                    class="bg-linear-to-r from-red-50 to-amber-50/60 rounded-xl p-3.5 border border-red-200/70 flex items-center justify-between">
                     <span class="text-xs font-bold text-[#881337] uppercase tracking-wider">Doktrin Adhyaksa:</span>
                     <span class="text-xs font-extrabold text-amber-900 tracking-wide">
                         Satya &bull; Adhi &bull; Wicaksana

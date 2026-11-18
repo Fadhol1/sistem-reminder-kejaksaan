@@ -44,11 +44,11 @@
              KOLOM KIRI: SISI MERAH (IDENTITAS RESMI KEJAKSAAN & FITUR - STATIS & MENYATU)
              ======================================================== -->
         <div
-            class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-8 lg:p-6 xl:p-8 2xl:p-10 overflow-hidden shadow-2xl lg:shadow-none select-none">
+            class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-linear-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-8 lg:p-6 xl:p-8 2xl:p-10 overflow-hidden shadow-2xl lg:shadow-none select-none">
 
             <!-- Ornamen Dekoratif Latar Belakang (Guilloche / Mesh Halus) -->
             <div
-                class="absolute inset-0 pointer-events-none opacity-[0.06] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]">
+                class="absolute inset-0 pointer-events-none opacity-[0.06] bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[24px_24px]">
             </div>
             <div class="absolute -top-32 -left-32 w-96 h-96 bg-red-500/20 rounded-full blur-3xl pointer-events-none">
             </div>
@@ -57,7 +57,7 @@
             </div>
 
             <!-- Watermark Timbangan Keadilan Raksasa Halus di Sudut -->
-            <div class="absolute -right-16 -bottom-16 w-80 h-80 text-white/[0.04] pointer-events-none select-none">
+            <div class="absolute -right-16 -bottom-16 w-80 h-80 text-white/4 pointer-events-none select-none">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
@@ -69,7 +69,7 @@
                 <div class="flex items-center gap-3.5">
                     <!-- Lambang Adhyaksa / Shield Keadilan -->
                     <div
-                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-[1.5px] shadow-lg shadow-amber-950/40 shrink-0 flex items-center justify-center">
+                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 p-[1.5px] shadow-lg shadow-amber-950/40 shrink-0 flex items-center justify-center">
                         <div class="w-full h-full bg-[#5c0b15] rounded-[10px] flex items-center justify-center">
                             <!-- SVG Timbangan Keadilan & Pedang Adhyaksa -->
                             <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -209,7 +209,7 @@
              KOLOM KANAN: SISI PUTIH (FORMULIR AUTENTIKASI BERSIH & MEWAH)
              ======================================================== -->
         <div
-            class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-[600px] lg:min-h-0">
+            class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-150 lg:min-h-0">
 
             <!-- Header Navigasi (Akses Tertutup Khusus Aparat/Pegawai) -->
             <div class="px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between border-b border-slate-100 pb-4">

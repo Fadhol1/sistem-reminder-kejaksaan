@@ -91,7 +91,7 @@
         <div class="flex items-center justify-between px-5 h-16 border-b border-gray-200 bg-white shrink-0">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                 <div
-                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#700d1a] via-[#881337] to-[#3a060d] flex items-center justify-center shadow-md shadow-red-950/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200 border border-amber-400/30">
+                    class="w-10 h-10 rounded-xl bg-linear-to-br from-[#700d1a] via-[#881337] to-[#3a060d] flex items-center justify-center shadow-md shadow-red-950/20 text-white shrink-0 group-hover:scale-105 transition-transform duration-200 border border-amber-400/30">
                     <svg class="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
@@ -320,7 +320,7 @@
                             class="w-8 h-8 rounded-full object-cover border border-gray-200">
                     @else
                         <div
-                            class="w-8 h-8 rounded-full bg-gradient-to-br from-[#881337] to-[#700d1a] text-white flex items-center justify-center text-xs font-bold uppercase shadow-xs border border-amber-400/20">
+                            class="w-8 h-8 rounded-full bg-linear-to-br from-[#881337] to-[#700d1a] text-white flex items-center justify-center text-xs font-bold uppercase shadow-xs border border-amber-400/20">
                             {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                         </div>
                     @endif
