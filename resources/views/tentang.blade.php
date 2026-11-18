@@ -27,8 +27,8 @@
         </div>
 
         <!-- ========================================================
-             SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
-            ======================================================== -->
+                             SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
+                            ======================================================== -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -41,7 +41,7 @@
                         Tim Pengembang Sistem (Development Team)
                     </h2>
                     <p class="text-xs text-gray-500 mt-0.5">Mahasiswa Program Studi Manajemen Informatika &bull; Kampus
-                        Universitas Mahakarya Asia</p>
+                        Universitas Mahakarya Asia Baturaja</p>
                 </div>
                 <span
                     class="hidden sm:inline-flex text-[11px] font-bold text-[#881337] bg-red-50 border border-red-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
@@ -51,7 +51,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-                <!-- PENGEMBANG 1: Dheny Kurniawan -->
+                <!-- PENGEMBANG 1:M Dheny Kurniawand -->
                 <div
                     class="bg-white rounded-2xl border border-gray-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between">
                     <div>
@@ -80,7 +80,7 @@
                                 </div>
                             </div>
 
-                            <h3 class="text-base font-bold text-gray-900 leading-tight">Dheny Kurniawan</h3>
+                            <h3 class="text-base font-bold text-gray-900 leading-tight">M Dheny Kurniawand</h3>
                             <p class="text-xs font-semibold text-[#881337] mt-0.5">Devapp (Application Developer)</p>
 
                             <div class="mt-3 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-600">
@@ -236,8 +236,8 @@
         </div>
 
         <!-- ========================================================
-                                                                         SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
-                                                                         ======================================================== -->
+                                                                                         SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
+                                                                                         ======================================================== -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
 
             <!-- Detail Aplikasi SIPETA -->
