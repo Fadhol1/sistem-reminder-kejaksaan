@@ -27,8 +27,8 @@
         </div>
 
         <!-- ========================================================
-                     SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
-                     ======================================================== -->
+                         SEKSI 1: TIM PENGEMBANG (3 DEVELOPERS)
+                         ======================================================== -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -36,7 +36,7 @@
                         <svg class="w-5 h-5 text-[#881337]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.243m15.016 0a9.145 9.145 0 01-2.198.445 6.66 6.66 0 00-1.026-.118 4.125 4.125 0 00-7.533 2.243m15.016 0a3.513 3.513 0 00-1.026-.118 4.125 4.125 0 00-7.533 2.243M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                         Tim Pengembang Sistem (Development Team)
                     </h2>
@@ -236,8 +236,8 @@
         </div>
 
         <!-- ========================================================
-                     SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
-                     ======================================================== -->
+                         SEKSI 2: TENTANG SISTEM SIPETA & KEJAKSAAN NEGERI OKU
+                         ======================================================== -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
 
             <!-- Detail Aplikasi SIPETA -->
