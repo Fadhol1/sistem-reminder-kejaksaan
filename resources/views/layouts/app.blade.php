@@ -212,7 +212,7 @@
                                 <svg class="w-5 h-5 {{ request()->routeIs('users.*') ? 'text-[#881337]' : 'text-slate-400' }} shrink-0"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.243m15.016 0a9.145 9.145 0 01-2.198.445 6.66 6.66 0 00-1.026-.118 4.125 4.125 0 00-7.533 2.243m15.016 0a3.513 3.513 0 00-1.026-.118 4.125 4.125 0 00-7.533 2.243M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                                 </svg>
                                 <span class="truncate">Manajemen Pengguna</span>
                             </div>
