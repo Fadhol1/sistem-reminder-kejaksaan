@@ -99,6 +99,15 @@ class BeritaController extends Controller
             403,
             'Akses Ditolak: Berita berstatus draf hanya dapat diakses oleh Admin PIDUM.'
         );
+
+        // Tambah jumlah view secara riil di database jika belum dilihat pada sesi browser ini
+        $sessionKey = 'viewed_berita_' . $berita->id;
+        if (!session()->has($sessionKey)) {
+            $berita->increment('views_count');
+            session()->put($sessionKey, true);
+            $berita->refresh();
+        }
+
         return view('berita.show', compact('berita'));
     }
 
