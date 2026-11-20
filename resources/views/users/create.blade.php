@@ -14,6 +14,19 @@
     </div>
 
     <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden p-6">
+        <!-- Catatan Penting Aktivasi Token Mobile -->
+        <div class="mb-6 rounded-lg border border-amber-300 bg-amber-50/90 p-4 text-xs text-amber-900 flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+            <div>
+                <p class="font-bold text-amber-950 text-sm">Catatan Penting Setelah Pendaftaran:</p>
+                <p class="mt-1 text-amber-800 leading-relaxed">
+                    Setelah akun pengguna berhasil didaftarkan, instruksikan pengguna (terutama <strong>Jaksa Peneliti</strong>) untuk <strong>segera melakukan login minimal 1 kali pada Aplikasi Mobile Android SIPETA</strong> agar perangkatnya otomatis teregistrasi dan mendapatkan Token Notifikasi (FCM Token). Tanpa login di aplikasi HP, notifikasi pengingat tenggat waktu perkara tidak dapat terkirim ke ponsel Jaksa.
+                </p>
+            </div>
+        </div>
+
         <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 

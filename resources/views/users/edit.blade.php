@@ -15,6 +15,35 @@
         </div>
 
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden p-6">
+            <!-- Status Token Perangkat Mobile -->
+            <div class="mb-6 rounded-lg border {{ ($user->active_device_tokens_count ?? 0) > 0 ? 'border-emerald-200 bg-emerald-50/80 text-emerald-900' : 'border-amber-300 bg-amber-50/90 text-amber-900' }} p-4 text-xs flex items-start gap-3">
+                @if(($user->active_device_tokens_count ?? 0) > 0)
+                    <div class="shrink-0 rounded-md bg-emerald-100 p-1.5 text-emerald-700">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-bold text-emerald-950 text-sm">Status Notifikasi Mobile: Terhubung ({{ $user->active_device_tokens_count }} Perangkat)</p>
+                        <p class="mt-1 text-emerald-800 leading-relaxed">
+                            Pengguna ini telah melakukan login pada Aplikasi Mobile Android SIPETA dan memiliki token perangkat aktif. Pengguna akan menerima notifikasi pengingat tenggat waktu perkara.
+                        </p>
+                    </div>
+                @else
+                    <div class="shrink-0 rounded-md bg-amber-100 p-1.5 text-amber-700">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-bold text-amber-950 text-sm">Catatan Penting: Belum Ada Token Notifikasi Mobile</p>
+                        <p class="mt-1 text-amber-800 leading-relaxed">
+                            Pengguna belum pernah melakukan login pada Aplikasi Mobile Android SIPETA. <strong>Segera instruksikan pengguna untuk login pada aplikasi HP</strong> agar perangkatnya otomatis mendapatkan FCM Token untuk menerima push notification pengingat tenggat waktu perkara.
+                        </p>
+                    </div>
+                @endif
+            </div>
+
             <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data"
                 class="space-y-6">
                 @csrf

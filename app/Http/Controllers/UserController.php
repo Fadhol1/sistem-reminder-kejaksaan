@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengelola pengguna.');
 
-        $query = User::query()->orderBy('name', 'asc');
+        $query = User::query()->withCount('activeDeviceTokens')->orderBy('name', 'asc');
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -93,7 +93,7 @@ class UserController extends Controller
     {
         abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit pengguna.');
 
-        $user = User::findOrFail($id);
+        $user = User::withCount('activeDeviceTokens')->findOrFail($id);
         
         return view('users.edit', compact('user'));
     }

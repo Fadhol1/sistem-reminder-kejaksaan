@@ -49,6 +49,44 @@
         </div>
     @endif
 
+    <!-- Catatan Penting: Aktivasi Push Notification & Token Perangkat Mobile -->
+    <div class="rounded-xl border border-amber-300 bg-amber-50/90 p-4 sm:p-5 shadow-2xs">
+        <div class="flex items-start gap-3.5">
+            <div class="shrink-0 rounded-lg bg-amber-500/15 p-2 text-amber-800 border border-amber-200">
+                <svg class="h-6 w-6 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+            </div>
+            <div class="flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                    <h4 class="text-sm font-bold text-amber-950 flex items-center gap-1.5">
+                        <span>Catatan Penting: Aktivasi Token Notifikasi Mobile (Android)</span>
+                    </h4>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-200/90 text-amber-900 border border-amber-300 w-fit">
+                        Wajib untuk Role Jaksa
+                    </span>
+                </div>
+                <p class="mt-1.5 text-xs text-amber-900 leading-relaxed">
+                    Setiap akun pengguna baru (terutama <strong>Jaksa Peneliti / JPU</strong>) yang didaftarkan melalui web <strong>wajib segera melakukan login minimal 1 (satu) kali pada Aplikasi Mobile Android SIPETA</strong>.
+                </p>
+                <div class="mt-3 pt-2.5 border-t border-amber-200 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-amber-900">
+                    <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        <span><strong>Registrasi Otomatis:</strong> Saat login pertama di HP, aplikasi Android secara otomatis mendaftarkan <em>FCM Device Token</em> perangkat ke server.</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                        </svg>
+                        <span><strong>Konsekuensi:</strong> Selama belum pernah login di aplikasi mobile, akun berstatus <em>Belum Ada Token</em> dan <strong>tidak dapat menerima Push Notification pengingat tenggat waktu</strong> (H-3, Jatuh Tempo, dan Overdue).</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Search/Filter Filter -->
     <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <form action="{{ route('users.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
@@ -83,6 +121,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama & Email</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peran (Role)</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Notifikasi HP</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Daftar</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -119,6 +158,19 @@
                                     {{ $user->role }}
                                 </span>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if(($user->active_device_tokens_count ?? 0) > 0)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title="{{ $user->active_device_tokens_count }} perangkat aktif terhubung">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Token Aktif ({{ $user->active_device_tokens_count }} HP)
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200" title="Pengguna belum pernah login di aplikasi Android SIPETA">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                        Belum Ada Token
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $user->created_at->format('d M Y') }}
                             </td>
@@ -138,7 +190,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-10 text-center text-gray-500 text-sm">
+                            <td colspan="5" class="px-6 py-10 text-center text-gray-500 text-sm">
                                 Tidak ada data pengguna yang ditemukan.
                             </td>
                         </tr>
