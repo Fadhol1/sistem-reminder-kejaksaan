@@ -24,9 +24,9 @@ class UserController extends Controller
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -35,7 +35,7 @@ class UserController extends Controller
         }
 
         // Pengguna terbaru yang baru ditambahkan selalu tampil di paling atas
-        $query->latest('id');
+        $query->orderBy('id', 'asc');
 
         $users = $query->paginate(10)->withQueryString();
 
@@ -48,7 +48,7 @@ class UserController extends Controller
     public function create(Request $request)
     {
         abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat menambah pengguna.');
-        
+
         return view('users.create');
     }
 
@@ -97,7 +97,7 @@ class UserController extends Controller
         abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit pengguna.');
 
         $user = User::withCount('activeDeviceTokens')->findOrFail($id);
-        
+
         return view('users.edit', compact('user'));
     }
 
@@ -112,9 +112,9 @@ class UserController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'string', 'in:jaksa,pidum'],
-            'nip' => ['nullable', 'string', 'max:50', 'unique:users,nip,'.$user->id],
+            'nip' => ['nullable', 'string', 'max:50', 'unique:users,nip,' . $user->id],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
@@ -132,14 +132,14 @@ class UserController extends Controller
         $user->nip = $validated['nip'] ?? null;
         $user->pangkat_golongan = $validated['pangkat_golongan'] ?? null;
         $user->jabatan = $validated['jabatan'] ?? null;
-        
+
         if ($request->hasFile('foto_profil')) {
             if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
                 Storage::disk('public')->delete($user->foto_profil);
             }
             $user->foto_profil = $request->file('foto_profil')->store('profiles', 'public');
         }
-        
+
         // Prevent admin from changing their own role maliciously and locking themselves out
         if ($user->id !== $request->user()->id) {
             $user->role = $validated['role'];
@@ -184,7 +184,7 @@ class UserController extends Controller
 
         // 2. Prevent deletion if tied to active PERKARA timeline or mapping
         $isActiveInPerkara = $user->perkaras()->exists() || Perkara::where('penyidik', $user->name)->exists();
-        
+
         if ($isActiveInPerkara) {
             return redirect()->back()->with('error', 'Keamanan: Akun ini tidak dapat dihapus karena tercatat sedang/pernah memegang Perkara. Anda disarankan untuk menonaktifkan atau mengubah passwordnya jika ingin menutup akses.');
         }
