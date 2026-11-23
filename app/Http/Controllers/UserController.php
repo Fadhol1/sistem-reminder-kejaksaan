@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         abort_unless($request->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengelola pengguna.');
 
-        $query = User::query()->withCount('activeDeviceTokens')->orderBy('name', 'asc');
+        $query = User::query()->withCount('activeDeviceTokens');
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -34,7 +34,10 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->paginate(15);
+        // Pengguna terbaru yang baru ditambahkan selalu tampil di paling atas
+        $query->latest('id');
+
+        $users = $query->paginate(10)->withQueryString();
 
         return view('users.index', compact('users'));
     }
