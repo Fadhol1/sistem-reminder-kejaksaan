@@ -64,6 +64,8 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'role' => ['required', 'string', 'in:jaksa,pidum'],
             'nip' => ['nullable', 'string', 'max:50', 'unique:users'],
+            'nrp' => ['nullable', 'string', 'max:50'],
+            'nomor_hp' => ['nullable', 'string', 'max:20'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
@@ -80,6 +82,8 @@ class UserController extends Controller
             'email' => $validated['email'],
             'role' => $validated['role'],
             'nip' => $validated['nip'] ?? null,
+            'nrp' => $validated['nrp'] ?? null,
+            'nomor_hp' => $validated['nomor_hp'] ?? null,
             'pangkat_golongan' => $validated['pangkat_golongan'] ?? null,
             'jabatan' => $validated['jabatan'] ?? null,
             'foto_profil' => $fotoPath,
@@ -115,6 +119,8 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'string', 'in:jaksa,pidum'],
             'nip' => ['nullable', 'string', 'max:50', 'unique:users,nip,' . $user->id],
+            'nrp' => ['nullable', 'string', 'max:50'],
+            'nomor_hp' => ['nullable', 'string', 'max:20'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
@@ -130,6 +136,8 @@ class UserController extends Controller
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->nip = $validated['nip'] ?? null;
+        $user->nrp = $validated['nrp'] ?? null;
+        $user->nomor_hp = $validated['nomor_hp'] ?? null;
         $user->pangkat_golongan = $validated['pangkat_golongan'] ?? null;
         $user->jabatan = $validated['jabatan'] ?? null;
 
