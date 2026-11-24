@@ -26,7 +26,7 @@
             <div
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200/60 mb-3">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-                Autentikasi Pegawai & Aparat Penegak Hukum
+                Autentikasi Pegawai
             </div>
             <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Selamat Datang Kembali</h2>
             <p class="text-sm text-slate-500 mt-1.5">
@@ -85,7 +85,7 @@
                     </div>
                     <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
                         class="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10 shadow-xs transition duration-200 @error('email') border-red-500 @enderror"
-                        placeholder="nama@kejaksaan.go.id / polri.go.id">
+                        placeholder="nama@kejaksaan.go.id">
                 </div>
                 @error('email')
                     <p class="text-xs text-red-600 font-medium mt-1.5">{{ $message }}</p>
