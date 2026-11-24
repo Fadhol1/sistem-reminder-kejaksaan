@@ -5,7 +5,7 @@
 @section('content')
     <div class="max-w-4xl mx-auto space-y-6">
         <!-- Breadcrumb & Header Bar -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <nav class="flex items-center gap-2 text-xs text-gray-500">
                 <a href="{{ route('berita.index') }}" class="hover:text-red-700 transition">Berita & Publikasi</a>
                 <span>/</span>

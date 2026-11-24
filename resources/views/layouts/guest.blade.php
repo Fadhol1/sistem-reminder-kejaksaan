@@ -44,7 +44,7 @@
              KOLOM KIRI: SISI MERAH (IDENTITAS RESMI KEJAKSAAN & FITUR - STATIS & MENYATU)
              ======================================================== -->
         <div
-            class="lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-linear-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex flex-col justify-between p-6 sm:p-8 lg:p-6 xl:p-8 2xl:p-10 overflow-hidden shadow-2xl lg:shadow-none select-none">
+            class="hidden lg:flex lg:col-span-5 xl:col-span-5 2xl:col-span-5 relative bg-linear-to-br from-[#700d1a] via-[#881337] to-[#3a060d] text-white flex-col justify-between lg:p-6 xl:p-8 2xl:p-10 overflow-hidden shadow-2xl lg:shadow-none select-none">
 
             <!-- Ornamen Dekoratif Latar Belakang (Guilloche / Mesh Halus) -->
             <div
@@ -208,7 +208,7 @@
              KOLOM KANAN: SISI PUTIH (FORMULIR AUTENTIKASI BERSIH & MEWAH)
              ======================================================== -->
         <div
-            class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-150 lg:min-h-0">
+            class="lg:col-span-7 xl:col-span-7 2xl:col-span-7 bg-white flex flex-col justify-between overflow-y-auto custom-auth-scroll min-h-screen lg:min-h-0">
 
             <!-- Header Navigasi (Akses Tertutup Khusus Aparat/Pegawai) -->
             <div class="px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between border-b border-slate-100 pb-4">
