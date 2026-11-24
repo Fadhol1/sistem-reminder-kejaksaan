@@ -32,7 +32,7 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    'lifetime' => (int) env('SESSION_LIFETIME', 43200), // Default 30 hari (43.200 menit) agar sesi tidak cepat kedaluwarsa
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 

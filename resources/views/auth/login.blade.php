@@ -134,7 +134,7 @@
             <!-- Opsi Ingat Saya -->
             <div class="flex items-center justify-between pt-1">
                 <label class="flex items-center gap-2.5 text-xs text-slate-600 cursor-pointer select-none">
-                    <input type="checkbox" name="remember"
+                    <input type="checkbox" name="remember" checked
                         class="w-4 h-4 rounded border-slate-300 text-red-700 focus:ring-red-600 focus:ring-offset-0 transition cursor-pointer">
                     <span>Ingat saya di perangkat ini</span>
                 </label>
