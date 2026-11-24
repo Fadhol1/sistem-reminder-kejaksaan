@@ -50,7 +50,7 @@ return [
     |
     */
 
-    'expiration' => env('SANCTUM_EXPIRATION', 43200), // 30 hari (43200 menit)
+    'expiration' => env('SANCTUM_EXPIRATION', null), // null = Permanen di Android (sesi hanya berakhir jika user menekan Logout atau ganti password)
 
     /*
     |--------------------------------------------------------------------------
