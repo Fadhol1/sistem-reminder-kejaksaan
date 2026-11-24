@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'flatpickr/dist/flatpickr.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -31,4 +32,26 @@
 
 .animate-pulse-subtle {
     animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+/* Custom Flatpickr Theme Kejaksaan RI */
+.flatpickr-day.selected, 
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected:focus {
+    background: #881337 !important;
+    border-color: #881337 !important;
+    color: #ffffff !important;
+}
+.flatpickr-day.today {
+    border-color: #881337 !important;
+}
+.flatpickr-day.today:hover {
+    background: #fecdd3 !important;
+    color: #881337 !important;
+}
+.flatpickr-calendar {
+    font-family: inherit !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e5e7eb !important;
 }
