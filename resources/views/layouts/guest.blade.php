@@ -116,7 +116,7 @@
                     <div class="flex items-center justify-between pb-2.5 border-b border-white/10">
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                            <span class="text-xs font-bold text-white tracking-wider uppercase">Portal Kedinasan</span>
+                            <span class="text-xs font-bold text-white tracking-wider uppercase">Portal Pegawai</span>
                         </div>
                         <span
                             class="text-[10px] font-bold text-amber-300 bg-amber-400/20 border border-amber-300/30 px-2 py-0.5 rounded-full uppercase tracking-wider">
