@@ -239,7 +239,7 @@
 
             <!-- Footer Bawah Hak Cipta & Keamanan -->
             <div
-                class="px-6 sm:px-12 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center ml-auto gap-2 text-[11px] text-slate-400">
+                class="px-6 sm:px-12 py-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">
                 <div class="flex items-center gap-1.5">
                     <span>Kejaksaan Negeri Ogan Komering Ulu</span>
                 </div>
