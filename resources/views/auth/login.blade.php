@@ -6,7 +6,7 @@
     <div class="space-y-6">
         <!-- Logo & Identitas Resmi Kejaksaan RI -->
         <div class="flex items-center gap-3.5 pb-2">
-            <img src="{{ asset('images/logofixkejaksaan.jpg') }}" alt="Logo Kejaksaan" class="w-16 h-16">
+            <img src="{{ asset('images/logofixkejaksaan.svg') }}" alt="Logo Kejaksaan" class="w-16 h-16 object-contain">
 
             <div>
                 <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#881337] block">
