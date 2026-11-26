@@ -114,7 +114,7 @@ class FcmSenderService
                     'priority' => 'HIGH',
                     'notification' => [
                         'sound' => 'default',
-                        'click_action' => 'OPEN_PERKARA_DETAIL',
+                        'click_action' => $stringifiedData['click_action'] ?? 'OPEN_PERKARA_DETAIL',
                         'channel_id' => 'sipeta_reminder_channel',
                     ],
                 ],

@@ -2,6 +2,7 @@
 
 namespace App\Services\Notification;
 
+use App\Models\Berita;
 use App\Models\Perkara;
 use App\Models\PerkaraReminder;
 use App\Models\PushNotificationLog;
@@ -11,6 +12,7 @@ use App\Services\Fcm\FcmSenderService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class NotificationService
 {
@@ -25,6 +27,7 @@ class NotificationService
     public const EVENT_AUTO_FORM7 = 'AUTO_TRANSITION_FORM7';
     public const EVENT_AUTO_KOORDINASI = 'AUTO_TRANSITION_KOORDINASI';
     public const EVENT_STAGE_TRANSITION = 'STAGE_TRANSITION';
+    public const EVENT_BERITA_PUBLISHED = 'BERITA_PUBLISHED';
 
     protected FcmSenderService $fcmSender;
 
@@ -237,26 +240,86 @@ class NotificationService
     }
 
     /**
+     * Kirim push notification saat berita resmi diterbitkan (is_published = true).
+     * Target penerima: seluruh pengguna role 'jaksa' serta pengguna lain yang memiliki token perangkat aktif.
+     */
+    public function notifyBeritaPublished(Berita $berita): array
+    {
+        if (!$berita->is_published) {
+            return [];
+        }
+
+        $recipients = User::query()
+            ->where('role', 'jaksa')
+            ->orWhereHas('activeDeviceTokens')
+            ->get()
+            ->unique('id')
+            ->values();
+
+        if ($recipients->isEmpty()) {
+            return [];
+        }
+
+        $title = Str::limit('📰 Berita Baru: ' . $berita->judul, 250);
+
+        $rawSummary = $berita->ringkasan ?: strip_tags((string) ($berita->konten ?? ''));
+        $cleanSummary = trim((string) preg_replace('/\s+/', ' ', $rawSummary));
+        $body = $cleanSummary !== ''
+            ? Str::limit($cleanSummary, 160)
+            : 'Publikasi berita terbaru Kejaksaan Negeri OKU.';
+
+        $dataPayload = [
+            'berita_id' => (string) $berita->id,
+            'slug' => (string) ($berita->slug ?? ''),
+            'event_type' => self::EVENT_BERITA_PUBLISHED,
+            'click_action' => 'OPEN_BERITA_DETAIL',
+        ];
+
+        $results = [];
+
+        foreach ($recipients as $recipient) {
+            // Unik per berita & user agar penyuntingan berita yang sudah terbit tidak mengirim ulang notifikasi
+            $idempotencyKey = "berita_{$berita->id}_pub_u{$recipient->id}";
+
+            $results[] = $this->dispatchNotification(
+                user: $recipient,
+                perkara: null,
+                reminder: null,
+                eventType: self::EVENT_BERITA_PUBLISHED,
+                idempotencyKey: $idempotencyKey,
+                title: $title,
+                body: $body,
+                customDataPayload: $dataPayload
+            );
+        }
+
+        return $results;
+    }
+
+    /**
      * Pusat eksekusi pengiriman notifikasi dengan pencatatan audit trail, penanganan token, dan idempotensi.
      */
     protected function dispatchNotification(
         User $user,
-        Perkara $perkara,
+        ?Perkara $perkara,
         ?PerkaraReminder $reminder,
         string $eventType,
         string $idempotencyKey,
         string $title,
-        string $body
+        string $body,
+        array $customDataPayload = []
     ): array {
         // 1. Data payload minimal (non-sensitif) agar aplikasi Android mengambil detail via authenticated API
-        $dataPayload = [
-            'perkara_id' => (string)$perkara->id,
-            'nomor_perkara' => (string)$perkara->nomor_perkara,
-            'tahap' => (string)$perkara->tahap_saat_ini,
-            'event_type' => (string)$eventType,
-            'reminder_id' => $reminder ? (string)$reminder->id : '',
-            'click_action' => 'OPEN_PERKARA_DETAIL',
-        ];
+        $dataPayload = !empty($customDataPayload)
+            ? $customDataPayload
+            : [
+                'perkara_id' => (string) ($perkara?->id ?? ''),
+                'nomor_perkara' => (string) ($perkara?->nomor_perkara ?? ''),
+                'tahap' => (string) ($perkara?->tahap_saat_ini ?? ''),
+                'event_type' => (string) $eventType,
+                'reminder_id' => $reminder ? (string) $reminder->id : '',
+                'click_action' => 'OPEN_PERKARA_DETAIL',
+            ];
 
         // 2. Atomic Pre-Locking Idempotensi (Mencegah pengiriman duplikat di tingkat database)
         $existingLog = PushNotificationLog::where('idempotency_key', $idempotencyKey)->first();
@@ -318,7 +381,7 @@ class NotificationService
             try {
                 $log = PushNotificationLog::create([
                     'user_id' => $user->id,
-                    'perkara_id' => $perkara->id,
+                    'perkara_id' => $perkara?->id,
                     'perkara_reminder_id' => $reminder?->id,
                     'event_type' => $eventType,
                     'idempotency_key' => $idempotencyKey,

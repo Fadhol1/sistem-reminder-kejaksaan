@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
+use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -83,7 +85,11 @@ class BeritaController extends Controller
             $data['gambar'] = $request->file('gambar')->store('berita', 'public');
         }
 
-        Berita::create($data);
+        $berita = Berita::create($data);
+
+        if ($berita->is_published) {
+            $this->dispatchBeritaPublishedNotification($berita);
+        }
 
         return redirect()->route('berita.index')->with('success', 'Berita berhasil diterbitkan.');
     }
@@ -128,6 +134,7 @@ class BeritaController extends Controller
     {
         abort_unless(auth()->user()->isPidum(), 403, 'Akses Ditolak: Hanya Admin PIDUM yang dapat mengedit berita.');
         $berita = Berita::findOrFail($id);
+        $wasPublished = (bool) $berita->is_published;
 
         $validated = $request->validate([
             'judul' => ['required', 'string', 'max:255'],
@@ -161,6 +168,10 @@ class BeritaController extends Controller
 
         $berita->save();
 
+        if (!$wasPublished && $berita->is_published) {
+            $this->dispatchBeritaPublishedNotification($berita);
+        }
+
         return redirect()->route('berita.index')->with('success', 'Data berita berhasil diperbarui.');
     }
 
@@ -179,6 +190,20 @@ class BeritaController extends Controller
         $berita->delete();
 
         return redirect()->route('berita.index')->with('success', 'Berita berhasil dihapus.');
+    }
+
+    /**
+     * Kirim push notification saat berita dipublikasikan tanpa menggagalkan penyimpanan jika FCM bermasalah.
+     */
+    protected function dispatchBeritaPublishedNotification(Berita $berita): void
+    {
+        try {
+            app(NotificationService::class)->notifyBeritaPublished($berita);
+        } catch (\Throwable $e) {
+            Log::warning('Gagal mengirim notifikasi publikasi berita: ' . $e->getMessage(), [
+                'berita_id' => $berita->id,
+            ]);
+        }
     }
 }
 
