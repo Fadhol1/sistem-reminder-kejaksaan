@@ -97,7 +97,7 @@ class BeritaController extends Controller
     /**
      * Menampilkan detail preview berita.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $berita = Berita::findOrFail($id);
         abort_if(
@@ -106,13 +106,8 @@ class BeritaController extends Controller
             'Akses Ditolak: Berita berstatus draf hanya dapat diakses oleh Admin PIDUM.'
         );
 
-        // Tambah jumlah view secara riil di database jika belum dilihat pada sesi browser ini
-        $sessionKey = 'viewed_berita_' . $berita->id;
-        if (!session()->has($sessionKey)) {
-            $berita->increment('views_count');
-            session()->put($sessionKey, true);
-            $berita->refresh();
-        }
+        // Catat view unik per pengguna agar refresh/buka ulang tidak menambah hitungan
+        $berita->recordUniqueView($request);
 
         return view('berita.show', compact('berita'));
     }

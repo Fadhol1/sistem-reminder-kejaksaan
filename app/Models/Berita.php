@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Berita extends Model
@@ -108,6 +110,47 @@ class Berita extends Model
     public function scopePublished($query)
     {
         return $query->where('is_published', true);
+    }
+
+    /**
+     * Catat view unik per pengguna (atau per perangkat/tamu jika belum terautentikasi)
+     * agar pembukaan berita berulang oleh pengguna yang sama tidak menambah views_count lagi.
+     */
+    public function recordUniqueView(Request $request): bool
+    {
+        if (!$this->is_published) {
+            return false;
+        }
+
+        $user = $request->user('sanctum') ?? $request->user();
+
+        if ($user) {
+            $viewerKey = 'user_' . $user->id;
+            $userId = $user->id;
+        } else {
+            $deviceId = trim((string) ($request->input('device_id') ?: $request->header('X-Device-Id', '')));
+            $rawIdentity = $deviceId !== ''
+                ? 'device_' . $deviceId
+                : 'ip_' . ($request->ip() ?? 'unknown') . '|' . (string) $request->userAgent();
+            $viewerKey = 'guest_' . hash('sha256', $rawIdentity);
+            $userId = null;
+        }
+
+        $inserted = DB::table('berita_views')->insertOrIgnore([
+            'berita_id' => $this->id,
+            'user_id' => $userId,
+            'viewer_key' => $viewerKey,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        if ($inserted > 0) {
+            $this->increment('views_count');
+            $this->refresh();
+            return true;
+        }
+
+        return false;
     }
 }
 

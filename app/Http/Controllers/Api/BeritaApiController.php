@@ -53,7 +53,7 @@ class BeritaApiController extends Controller
     /**
      * Mengambil detail satu berita berdasarkan ID atau Slug.
      */
-    public function show($id): JsonResponse
+    public function show(Request $request, $id): JsonResponse
     {
         $berita = $this->findPublishedBerita($id);
 
@@ -64,9 +64,8 @@ class BeritaApiController extends Controller
             ], 404);
         }
 
-        // Tambah jumlah view secara pasif
-        $berita->increment('views_count');
-        $berita->refresh();
+        // Catat view unik agar pemanggilan ulang oleh user/perangkat yang sama tidak menggandakan views_count
+        $berita->recordUniqueView($request);
 
         return response()->json([
             'success' => true,
@@ -78,7 +77,7 @@ class BeritaApiController extends Controller
     /**
      * Mencatat penambahan jumlah dilihat (views_count) untuk endpoint POST /api/berita/{id}/view.
      */
-    public function recordView($id): JsonResponse
+    public function recordView(Request $request, $id): JsonResponse
     {
         $berita = $this->findPublishedBerita($id);
 
@@ -89,12 +88,13 @@ class BeritaApiController extends Controller
             ], 404);
         }
 
-        $berita->increment('views_count');
-        $berita->refresh();
+        $counted = $berita->recordUniqueView($request);
 
         return response()->json([
             'success'     => true,
-            'message'     => 'Jumlah dilihat berhasil diperbarui',
+            'message'     => $counted
+                ? 'Jumlah dilihat berhasil diperbarui'
+                : 'Berita sudah pernah dilihat sebelumnya',
             'views_count' => $berita->views_count,
             'data'        => $berita,
         ]);

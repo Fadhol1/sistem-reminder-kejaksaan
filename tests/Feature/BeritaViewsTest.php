@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Berita;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BeritaViewsTest extends TestCase
@@ -12,11 +13,13 @@ class BeritaViewsTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Uji bahwa endpoint API detail berita benar-benar menambah (increment) views_count di database secara nyata.
+     * Uji bahwa endpoint API detail berita hanya menambah views_count 1x per user/perangkat unik.
      */
-    public function test_api_detail_berita_increments_views_count(): void
+    public function test_api_detail_berita_increments_views_count_once_per_viewer(): void
     {
-        $user = User::factory()->create(['role' => 'jaksa']);
+        $user1 = User::factory()->create(['role' => 'jaksa']);
+        $user2 = User::factory()->create(['role' => 'jaksa']);
+
         $berita = Berita::create([
             'judul' => 'Uji Coba Berita Real View API',
             'slug' => 'uji-coba-berita-real-view-api',
@@ -24,32 +27,28 @@ class BeritaViewsTest extends TestCase
             'konten' => 'Konten lengkap berita',
             'tanggal' => now()->toDateString(),
             'penulis' => 'Humas Kejaksaan',
-            'user_id' => $user->id,
+            'user_id' => $user1->id,
             'is_published' => true,
             'views_count' => 0,
         ]);
 
-        $this->assertEquals(0, $berita->views_count);
+        // Jaksa 1 membuka detail pertama kali -> bertambah jadi 1
+        Sanctum::actingAs($user1);
+        $this->getJson("/api/berita/{$berita->id}")
+            ->assertOk()
+            ->assertJsonPath('data.views_count', 1);
 
-        // Akses pertama kali via API (misal dibuka di HP Android)
-        $response1 = $this->getJson("/api/berita/{$berita->id}");
-        $response1->assertOk();
-        $response1->assertJsonPath('data.views_count', 1);
+        // Jaksa 1 membuka ulang via slug -> tetap 1 (tidak bertambah)
+        $this->getJson("/api/berita/{$berita->slug}")
+            ->assertOk()
+            ->assertJsonPath('data.views_count', 1);
 
-        $berita->refresh();
-        $this->assertEquals(1, $berita->views_count);
-        $this->assertDatabaseHas('beritas', [
-            'id' => $berita->id,
-            'views_count' => 1,
-        ]);
+        // Jaksa 2 membuka berita yang sama -> bertambah jadi 2
+        Sanctum::actingAs($user2);
+        $this->getJson("/api/berita/{$berita->id}")
+            ->assertOk()
+            ->assertJsonPath('data.views_count', 2);
 
-        // Akses kedua kali via API menggunakan Slug
-        $response2 = $this->getJson("/api/berita/{$berita->slug}");
-        $response2->assertOk();
-        $response2->assertJsonPath('data.views_count', 2);
-
-        $berita->refresh();
-        $this->assertEquals(2, $berita->views_count);
         $this->assertDatabaseHas('beritas', [
             'id' => $berita->id,
             'views_count' => 2,
@@ -57,11 +56,13 @@ class BeritaViewsTest extends TestCase
     }
 
     /**
-     * Uji bahwa endpoint POST /api/berita/{id}/view menambah views_count secara nyata.
+     * Uji bahwa endpoint POST /api/berita/{id}/view menghitung unik per user dan tidak double-count dengan GET detail.
      */
-    public function test_api_post_berita_view_increments_views_count(): void
+    public function test_api_post_berita_view_deduplicates_repeat_clicks_per_user_and_device(): void
     {
-        $user = User::factory()->create(['role' => 'jaksa']);
+        $jaksa1 = User::factory()->create(['role' => 'jaksa']);
+        $jaksa2 = User::factory()->create(['role' => 'jaksa']);
+
         $berita = Berita::create([
             'judul' => 'Uji Coba POST View Berita',
             'slug' => 'uji-coba-post-view-berita',
@@ -69,33 +70,63 @@ class BeritaViewsTest extends TestCase
             'konten' => 'Konten lengkap berita',
             'tanggal' => now()->toDateString(),
             'penulis' => 'Humas Kejaksaan',
-            'user_id' => $user->id,
+            'user_id' => $jaksa1->id,
             'is_published' => true,
             'views_count' => 0,
         ]);
 
-        $response1 = $this->postJson("/api/berita/{$berita->id}/view");
-        $response1->assertOk()
+        // Jaksa 1 klik berita pertama kali -> 1
+        Sanctum::actingAs($jaksa1);
+        $this->postJson("/api/berita/{$berita->id}/view")
+            ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('views_count', 1)
             ->assertJsonPath('data.views_count', 1);
 
-        $response2 = $this->postJson("/api/berita/{$berita->slug}/view");
-        $response2->assertOk()
-            ->assertJsonPath('views_count', 2)
-            ->assertJsonPath('data.views_count', 2);
+        // Jaksa 1 klik lagi berkali-kali (by ID, by slug, maupun GET detail) -> tetap 1
+        $this->postJson("/api/berita/{$berita->id}/view")
+            ->assertOk()
+            ->assertJsonPath('views_count', 1);
+
+        $this->postJson("/api/berita/{$berita->slug}/view")
+            ->assertOk()
+            ->assertJsonPath('views_count', 1);
+
+        $this->getJson("/api/berita/{$berita->id}")
+            ->assertOk()
+            ->assertJsonPath('data.views_count', 1);
+
+        // Jaksa 2 klik berita yang sama -> 2, klik lagi -> tetap 2
+        Sanctum::actingAs($jaksa2);
+        $this->postJson("/api/berita/{$berita->id}/view")
+            ->assertOk()
+            ->assertJsonPath('views_count', 2);
+
+        $this->postJson("/api/berita/{$berita->id}/view")
+            ->assertOk()
+            ->assertJsonPath('views_count', 2);
 
         $this->assertDatabaseHas('beritas', [
             'id' => $berita->id,
             'views_count' => 2,
         ]);
 
+        // Pengunjung tamu (tanpa token) dengan device_id yang sama hanya dihitung 1x
+        $this->app['auth']->forgetGuards();
+        $this->postJson("/api/berita/{$berita->id}/view", ['device_id' => 'hp_tamu_01'])
+            ->assertOk()
+            ->assertJsonPath('views_count', 3);
+
+        $this->postJson("/api/berita/{$berita->id}/view", ['device_id' => 'hp_tamu_01'])
+            ->assertOk()
+            ->assertJsonPath('views_count', 3);
+
         // Berita draf atau tidak ditemukan tetap mengembalikan 404
         $draft = Berita::create([
             'judul' => 'Berita Draf',
             'slug' => 'berita-draf',
             'tanggal' => now()->toDateString(),
-            'user_id' => $user->id,
+            'user_id' => $jaksa1->id,
             'is_published' => false,
             'views_count' => 0,
         ]);
@@ -105,7 +136,7 @@ class BeritaViewsTest extends TestCase
     }
 
     /**
-     * Uji bahwa preview berita pada Web Admin juga menambah views_count di database secara nyata.
+     * Uji bahwa preview berita pada Web Admin hanya menambah views_count 1x per user.
      */
     public function test_web_detail_berita_increments_views_count(): void
     {
@@ -134,7 +165,7 @@ class BeritaViewsTest extends TestCase
             'views_count' => 6,
         ]);
 
-        // Akses kedua kali pada sesi yang sama tidak menambah dua kali (proteksi spam refresh)
+        // Akses kedua kali oleh user yang sama tidak menambah dua kali
         $responseRepeat = $this->actingAs($user)->get(route('berita.show', $berita->id));
         $responseRepeat->assertOk();
 
@@ -142,4 +173,3 @@ class BeritaViewsTest extends TestCase
         $this->assertEquals(6, $berita->views_count);
     }
 }
-
