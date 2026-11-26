@@ -57,6 +57,54 @@ class BeritaViewsTest extends TestCase
     }
 
     /**
+     * Uji bahwa endpoint POST /api/berita/{id}/view menambah views_count secara nyata.
+     */
+    public function test_api_post_berita_view_increments_views_count(): void
+    {
+        $user = User::factory()->create(['role' => 'jaksa']);
+        $berita = Berita::create([
+            'judul' => 'Uji Coba POST View Berita',
+            'slug' => 'uji-coba-post-view-berita',
+            'ringkasan' => 'Ringkasan uji coba',
+            'konten' => 'Konten lengkap berita',
+            'tanggal' => now()->toDateString(),
+            'penulis' => 'Humas Kejaksaan',
+            'user_id' => $user->id,
+            'is_published' => true,
+            'views_count' => 0,
+        ]);
+
+        $response1 = $this->postJson("/api/berita/{$berita->id}/view");
+        $response1->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('views_count', 1)
+            ->assertJsonPath('data.views_count', 1);
+
+        $response2 = $this->postJson("/api/berita/{$berita->slug}/view");
+        $response2->assertOk()
+            ->assertJsonPath('views_count', 2)
+            ->assertJsonPath('data.views_count', 2);
+
+        $this->assertDatabaseHas('beritas', [
+            'id' => $berita->id,
+            'views_count' => 2,
+        ]);
+
+        // Berita draf atau tidak ditemukan tetap mengembalikan 404
+        $draft = Berita::create([
+            'judul' => 'Berita Draf',
+            'slug' => 'berita-draf',
+            'tanggal' => now()->toDateString(),
+            'user_id' => $user->id,
+            'is_published' => false,
+            'views_count' => 0,
+        ]);
+
+        $this->postJson("/api/berita/{$draft->id}/view")->assertNotFound();
+        $this->postJson('/api/berita/999999/view')->assertNotFound();
+    }
+
+    /**
      * Uji bahwa preview berita pada Web Admin juga menambah views_count di database secara nyata.
      */
     public function test_web_detail_berita_increments_views_count(): void

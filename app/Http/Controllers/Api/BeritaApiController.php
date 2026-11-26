@@ -55,15 +55,7 @@ class BeritaApiController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $berita = Berita::published()
-            ->where(function ($query) use ($id) {
-                if (is_numeric($id)) {
-                    $query->where('id', $id)->orWhere('slug', (string) $id);
-                } else {
-                    $query->where('slug', $id);
-                }
-            })
-            ->first();
+        $berita = $this->findPublishedBerita($id);
 
         if (!$berita) {
             return response()->json([
@@ -74,12 +66,54 @@ class BeritaApiController extends Controller
 
         // Tambah jumlah view secara pasif
         $berita->increment('views_count');
+        $berita->refresh();
 
         return response()->json([
             'success' => true,
             'message' => 'Detail berita berhasil diambil',
             'data'    => $berita,
         ]);
+    }
+
+    /**
+     * Mencatat penambahan jumlah dilihat (views_count) untuk endpoint POST /api/berita/{id}/view.
+     */
+    public function recordView($id): JsonResponse
+    {
+        $berita = $this->findPublishedBerita($id);
+
+        if (!$berita) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Berita tidak ditemukan',
+            ], 404);
+        }
+
+        $berita->increment('views_count');
+        $berita->refresh();
+
+        return response()->json([
+            'success'     => true,
+            'message'     => 'Jumlah dilihat berhasil diperbarui',
+            'views_count' => $berita->views_count,
+            'data'        => $berita,
+        ]);
+    }
+
+    /**
+     * Cari berita yang sudah dipublikasikan berdasarkan ID atau Slug.
+     */
+    protected function findPublishedBerita($id): ?Berita
+    {
+        return Berita::published()
+            ->where(function ($query) use ($id) {
+                if (is_numeric($id)) {
+                    $query->where('id', $id)->orWhere('slug', (string) $id);
+                } else {
+                    $query->where('slug', $id);
+                }
+            })
+            ->first();
     }
 }
 

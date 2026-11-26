@@ -18,6 +18,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 Route::middleware('throttle:60,1')->group(function () {
     Route::get('/berita', [\App\Http\Controllers\Api\BeritaApiController::class, 'index'])->name('api.berita.index');
     Route::get('/berita/{id}', [\App\Http\Controllers\Api\BeritaApiController::class, 'show'])->name('api.berita.show');
+    Route::post('/berita/{id}/view', [\App\Http\Controllers\Api\BeritaApiController::class, 'recordView'])->name('api.berita.view');
 });
 
 // Protected Endpoints (Terproteksi Autentikasi Sanctum & Rate Limiting 60 req/menit)
