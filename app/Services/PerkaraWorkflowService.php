@@ -441,7 +441,7 @@ class PerkaraWorkflowService
 
             // Save Timeline Record
             if (!empty($eventName)) {
-                PerkaraTimeline::create([
+                $createdTimeline = PerkaraTimeline::create([
                     'perkara_id' => $perkara->id,
                     'user_id' => $userId,
                     'actor_type' => $actorType,
@@ -454,7 +454,13 @@ class PerkaraWorkflowService
                 ]);
 
                 try {
-                    app(\App\Services\Notification\NotificationService::class)->notifyStageTransition($perkara, $eventName, $catatan, $userId);
+                    app(\App\Services\Notification\NotificationService::class)->notifyStageTransition(
+                        $perkara,
+                        $eventName,
+                        $catatan,
+                        $userId,
+                        $createdTimeline->id
+                    );
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::warning('Gagal notif transisi: ' . $e->getMessage());
                 }
@@ -486,7 +492,7 @@ class PerkaraWorkflowService
      */
     public static function undoLastAction(Perkara $perkara, string $reason, int $userId): PerkaraTimeline
     {
-        return DB::transaction(function () use ($perkara, $reason, $userId) {
+        [$correctionTimeline, $revertedActionName] = DB::transaction(function () use ($perkara, $reason, $userId) {
             $lockedPerkara = Perkara::lockForUpdate()->find($perkara->id);
             if (!$lockedPerkara) {
                 throw new \DomainException("Perkara dengan ID {$perkara->id} tidak ditemukan.");
@@ -553,8 +559,21 @@ class PerkaraWorkflowService
                 'catatan' => 'Alasan Koreksi: ' . $reason,
             ]);
 
-            return $correctionTimeline;
+            return [$correctionTimeline, $lastTimeline->status_kegiatan];
         });
+
+        try {
+            app(\App\Services\Notification\NotificationService::class)->notifyActionReverted(
+                $perkara,
+                $revertedActionName,
+                $reason,
+                $correctionTimeline->id
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal notif koreksi/undo: ' . $e->getMessage());
+        }
+
+        return $correctionTimeline;
     }
 
     /**

@@ -484,7 +484,13 @@ class PerkaraApiController extends Controller
             // Notifikasi perkembangan alur perkara
             try {
                 $stageName = $validated['status_kegiatan'] ?? $validated['tahap'];
-                app(\App\Services\Notification\NotificationService::class)->notifyStageTransition($perkara, $stageName, $validated['catatan'] ?? null, auth()->id());
+                app(\App\Services\Notification\NotificationService::class)->notifyStageTransition(
+                    $perkara,
+                    $stageName,
+                    $validated['catatan'] ?? null,
+                    auth()->id(),
+                    $timeline->id
+                );
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Gagal notif timeline: ' . $e->getMessage());
             }

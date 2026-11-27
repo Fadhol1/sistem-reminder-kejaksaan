@@ -422,4 +422,107 @@ class FcmPushNotificationTest extends TestCase
             ->where('event_type', NotificationService::EVENT_REMINDER_H3)
             ->count());
     }
+
+    /**
+     * 10. Test Undo (Koreksi Administrasi) Mengirim Push Notification & Siklus Maju -> Undo -> Maju di Hari yang Sama Tetap Terkirim
+     */
+    public function test_undo_and_same_day_retransition_both_send_push_notifications(): void
+    {
+        $jaksaToken = 'fcm_jaksa_undo_retransition_123';
+        UserDeviceToken::create([
+            'user_id' => $this->jaksa->id,
+            'fcm_token' => $jaksaToken,
+            'fcm_token_hash' => UserDeviceToken::hashToken($jaksaToken),
+            'is_active' => true,
+        ]);
+
+        // Admin PIDUM juga punya token, namun koreksi/transisi biasa hanya dikirim ke Jaksa terkait
+        $pidumToken = 'fcm_pidum_undo_test_456';
+        UserDeviceToken::create([
+            'user_id' => $this->pidum->id,
+            'fcm_token' => $pidumToken,
+            'fcm_token_hash' => UserDeviceToken::hashToken($pidumToken),
+            'is_active' => true,
+        ]);
+
+        $sentMessages = [];
+        $mockFcm = $this->createMock(FcmSenderService::class);
+        $mockFcm->expects($this->exactly(3))
+            ->method('sendToToken')
+            ->willReturnCallback(function ($token, $title, $body, $data) use (&$sentMessages) {
+                $sentMessages[] = compact('token', 'title', 'body', 'data');
+                return [
+                    'success' => true,
+                    'message_id' => 'projects/reminderskejaksaan/messages/undo_cycle_' . count($sentMessages),
+                    'error' => null,
+                    'is_invalid_token' => false,
+                ];
+            });
+
+        $this->app->instance(FcmSenderService::class, $mockFcm);
+
+        // 1. Maju ke P-24 (terima_berkas)
+        \App\Services\PerkaraWorkflowService::processAction($this->perkara, 'terima_berkas', [], $this->pidum->id, 'USER');
+
+        // 2. Undo kembali ke Monitoring Penyidikan pada hari yang sama
+        \App\Services\PerkaraWorkflowService::undoLastAction($this->perkara, 'Salah input berkas tahap I', $this->pidum->id);
+
+        // 3. Maju lagi ke P-24 pada hari yang sama
+        \App\Services\PerkaraWorkflowService::processAction($this->perkara, 'terima_berkas', [], $this->pidum->id, 'USER');
+
+        $this->assertCount(3, $sentMessages);
+
+        // Semua 3 notifikasi hanya dikirim ke Jaksa terkait
+        foreach ($sentMessages as $msg) {
+            $this->assertEquals($jaksaToken, $msg['token']);
+        }
+
+        $this->assertEquals(NotificationService::EVENT_STAGE_TRANSITION, $sentMessages[0]['data']['event_type']);
+        $this->assertEquals(NotificationService::EVENT_STAGE_CORRECTION, $sentMessages[1]['data']['event_type']);
+        $this->assertStringContainsString('Salah input berkas tahap I', $sentMessages[1]['body']);
+        $this->assertStringContainsString('Monitoring Penyidikan', $sentMessages[1]['body']);
+        $this->assertEquals(NotificationService::EVENT_STAGE_TRANSITION, $sentMessages[2]['data']['event_type']);
+
+        // Pastikan Admin PIDUM tidak mendapat notifikasi koreksi/transisi
+        $this->assertEquals(0, PushNotificationLog::where('user_id', $this->pidum->id)->count());
+
+        // Deduplikasi per timelineId tetap bekerja jika dipanggil ulang untuk timeline yang sama
+        $latestTimeline = $this->perkara->timelines()->latest('id')->first();
+        $dupResult = app(NotificationService::class)->notifyStageTransition(
+            $this->perkara,
+            'Penyerahan Berkas Tahap I Diterima',
+            null,
+            $this->pidum->id,
+            $latestTimeline->id
+        );
+        $this->assertEquals('SKIPPED_DUPLICATE', $dupResult[0]['status']);
+    }
+
+    /**
+     * 11. Test Kegagalan FCM Saat Undo Tidak Membatalkan Transaksi Undo di Database
+     */
+    public function test_fcm_failure_during_undo_does_not_rollback_undo(): void
+    {
+        $jaksaToken = 'fcm_jaksa_undo_fail_789';
+        UserDeviceToken::create([
+            'user_id' => $this->jaksa->id,
+            'fcm_token' => $jaksaToken,
+            'fcm_token_hash' => UserDeviceToken::hashToken($jaksaToken),
+            'is_active' => true,
+        ]);
+
+        $mockFcm = $this->createMock(FcmSenderService::class);
+        $mockFcm->method('sendToToken')
+            ->willThrowException(new \RuntimeException('Simulated FCM outage'));
+
+        $this->app->instance(FcmSenderService::class, $mockFcm);
+
+        \App\Services\PerkaraWorkflowService::processAction($this->perkara, 'terima_berkas', [], $this->pidum->id, 'USER');
+        $correction = \App\Services\PerkaraWorkflowService::undoLastAction($this->perkara, 'Koreksi saat FCM error', $this->pidum->id);
+
+        $this->perkara->refresh();
+        $this->assertEquals(\App\Services\PerkaraWorkflowService::TAHAP_MONITORING, $this->perkara->tahap_saat_ini);
+        $this->assertEquals('Menunggu Berkas Tahap I', $this->perkara->status_saat_ini);
+        $this->assertStringContainsString('[KOREKSI ADMINISTRASI]', $correction->status_kegiatan);
+    }
 }

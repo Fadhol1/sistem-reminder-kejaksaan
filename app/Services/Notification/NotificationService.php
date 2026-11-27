@@ -27,6 +27,7 @@ class NotificationService
     public const EVENT_AUTO_FORM7 = 'AUTO_TRANSITION_FORM7';
     public const EVENT_AUTO_KOORDINASI = 'AUTO_TRANSITION_KOORDINASI';
     public const EVENT_STAGE_TRANSITION = 'STAGE_TRANSITION';
+    public const EVENT_STAGE_CORRECTION = 'STAGE_CORRECTION';
     public const EVENT_BERITA_PUBLISHED = 'BERITA_PUBLISHED';
 
     protected FcmSenderService $fcmSender;
@@ -194,15 +195,68 @@ class NotificationService
         return $results;
     }
 
-        /**
+    /**
      * Kirim notifikasi saat perkara berlanjut ke langkah atau tahap berikutnya.
      */
-    public function notifyStageTransition(Perkara $perkara, string $stageOrEventName, ?string $catatan = null, ?int $actorUserId = null): array
-    {
+    public function notifyStageTransition(
+        Perkara $perkara,
+        string $stageOrEventName,
+        ?string $catatan = null,
+        ?int $actorUserId = null,
+        ?int $timelineId = null
+    ): array {
         $eventType = self::EVENT_STAGE_TRANSITION;
         $title = '📌 Perkembangan Perkara: ' . $perkara->nomor_perkara;
         $body = 'Perkara telah berlanjut ke: ' . $stageOrEventName . ($catatan ? ' (' . $catatan . ')' : '');
 
+        $dateKey = now()->format('Y-m-d');
+        $stageSlug = Str::slug($perkara->tahap_saat_ini . '_' . $stageOrEventName);
+
+        return $this->dispatchForPerkaraStageRecipients(
+            perkara: $perkara,
+            eventType: $eventType,
+            title: $title,
+            body: $body,
+            actorUserId: $actorUserId,
+            keyFactory: fn (User $recipient) => $timelineId !== null
+                ? "stage_p{$perkara->id}_tl{$timelineId}_u{$recipient->id}"
+                : "stage_p{$perkara->id}_{$stageSlug}_{$dateKey}_u{$recipient->id}"
+        );
+    }
+
+    /**
+     * Kirim notifikasi saat Admin PIDUM membatalkan (undo) langkah perkembangan perkara.
+     */
+    public function notifyActionReverted(
+        Perkara $perkara,
+        string $revertedActionName,
+        string $reason,
+        int $correctionTimelineId
+    ): array {
+        $title = Str::limit('↩️ Koreksi Tahap Perkara: ' . $perkara->nomor_perkara, 250);
+        $body = "Aksi \"{$revertedActionName}\" dibatalkan. Tahap dikembalikan ke {$perkara->tahap_saat_ini} ({$perkara->status_saat_ini}). Alasan: {$reason}";
+
+        return $this->dispatchForPerkaraStageRecipients(
+            perkara: $perkara,
+            eventType: self::EVENT_STAGE_CORRECTION,
+            title: $title,
+            body: $body,
+            actorUserId: null,
+            keyFactory: fn (User $recipient) => "undo_p{$perkara->id}_tl{$correctionTimelineId}_u{$recipient->id}"
+        );
+    }
+
+    /**
+     * Resolusi penerima Jaksa terkait (dengan fallback) dan kirim notifikasi tahapan perkara.
+     */
+    protected function dispatchForPerkaraStageRecipients(
+        Perkara $perkara,
+        string $eventType,
+        string $title,
+        string $body,
+        ?int $actorUserId,
+        callable $keyFactory
+    ): array {
         $recipients = $this->resolveRecipients($perkara, $eventType);
 
         if ($recipients->isEmpty()) {
@@ -216,24 +270,18 @@ class NotificationService
             }
         }
 
-        $dateKey = now()->format('Y-m-d');
-        $stageSlug = \Illuminate\Support\Str::slug($perkara->tahap_saat_ini . '_' . $stageOrEventName);
         $results = [];
 
         foreach ($recipients as $recipient) {
-            $idempotencyKey = "stage_p{$perkara->id}_{$stageSlug}_{$dateKey}_u{$recipient->id}";
-
-            $result = $this->dispatchNotification(
+            $results[] = $this->dispatchNotification(
                 user: $recipient,
                 perkara: $perkara,
                 reminder: null,
                 eventType: $eventType,
-                idempotencyKey: $idempotencyKey,
+                idempotencyKey: $keyFactory($recipient),
                 title: $title,
                 body: $body
             );
-
-            $results[] = $result;
         }
 
         return $results;
