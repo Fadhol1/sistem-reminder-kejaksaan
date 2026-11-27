@@ -64,4 +64,27 @@ class AuthController extends Controller
 
         return redirect()->route('login');
     }
+
+    /**
+     * Mengunduh berkas APK aplikasi Android resmi dari storage/download/.
+     */
+    public function downloadApp()
+    {
+        $downloadDir = storage_path('download');
+        $preferredPath = $downloadDir . DIRECTORY_SEPARATOR . 'KN OKU.apk';
+
+        $apkPath = is_file($preferredPath)
+            ? $preferredPath
+            : collect(glob($downloadDir . DIRECTORY_SEPARATOR . '*.apk') ?: [])
+                ->first(fn (string $path) => is_file($path));
+
+        if (!$apkPath) {
+            abort(404, 'File aplikasi Android belum tersedia di server.');
+        }
+
+        return response()->download($apkPath, basename($apkPath), [
+            'Content-Type' => 'application/vnd.android.package-archive',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
 }

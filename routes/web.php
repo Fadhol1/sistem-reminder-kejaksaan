@@ -16,6 +16,10 @@ Route::middleware('guest')->group(function () {
     Route::redirect('/register', '/login');
 });
 
+Route::get('/download-aplikasi', [AuthController::class, 'downloadApp'])
+    ->middleware('throttle:15,1')
+    ->name('app.download');
+
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');

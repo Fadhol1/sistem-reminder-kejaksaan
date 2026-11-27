@@ -36,3 +36,8 @@ app/Console/Commands/TestEngine.php
 *.sql.gz
 rclone.conf
 /storage/app/backups
+
+# Android APK binaries (hosted on server, excluded from Git)
+*.apk
+/storage/download/*
+!/storage/download/.gitkeep

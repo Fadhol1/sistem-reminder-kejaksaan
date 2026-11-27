@@ -157,5 +157,37 @@
                 </p>
             </div>
         </form>
+
+        <!-- Unduh Aplikasi Android Resmi -->
+        <div class="pt-4 border-t border-slate-100">
+            <a href="{{ route('app.download') }}"
+                class="group flex items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-red-50/60 border border-slate-200 hover:border-red-200 transition-all duration-200">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-white border border-slate-200 group-hover:border-red-200 flex items-center justify-center text-[#881337] shrink-0 shadow-2xs">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-slate-800 group-hover:text-[#881337] transition truncate">
+                            Unduh Aplikasi Android (KN OKU)
+                        </p>
+                        <p class="text-[11px] text-slate-500 truncate">
+                            Instalasi resmi (.apk) untuk Jaksa &amp; Pegawai
+                        </p>
+                    </div>
+                </div>
+                <span
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white group-hover:bg-[#881337] text-[#881337] group-hover:text-white border border-slate-200 group-hover:border-[#881337] shrink-0 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    <span>Unduh</span>
+                </span>
+            </a>
+        </div>
     </div>
 @endsection

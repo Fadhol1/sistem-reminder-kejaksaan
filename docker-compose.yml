@@ -12,6 +12,7 @@ services:
     volumes:
       - ./.env:/var/www/.env
       - sipeta_storage:/var/www/storage
+      - ./storage/download:/var/www/storage/download
       - sipeta_public_build:/var/www/public/build
       - ./firebase:/var/www/firebase:ro
     depends_on:

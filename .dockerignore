@@ -19,5 +19,7 @@ storage/pail/*
 firebase/*.json
 public/hot
 public/storage
+storage/download/*.apk
+*.apk
 *.md
 

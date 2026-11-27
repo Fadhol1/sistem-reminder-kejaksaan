@@ -301,5 +301,37 @@ class SecurityHardeningTest extends TestCase
         $this->assertDatabaseMissing('perkara_reminders', ['id' => $activeRem->id]);
         $this->assertDatabaseMissing('perkara_reminders', ['id' => $inactiveRem->id]);
     }
+
+    public function test_login_page_shows_apk_download_link_and_serves_apk(): void
+    {
+        $loginRes = $this->get(route('login'));
+        $loginRes->assertOk();
+        $loginRes->assertSee(route('app.download'));
+        $loginRes->assertSee('Unduh Aplikasi Android (KN OKU)');
+
+        $apkPath = storage_path('download' . DIRECTORY_SEPARATOR . 'KN OKU.apk');
+        $createdTemp = false;
+
+        if (!is_file($apkPath)) {
+            if (!is_dir(dirname($apkPath))) {
+                mkdir(dirname($apkPath), 0755, true);
+            }
+            file_put_contents($apkPath, 'dummy-apk-bytes');
+            $createdTemp = true;
+        }
+
+        try {
+            $downloadRes = $this->get(route('app.download'));
+            $downloadRes->assertOk();
+            $downloadRes->assertHeader('Content-Type', 'application/vnd.android.package-archive');
+            $downloadRes->assertHeader('X-Content-Type-Options', 'nosniff');
+            $this->assertStringContainsString('attachment;', (string) $downloadRes->headers->get('Content-Disposition'));
+            $this->assertStringContainsString('KN OKU.apk', (string) $downloadRes->headers->get('Content-Disposition'));
+        } finally {
+            if ($createdTemp && is_file($apkPath)) {
+                @unlink($apkPath);
+            }
+        }
+    }
 }
 
