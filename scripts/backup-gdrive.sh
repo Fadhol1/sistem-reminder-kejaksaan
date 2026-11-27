@@ -54,11 +54,22 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# Muat variabel dari .env tanpa mengekspos ke output log
-set -a
-# shellcheck disable=SC1091
-source .env
-set +a
+# Baca variabel DB dari .env secara aman (tahan CRLF Windows & spasi pada baris lain)
+read_env_var() {
+    local key="$1"
+    local line
+    line="$(grep -E "^${key}=" .env | tail -n 1 || true)"
+    line="${line%$'\r'}"
+    local val="${line#*=}"
+    if [[ "$val" =~ ^\"(.*)\"$ ]] || [[ "$val" =~ ^\'(.*)\'$ ]]; then
+        val="${BASH_REMATCH[1]}"
+    fi
+    printf '%s' "$val"
+}
+
+DB_DATABASE="$(read_env_var DB_DATABASE)"
+DB_USERNAME="$(read_env_var DB_USERNAME)"
+DB_PASSWORD="$(read_env_var DB_PASSWORD)"
 
 if [ -z "${DB_DATABASE:-}" ] || [ -z "${DB_USERNAME:-}" ] || [ -z "${DB_PASSWORD:-}" ]; then
     echo "ERROR: DB_DATABASE, DB_USERNAME, atau DB_PASSWORD belum diatur di .env." >&2
