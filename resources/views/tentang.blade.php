@@ -69,14 +69,12 @@
 
                         <!-- Body Card -->
                         <div class="px-5 pb-4 pt-0 relative">
-                            <!-- Avatar Inisial -->
+                            <!-- Foto Profil Pengembang -->
                             <div class="-mt-9 mb-3">
                                 <div
-                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 p-0.5 shadow-md shadow-black/20">
-                                    <div
-                                        class="w-full h-full bg-[#5c0b15] rounded-[10px] flex items-center justify-center text-white font-extrabold text-xl tracking-wider">
-                                        DK
-                                    </div>
+                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 p-0.5 shadow-md shadow-black/20 overflow-hidden">
+                                    <img src="{{ asset('images/Dheny.JPG') }}" alt="M Dheny Kurniawand"
+                                        class="w-full h-full rounded-[10px] object-cover object-top bg-[#5c0b15]">
                                 </div>
                             </div>
 
@@ -129,14 +127,12 @@
 
                         <!-- Body Card -->
                         <div class="px-5 pb-4 pt-0 relative">
-                            <!-- Avatar Inisial -->
+                            <!-- Foto Profil Pengembang -->
                             <div class="-mt-9 mb-3">
                                 <div
-                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 via-blue-500 to-indigo-600 p-0.5 shadow-md shadow-black/20">
-                                    <div
-                                        class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-white font-extrabold text-xl tracking-wider">
-                                        DA
-                                    </div>
+                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-blue-400 via-blue-500 to-indigo-600 p-0.5 shadow-md shadow-black/20 overflow-hidden">
+                                    <img src="{{ asset('images/Dendi.JPG') }}" alt="Dendi Ananda Putra"
+                                        class="w-full h-full rounded-[10px] object-cover object-top bg-slate-900">
                                 </div>
                             </div>
 
@@ -189,14 +185,12 @@
 
                         <!-- Body Card -->
                         <div class="px-5 pb-4 pt-0 relative">
-                            <!-- Avatar Inisial -->
+                            <!-- Foto Profil Pengembang -->
                             <div class="-mt-9 mb-3">
                                 <div
-                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-0.5 shadow-md shadow-black/20">
-                                    <div
-                                        class="w-full h-full bg-emerald-950 rounded-[10px] flex items-center justify-center text-white font-extrabold text-xl tracking-wider">
-                                        NF
-                                    </div>
+                                    class="w-16 h-16 rounded-xl bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-0.5 shadow-md shadow-black/20 overflow-hidden">
+                                    <img src="{{ asset('images/Naufal.JPG') }}" alt="Naufal Fadhil Wibadi"
+                                        class="w-full h-full rounded-[10px] object-cover object-top bg-emerald-950">
                                 </div>
                             </div>
 
