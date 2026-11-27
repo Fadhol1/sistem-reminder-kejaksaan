@@ -30,3 +30,9 @@ app/Console/Commands/TestEngine.php
 
 # Deployment archives
 *.tar.gz
+
+# Database backups & rclone credentials
+*.sql
+*.sql.gz
+rclone.conf
+/storage/app/backups
