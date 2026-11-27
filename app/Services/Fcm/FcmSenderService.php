@@ -95,7 +95,13 @@ class FcmSenderService
         }
 
         // Pastikan semua nilai data payload adalah string (persyaratan FCM HTTP v1)
-        $stringifiedData = [];
+        // Gunakan Data-Only Message (sertakan title & body di dalam data tanpa blok notification)
+        // agar SipetaFirebaseMessagingService.onMessageReceived() selalu terpanggil di Android
+        // baik saat aplikasi foreground, background, maupun tertutup.
+        $stringifiedData = [
+            'title' => (string) $title,
+            'body' => (string) $body,
+        ];
         foreach ($data as $key => $value) {
             $stringifiedData[(string)$key] = is_scalar($value) ? (string)$value : json_encode($value);
         }
@@ -105,18 +111,9 @@ class FcmSenderService
         $payload = [
             'message' => [
                 'token' => $token,
-                'notification' => [
-                    'title' => $title,
-                    'body' => $body,
-                ],
                 'data' => $stringifiedData,
                 'android' => [
                     'priority' => 'HIGH',
-                    'notification' => [
-                        'sound' => 'default',
-                        'click_action' => $stringifiedData['click_action'] ?? 'OPEN_PERKARA_DETAIL',
-                        'channel_id' => 'sipeta_reminder_channel',
-                    ],
                 ],
             ],
         ];

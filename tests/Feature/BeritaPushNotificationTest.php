@@ -86,6 +86,7 @@ class BeritaPushNotificationTest extends TestCase
         $this->assertNotNull($capturedPayload);
         $this->assertEquals($jaksaToken, $capturedPayload['deviceToken']);
         $this->assertStringContainsString('Sosialisasi KUHP Baru', $capturedPayload['title']);
+        $this->assertEquals('berita', $capturedPayload['data']['type']);
         $this->assertEquals((string) $berita->id, $capturedPayload['data']['berita_id']);
         $this->assertEquals(NotificationService::EVENT_BERITA_PUBLISHED, $capturedPayload['data']['event_type']);
         $this->assertEquals('OPEN_BERITA_DETAIL', $capturedPayload['data']['click_action']);
@@ -156,7 +157,7 @@ class BeritaPushNotificationTest extends TestCase
         $this->assertEquals(1, PushNotificationLog::where('event_type', NotificationService::EVENT_BERITA_PUBLISHED)->count());
     }
 
-    public function test_fcm_sender_uses_custom_click_action_from_data_payload(): void
+    public function test_fcm_sender_sends_data_only_high_priority_payload_for_custom_android_handler(): void
     {
         Http::fake([
             'https://fcm.googleapis.com/*' => Http::response([
@@ -176,6 +177,7 @@ class BeritaPushNotificationTest extends TestCase
             title: 'Berita Baru',
             body: 'Ringkasan berita',
             data: [
+                'type' => 'berita',
                 'berita_id' => '99',
                 'click_action' => 'OPEN_BERITA_DETAIL',
             ]
@@ -185,8 +187,15 @@ class BeritaPushNotificationTest extends TestCase
 
         Http::assertSent(function ($request) {
             $body = $request->data();
-            return ($body['message']['android']['notification']['click_action'] ?? null) === 'OPEN_BERITA_DETAIL'
-                && ($body['message']['data']['berita_id'] ?? null) === '99';
+            $message = $body['message'] ?? [];
+            return !array_key_exists('notification', $message)
+                && !array_key_exists('notification', $message['android'] ?? [])
+                && ($message['android']['priority'] ?? null) === 'HIGH'
+                && ($message['data']['title'] ?? null) === 'Berita Baru'
+                && ($message['data']['body'] ?? null) === 'Ringkasan berita'
+                && ($message['data']['type'] ?? null) === 'berita'
+                && ($message['data']['click_action'] ?? null) === 'OPEN_BERITA_DETAIL'
+                && ($message['data']['berita_id'] ?? null) === '99';
         });
     }
 }

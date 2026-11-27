@@ -317,6 +317,7 @@ class NotificationService
             : 'Publikasi berita terbaru Kejaksaan Negeri OKU.';
 
         $dataPayload = [
+            'type' => 'berita',
             'berita_id' => (string) $berita->id,
             'slug' => (string) ($berita->slug ?? ''),
             'event_type' => self::EVENT_BERITA_PUBLISHED,
@@ -361,6 +362,7 @@ class NotificationService
         $dataPayload = !empty($customDataPayload)
             ? $customDataPayload
             : [
+                'type' => 'perkara',
                 'perkara_id' => (string) ($perkara?->id ?? ''),
                 'nomor_perkara' => (string) ($perkara?->nomor_perkara ?? ''),
                 'tahap' => (string) ($perkara?->tahap_saat_ini ?? ''),
